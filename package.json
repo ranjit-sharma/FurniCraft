@@ -4,12 +4,19 @@
   "description": "Modern Furniture Workforce & Financial Management System",
   "private": true,
   "scripts": {
-    "server": "cmd /c \"cd server && npm run dev\"",
-    "client": "cmd /c \"cd client && npm run dev\"",
-    "seed": "cmd /c \"cd server && npm run seed\"",
-    "test:server": "cmd /c \"cd server && npm test\"",
-    "test:client": "cmd /c \"cd client && npm test\"",
-    "test": "cmd /c \"cd server && npm test && cd ../client && npm test\""
+    "install:server": "npm --prefix server install",
+    "install:client": "npm --prefix client install",
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test:server": "npm test --prefix server",
+    "test:client": "npm test --prefix client",
+    "test": "npm test --prefix server && npm test --prefix client"
   },
   "keywords": [
     "modern-furniture",

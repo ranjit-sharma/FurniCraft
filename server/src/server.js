@@ -35,8 +35,8 @@ const startServer = async () => {
     // Make io accessible in requests if needed
     app.set('io', io);
 
-    // 4. Start Listening
-    server.listen(env.PORT, () => {
+    // 4. Start Listening (bind 0.0.0.0 for containerized / cloud hosting e.g. Render)
+    server.listen(env.PORT, '0.0.0.0', () => {
       console.log(`====================================================`);
       console.log(` FurniCraft Server running on http://localhost:${env.PORT}`);
       console.log(` Environment: ${env.NODE_ENV}`);

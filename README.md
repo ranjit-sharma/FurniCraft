@@ -494,6 +494,26 @@ FurniCraft implements the standard shopfloor wage conventions of the Indian mode
    ```
    Open your browser at: **`http://localhost:8080`**
 
+### Deploying to Render
+
+FurniCraft is configured for zero-friction cloud deployment on [Render](https://render.com). It can be deployed in seconds as a single **Unified Web Service** (where Express serves both the REST API and the built React SPA):
+
+1. **Create a New Web Service** on Render and connect `https://github.com/ranjit-sharma/FurniCraft.git`.
+2. **Build & Start Commands** (Root defaults now work out of the box):
+   - **Root Directory**: Leave blank (defaults to repository root `.`)
+   - **Environment**: `Node`
+   - **Build Command**: `npm install && npm run build` *(or `npm run build`)*
+   - **Start Command**: `npm start`
+3. **Environment Variables** (Under the "Environment" tab):
+   - `NODE_ENV`: `production`
+   - `MONGODB_URI`: `mongodb+srv://<username>:<password>@cluster0.mongodb.net/furnicraft_db?retryWrites=true&w=majority`
+   - `JWT_SECRET`: Any random 32+ character secret string
+   - `JWT_EXPIRES_IN`: `7d`
+   - `PORT`: Leave blank (Render injects its own port automatically, typically `10000`)
+4. **Click "Deploy Web Service"**:
+   - The root build script installs both server and client packages, builds the client via Vite, and boots the backend with Express serving the React SPA and API on the same domain.
+   - Alternatively, Render will automatically detect the included [`render.yaml`](file:///c:/Users/ranji/Desktop/project/FurniCraft/render.yaml) blueprint!
+
 ---
 
 ## 8. Safe Seed Demo Accounts
