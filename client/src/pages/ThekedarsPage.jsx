@@ -1,0 +1,753 @@
+import React, { useState, useEffect } from 'react';
+import api from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
+import { Card } from '../components/common/Card';
+import { Badge } from '../components/common/Badge';
+import { Button } from '../components/common/Button';
+import { Modal } from '../components/common/Modal';
+import {
+  Users,
+  UserPlus,
+  UserCheck,
+  UserX,
+  Phone,
+  Mail,
+  ShieldCheck,
+  ShieldAlert,
+  Building2,
+  FolderKanban,
+  CheckCircle,
+  AlertTriangle,
+  RefreshCw,
+  Trash2,
+  Lock,
+  Unlock,
+} from 'lucide-react';
+
+export const ThekedarsPage = () => {
+  const { t } = useLanguage();
+  const [thekedars, setThekedars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState(null);
+  const [statusActionLoadingId, setStatusActionLoadingId] = useState(null);
+
+  // Register Thekedar Modal
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('Thekedar@2026');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Details Modal
+  const [selectedThekedar, setSelectedThekedar] = useState(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+
+  const fetchThekedars = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/users/thekedars');
+      setThekedars(res.data.thekedars || []);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to load Thekedar records' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchThekedars();
+  }, []);
+
+  const handleRegisterThekedar = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      await api.post('/auth/register', {
+        name,
+        email,
+        phone,
+        password,
+        role: 'THEKEDAR',
+      });
+      setMessage({ type: 'success', text: `Thekedar ${name} onboarded successfully!` });
+      setRegisterModalOpen(false);
+      setName('');
+      setEmail('');
+      setPhone('');
+      setPassword('Thekedar@2026');
+      fetchThekedars();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to onboard Thekedar' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Toggle Thekedar account status (Activate vs Deactivate / Suspend)
+  const handleToggleStatus = async (thekedar, e) => {
+    if (e) e.stopPropagation();
+    const newStatus = thekedar.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    const actionVerb = newStatus === 'ACTIVE' ? 'ACTIVATE' : 'DEACTIVATE / SUSPEND';
+
+    const confirmed = window.confirm(
+      newStatus === 'ACTIVE'
+        ? `Are you sure you want to ACTIVATE the account for Thekedar "${thekedar.name}"?\n\nThey will regain full access to their contractor dashboard, attendance, and worker management.`
+        : `Are you sure you want to DEACTIVATE / SUSPEND the account for Thekedar "${thekedar.name}"?\n\nTheir active sessions will be terminated immediately and they will be blocked from logging in.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setStatusActionLoadingId(thekedar._id);
+      setMessage(null);
+      await api.patch(`/users/thekedars/${thekedar._id}/status`, { status: newStatus });
+      
+      setMessage({
+        type: 'success',
+        text: `Thekedar "${thekedar.name}" has been ${newStatus === 'ACTIVE' ? 'activated' : 'deactivated/suspended'} successfully.`,
+      });
+
+      // Update state locally
+      setThekedars((prev) =>
+        prev.map((th) => (th._id === thekedar._id ? { ...th, status: newStatus } : th))
+      );
+      if (selectedThekedar && selectedThekedar._id === thekedar._id) {
+        setSelectedThekedar((prev) => ({ ...prev, status: newStatus }));
+      }
+    } catch (err) {
+      setMessage({
+        type: 'error',
+        text: err.message || `Failed to update status for Thekedar "${thekedar.name}".`,
+      });
+    } finally {
+      setStatusActionLoadingId(null);
+    }
+  };
+
+  // Permanently delete Thekedar account (only when 0 projects and 0 workers)
+  const handleDeleteThekedar = async (thekedar, e) => {
+    if (e) e.stopPropagation();
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently DELETE the account for Thekedar "${thekedar.name}"?\n\nThis action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setStatusActionLoadingId(thekedar._id);
+      setMessage(null);
+      await api.delete(`/users/thekedars/${thekedar._id}`);
+      setMessage({
+        type: 'success',
+        text: `Thekedar account for "${thekedar.name}" deleted successfully.`,
+      });
+      setThekedars((prev) => prev.filter((t) => t._id !== thekedar._id));
+      if (selectedThekedar && selectedThekedar._id === thekedar._id) {
+        setDetailsModalOpen(false);
+        setSelectedThekedar(null);
+      }
+    } catch (err) {
+      setMessage({
+        type: 'error',
+        text: err.message || `Failed to delete Thekedar account.`,
+      });
+    } finally {
+      setStatusActionLoadingId(null);
+    }
+  };
+
+  const totalThekedars = thekedars.length;
+  const activeThekedars = thekedars.filter((t) => t.status === 'ACTIVE').length;
+  const suspendedThekedars = thekedars.filter((t) => t.status === 'SUSPENDED').length;
+  const totalProjectsManaged = thekedars.reduce((sum, t) => sum + (t.totalProjects || 0), 0);
+  const totalWorkersSupervised = thekedars.reduce((sum, t) => sum + (t.workerCount || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">{t('thekedars.title', 'Thekedar Account Management')}</h1>
+          <p className="text-xs sm:text-sm text-slate-700">
+            {t('thekedars.subtitle', 'Owner Command: Activate, suspend, onboard, and oversee contractor accounts and workforce scope.')}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" onClick={fetchThekedars} className="w-full sm:w-auto justify-center">
+            <RefreshCw className="mr-1.5 h-4 w-4" /> {t('thekedars.refresh', 'Refresh')}
+          </Button>
+          <Button size="sm" onClick={() => setRegisterModalOpen(true)} className="w-full sm:w-auto justify-center">
+            <UserPlus className="mr-1.5 h-4 w-4" /> {t('thekedars.onboardNew', 'Onboard New Thekedar')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {message && (
+        <div
+          className={`flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
+            message.type === 'success'
+              ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+              : 'border border-rose-200 bg-rose-50 text-rose-900'
+          }`}
+        >
+          <span>{message.text}</span>
+          <button onClick={() => setMessage(null)} className="text-xs font-bold underline cursor-pointer">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Executive Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+              <Building2 className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.totalThekedars', 'Total Thekedars')}</p>
+              <p className="text-2xl font-black text-slate-900">{totalThekedars}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+              <CheckCircle className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.activeContractors', 'Active Contractors')}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-black text-slate-900">{activeThekedars}</p>
+                {suspendedThekedars > 0 && (
+                  <span className="text-xs font-bold text-rose-600">
+                    {t('thekedars.suspendedNotice', '({count} suspended)').replace('{count}', suspendedThekedars)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+              <FolderKanban className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.assignedProjects', 'Assigned Projects')}</p>
+              <p className="text-2xl font-black text-slate-900">{totalProjectsManaged}</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
+              <Users className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.supervisedWorkers', 'Supervised Workers')}</p>
+              <p className="text-2xl font-black text-slate-900">{totalWorkersSupervised}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Thekedar Records Table */}
+      <Card className="overflow-hidden">
+        <div className="border-b border-slate-200 bg-slate-50/75 px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Contractor Accounts & Status Controls</h2>
+            <p className="text-xs text-slate-700">
+              As the Owner, you have exclusive control to activate or suspend Thekedar accounts.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-bold text-purple-900">
+            <ShieldCheck className="h-3.5 w-3.5 text-purple-700" /> Owner Authorization Enforced
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="flex h-48 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
+          </div>
+        ) : thekedars.length === 0 ? (
+          <div className="p-12 text-center">
+            <Building2 className="mx-auto h-12 w-12 text-slate-300" />
+            <h3 className="mt-3 text-base font-bold text-slate-800">No Thekedars Registered</h3>
+            <p className="mt-1 text-sm text-slate-700">Get started by onboarding the first furniture contractor.</p>
+            <Button size="sm" className="mt-4" onClick={() => setRegisterModalOpen(true)}>
+              <UserPlus className="mr-1.5 h-4 w-4" /> Onboard Thekedar
+            </Button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                <tr>
+                  <th className="px-5 py-3.5">Thekedar Name</th>
+                  <th className="px-5 py-3.5">Contact Details</th>
+                  <th className="px-5 py-3.5">Assigned Projects</th>
+                  <th className="px-5 py-3.5">Workforce Scope</th>
+                  <th className="px-5 py-3.5">Account Status</th>
+                  <th className="px-5 py-3.5 text-right">Account Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {thekedars.map((th) => (
+                  <tr key={th._id} className="hover:bg-slate-50/50 transition-colors">
+                    {/* Thekedar Name */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 text-xs shadow-xs">
+                          <i className="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900">{th.name}</div>
+                          <div className="text-xs text-slate-500">
+                            Joined: {new Date(th.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Contact Details */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-800">
+                        <Mail className="h-3.5 w-3.5 text-slate-500" />
+                        <span>{th.email}</span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-800">
+                        <Phone className="h-3.5 w-3.5 text-slate-500" />
+                        <span>{th.phone || 'Not provided'}</span>
+                      </div>
+                    </td>
+
+                    {/* Assigned Projects */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900">{th.totalProjects || 0}</span>
+                        <span className="text-xs text-slate-500">projects</span>
+                      </div>
+                      {th.assignedProjects && th.assignedProjects.length > 0 && (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {th.assignedProjects.slice(0, 2).map((p) => (
+                            <span
+                              key={p._id}
+                              className="inline-block rounded bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200"
+                            >
+                              {p.name}
+                            </span>
+                          ))}
+                          {th.assignedProjects.length > 2 && (
+                            <button
+                              onClick={() => {
+                                setSelectedThekedar(th);
+                                setDetailsModalOpen(true);
+                              }}
+                              className="text-[10px] font-bold text-amber-700 hover:underline cursor-pointer"
+                            >
+                              +{th.assignedProjects.length - 2} more
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Workforce Scope with Worker Names & Phone Numbers */}
+                    <td className="px-5 py-4">
+                      <div className="space-y-1.5">
+                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 px-2 py-0.5 text-xs font-bold text-purple-900 border border-purple-200">
+                          <Users className="h-3.5 w-3.5 text-purple-700" />
+                          <span>{th.workerCount || th.workers?.length || 0} Workers</span>
+                        </div>
+                        {th.workers && th.workers.length > 0 ? (
+                          <div className="space-y-1 min-w-[200px] max-w-xs">
+                            {th.workers.slice(0, 3).map((w) => (
+                              <div
+                                key={w._id}
+                                className="flex items-center justify-between gap-2 rounded-md bg-slate-50 border border-slate-200/90 px-2 py-1 text-xs"
+                              >
+                                <span className="font-bold text-slate-900 truncate" title={w.name}>
+                                  {w.name}
+                                </span>
+                                <span className="font-mono text-[11px] text-slate-700 font-medium shrink-0 flex items-center gap-1">
+                                  <Phone className="h-2.5 w-2.5 text-slate-400" />
+                                  {w.phone}
+                                </span>
+                              </div>
+                            ))}
+                            {th.workers.length > 3 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedThekedar(th);
+                                  setDetailsModalOpen(true);
+                                }}
+                                className="text-[10px] font-bold text-purple-700 hover:underline cursor-pointer block mt-0.5"
+                              >
+                                +{th.workers.length - 3} more craftsmen
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-slate-400 italic">No workers assigned</div>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Account Status Badge */}
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
+                          th.status === 'ACTIVE'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : 'bg-rose-50 text-rose-800 border-rose-200'
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            th.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                          }`}
+                        />
+                        {th.status === 'ACTIVE' ? 'Active' : 'Suspended'}
+                      </span>
+                    </td>
+
+                    {/* Actions: Activate / Deactivate Toggle, View Scope, Delete */}
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {th.status === 'ACTIVE' ? (
+                          <button
+                            type="button"
+                            disabled={statusActionLoadingId === th._id}
+                            onClick={(e) => handleToggleStatus(th, e)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-400 disabled:opacity-50 transition cursor-pointer"
+                            title="Deactivate / Suspend contractor login access"
+                          >
+                            {statusActionLoadingId === th._id ? (
+                              <RefreshCw className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <UserX className="h-3 w-3" />
+                            )}
+                            <span>Deactivate</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={statusActionLoadingId === th._id}
+                            onClick={(e) => handleToggleStatus(th, e)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 disabled:opacity-50 transition cursor-pointer"
+                            title="Activate contractor login access"
+                          >
+                            {statusActionLoadingId === th._id ? (
+                              <RefreshCw className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <UserCheck className="h-3 w-3" />
+                            )}
+                            <span>Activate</span>
+                          </button>
+                        )}
+
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => {
+                            setSelectedThekedar(th);
+                            setDetailsModalOpen(true);
+                          }}
+                        >
+                          View Scope
+                        </Button>
+
+                        {th.totalProjects === 0 && th.workerCount === 0 && (
+                          <button
+                            type="button"
+                            disabled={statusActionLoadingId === th._id}
+                            onClick={(e) => handleDeleteThekedar(th, e)}
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition cursor-pointer"
+                            title="Delete contractor account (only available when 0 projects and 0 workers)"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Onboard New Thekedar Modal */}
+      <Modal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        title={t('thekedars.onboardModalTitle', 'Onboard New Furniture Thekedar')}
+      >
+        <form onSubmit={handleRegisterThekedar} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              {t('thekedars.fullName', 'Full Name')} *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g., Rajesh Sharma"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              {t('thekedars.emailAddress', 'Email Address')} *
+            </label>
+            <input
+              type="email"
+              required
+              placeholder="thekedar.rajesh@furnicraft.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              {t('thekedars.mobileNumber', 'Phone Number')} *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="9876543210"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+              {t('thekedars.password', 'Initial Password')} *
+            </label>
+            <input
+              type="text"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              {t('thekedars.passwordNote', 'The Thekedar can change this password after logging in.')}
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setRegisterModalOpen(false)}
+            >
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button type="submit" size="sm" disabled={submitting}>
+              {submitting ? t('common.loading', 'Loading...') : t('thekedars.submitOnboard', 'Onboard Thekedar')}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Scope & Profile Details Modal */}
+      {selectedThekedar && (
+        <Modal
+          isOpen={detailsModalOpen}
+          onClose={() => {
+            setDetailsModalOpen(false);
+            setSelectedThekedar(null);
+          }}
+          title={`${selectedThekedar.name} — Contractor Profile & Authorization`}
+        >
+          <div className="space-y-4">
+            {/* Account Authorization Card */}
+            <div
+              className={`rounded-xl p-4 border ${
+                selectedThekedar.status === 'ACTIVE'
+                  ? 'bg-emerald-50/70 border-emerald-200'
+                  : 'bg-rose-50/70 border-rose-200'
+              }`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
+                    Account Authorization State
+                  </span>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black border ${
+                        selectedThekedar.status === 'ACTIVE'
+                          ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                          : 'bg-rose-100 text-rose-900 border-rose-300'
+                      }`}
+                    >
+                      <span
+                        className={`h-2 w-2 rounded-full ${
+                          selectedThekedar.status === 'ACTIVE' ? 'bg-emerald-600 animate-pulse' : 'bg-rose-600'
+                        }`}
+                      />
+                      {selectedThekedar.status === 'ACTIVE' ? 'ACTIVE CONTRACTOR' : 'SUSPENDED / DEACTIVATED'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-600 max-w-sm">
+                    {selectedThekedar.status === 'ACTIVE'
+                      ? 'Thekedar is fully authorized to log in, supervise crafts, record attendance, and manage workers.'
+                      : 'Account is deactivated. Login tokens are revoked and access to contractor dashboard is blocked.'}
+                  </p>
+                </div>
+
+                <div>
+                  {selectedThekedar.status === 'ACTIVE' ? (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      disabled={statusActionLoadingId === selectedThekedar._id}
+                      onClick={(e) => handleToggleStatus(selectedThekedar, e)}
+                    >
+                      <UserX className="mr-1.5 h-3.5 w-3.5" />
+                      Deactivate Account
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      disabled={statusActionLoadingId === selectedThekedar._id}
+                      onClick={(e) => handleToggleStatus(selectedThekedar, e)}
+                    >
+                      <UserCheck className="mr-1.5 h-3.5 w-3.5" />
+                      Activate Account
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* General Info Card */}
+            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-semibold text-slate-600">Email Address:</span>
+                <span className="text-slate-900 font-medium">{selectedThekedar.email}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-semibold text-slate-600">Mobile Phone:</span>
+                <span className="text-slate-900 font-medium">{selectedThekedar.phone || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-semibold text-slate-600">Workers Supervised:</span>
+                <span className="text-slate-900 font-bold">{selectedThekedar.workerCount || 0} Craftsmen</span>
+              </div>
+            </div>
+
+            {/* Assigned Projects */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                Assigned Furniture Projects ({selectedThekedar.assignedProjects?.length || 0})
+              </h4>
+              {selectedThekedar.assignedProjects && selectedThekedar.assignedProjects.length > 0 ? (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {selectedThekedar.assignedProjects.map((p) => (
+                    <div
+                      key={p._id}
+                      className="rounded-lg border border-slate-200 p-2.5 bg-white text-xs flex justify-between items-center"
+                    >
+                      <div>
+                        <div className="font-bold text-slate-900">{p.name}</div>
+                        <div className="text-slate-500">{p.siteAddress}</div>
+                      </div>
+                      <Badge variant="info">{p.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic">No projects assigned yet.</p>
+              )}
+            </div>
+
+            {/* Supervised Workers: Name & Phone Number */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                Supervised Workers & Craftsmen ({selectedThekedar.workers?.length || selectedThekedar.workerCount || 0})
+              </h4>
+              {selectedThekedar.workers && selectedThekedar.workers.length > 0 ? (
+                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                  {selectedThekedar.workers.map((w) => (
+                    <div
+                      key={w._id}
+                      className="rounded-lg border border-slate-200 p-2.5 bg-white text-xs flex justify-between items-center hover:border-purple-300 transition"
+                    >
+                      <div>
+                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <span>{w.name}</span>
+                          <span className="text-[10px] font-mono text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                            {w.workerCode}
+                          </span>
+                        </div>
+                        <div className="text-slate-600 mt-1 flex items-center gap-1.5 font-medium">
+                          <Phone className="h-3 w-3 text-purple-600" />
+                          <span className="font-mono text-slate-800 font-semibold">{w.phone}</span>
+                          {w.email && <span className="text-slate-400 text-[11px]">({w.email})</span>}
+                        </div>
+                      </div>
+                      <Badge variant={w.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
+                        {w.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic">No workers registered under this contractor.</p>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t border-slate-200">
+              {selectedThekedar.totalProjects === 0 && selectedThekedar.workerCount === 0 ? (
+                <button
+                  type="button"
+                  disabled={statusActionLoadingId === selectedThekedar._id}
+                  onClick={(e) => handleDeleteThekedar(selectedThekedar, e)}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Delete Thekedar Account</span>
+                </button>
+              ) : (
+                <span className="text-[11px] text-slate-400">
+                  Cannot delete while projects or workers are assigned
+                </span>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDetailsModalOpen(false);
+                  setSelectedThekedar(null);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default ThekedarsPage;

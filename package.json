@@ -1,0 +1,24 @@
+{
+  "name": "furni-craft-workforce-system",
+  "version": "1.0.0",
+  "description": "Modern Furniture Workforce & Financial Management System",
+  "private": true,
+  "scripts": {
+    "server": "cmd /c \"cd server && npm run dev\"",
+    "client": "cmd /c \"cd client && npm run dev\"",
+    "seed": "cmd /c \"cd server && npm run seed\"",
+    "test:server": "cmd /c \"cd server && npm test\"",
+    "test:client": "cmd /c \"cd client && npm test\"",
+    "test": "cmd /c \"cd server && npm test && cd ../client && npm test\""
+  },
+  "keywords": [
+    "modern-furniture",
+    "workforce-management",
+    "thekedar",
+    "payroll",
+    "tool-tracking",
+    "mern"
+  ],
+  "author": "Antigravity Engineering",
+  "license": "ISC"
+}

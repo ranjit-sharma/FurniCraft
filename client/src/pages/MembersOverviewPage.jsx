@@ -1,0 +1,554 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import api from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
+import { Card } from '../components/common/Card';
+import { Badge } from '../components/common/Badge';
+import { Button } from '../components/common/Button';
+import {
+  Users,
+  UserCheck,
+  UserCheck2,
+  HardHat,
+  Shield,
+  Eye,
+  Search,
+  Filter,
+  Calendar,
+  Phone,
+  Mail,
+  Clock,
+  ArrowUpRight,
+  Activity,
+  CheckCircle2,
+  RefreshCw,
+  Building,
+} from 'lucide-react';
+
+export const MembersOverviewPage = () => {
+  const { t } = useLanguage();
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [selectedRole, setSelectedRole] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const fetchOverview = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get('/reports/members-overview');
+      const overviewData = res?.data?.summary
+        ? res.data
+        : res?.data?.data
+        ? res.data.data
+        : res?.summary
+        ? res
+        : res?.data;
+      setData(overviewData);
+    } catch (err) {
+      console.error('Failed to fetch members overview:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleThekedarStatus = async (member) => {
+    if (member.role !== 'THEKEDAR') return;
+    const newStatus = member.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    const confirmed = window.confirm(
+      newStatus === 'ACTIVE'
+        ? `Are you sure you want to ACTIVATE the account for Thekedar "${member.name}"?`
+        : `Are you sure you want to DEACTIVATE / SUSPEND the account for Thekedar "${member.name}"? Active sessions will be terminated immediately.`
+    );
+    if (!confirmed) return;
+
+    try {
+      setActionLoadingId(member._id);
+      await api.patch(`/users/thekedars/${member._id}/status`, { status: newStatus });
+      await fetchOverview();
+    } catch (err) {
+      alert(err.message || 'Failed to update Thekedar status');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchOverview();
+  }, []);
+
+  const summary = data?.summary || {
+    totalMembers: 0,
+    totalThekedars: 0,
+    activeThekedars: 0,
+    totalWorkers: 0,
+    activeWorkers: 0,
+    totalOwners: 0,
+    activeOwners: 0,
+    totalVisits: 0,
+    todayVisits: 0,
+    visitsByRole: { WORKER: 0, THEKEDAR: 0, OWNER: 0 },
+  };
+
+  const members = data?.members || [];
+  const recentVisits = data?.recentVisits || [];
+
+  const filteredMembers = members.filter((m) => {
+    const matchesRole = selectedRole === 'ALL' || m.role === selectedRole;
+    const matchesStatus = statusFilter === 'ALL' || m.status === statusFilter;
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      !q ||
+      m.name?.toLowerCase().includes(q) ||
+      m.email?.toLowerCase().includes(q) ||
+      m.phone?.toLowerCase().includes(q) ||
+      m.workerCode?.toLowerCase().includes(q) ||
+      m.assignedThekedar?.name?.toLowerCase().includes(q);
+
+    return matchesRole && matchesStatus && matchesSearch;
+  });
+
+  const getRoleBadgeVariant = (role) => {
+    switch (role) {
+      case 'OWNER':
+        return 'primary';
+      case 'THEKEDAR':
+        return 'warning';
+      case 'WORKER':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return 'Never logged in';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-purple-200 bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 p-4 sm:p-6 text-white shadow-xl">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/30">
+            <Users className="h-3.5 w-3.5" />
+            <span>{t('members.badge', 'Platform Workforce & Application Analytics')}</span>
+          </div>
+          <h1 className="text-xl sm:text-3xl font-black mt-2 tracking-tight">{t('members.title', 'Whole Application Members & Visits')}</h1>
+          <p className="text-xs sm:text-sm text-purple-200/80 mt-1 max-w-2xl">
+            {t('members.subtitle', 'Real-time audit of all registered application members, role breakdowns (Thekedars, Workers, Owners), and total system visit statistics.')}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
+          <Button
+            variant="outline-purple"
+            size="sm"
+            onClick={fetchOverview}
+            icon={RefreshCw}
+            className="w-full sm:w-auto justify-center text-white hover:bg-purple-900/50"
+          >
+            {t('thekedars.refresh', 'Refresh Data')}
+          </Button>
+          <Link to="/" className="w-full sm:w-auto">
+            <Button variant="primary" size="sm" className="w-full sm:w-auto justify-center">
+              {t('projectDetail.backToProjects', 'Back to Dashboard')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* KPI Cards Grid: Whole Members & Visits Breakdown */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+        {/* Total Members */}
+        <Card className="border-purple-200 bg-purple-50/30 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-purple-900 uppercase tracking-wider">{t('members.allMembers', 'Total Members')}</span>
+            <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
+              <Users className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-black text-purple-950 mt-2">{summary.totalMembers}</div>
+          <div className="text-[11px] text-purple-800 font-semibold mt-1">
+            {t('members.registeredPlatform', 'Registered on Platform')}
+          </div>
+        </Card>
+
+        {/* Total Thekedars */}
+        <Card className="border-amber-200 bg-amber-50/30 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('members.thekedarsCount', 'Thekedars')}</span>
+            <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+              <HardHat className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-black text-amber-950 mt-2">{summary.totalThekedars}</div>
+          <div className="text-[11px] text-amber-800 font-semibold mt-1 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+            {summary.activeThekedars} {t('thekedars.activeContractors', 'Active Contractors')}
+          </div>
+        </Card>
+
+        {/* Total Workers */}
+        <Card className="border-blue-200 bg-blue-50/30 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">{t('members.workersCount', 'Workers')}</span>
+            <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+              <UserCheck2 className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-black text-blue-950 mt-2">{summary.totalWorkers}</div>
+          <div className="text-[11px] text-blue-800 font-semibold mt-1 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+            {summary.activeWorkers} {t('worker.activeCraftsmen', 'Active Craftsmen')}
+          </div>
+        </Card>
+
+        {/* Total Owners */}
+        <Card className="border-emerald-200 bg-emerald-50/30 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">{t('members.ownersCount', 'Administrators')}</span>
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+              <Shield className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-black text-emerald-950 mt-2">{summary.totalOwners}</div>
+          <div className="text-[11px] text-emerald-800 font-semibold mt-1">
+            {t('members.executiveOwners', 'Executive Owner Accounts')}
+          </div>
+        </Card>
+
+        {/* Total Visits to Application */}
+        <Card className="col-span-2 lg:col-span-1 border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-blue-50/30 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-indigo-900 uppercase tracking-wider">{t('members.totalVisits', 'Total App Visits')}</span>
+            <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
+              <Eye className="h-4 w-4" />
+            </div>
+          </div>
+          <div className="text-3xl font-black text-indigo-950 mt-2">{summary.totalVisits.toLocaleString('en-IN')}</div>
+          <div className="text-[11px] text-indigo-800 font-semibold mt-1 flex items-center gap-1">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            {summary.todayVisits} {t('members.todayVisits', 'Visits Today')}
+          </div>
+        </Card>
+      </div>
+
+      {/* Role-wise Visit Breakdown Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Activity className="h-4 w-4 text-indigo-600" />
+              {t('members.visitsDistribution', 'Application Visits Distribution by Member Role')}
+            </h3>
+            <p className="text-xs text-slate-500">{t('members.sessionsBreakdown', 'Breakdown of total system sessions and login activity across workforce ranks.')}</p>
+          </div>
+          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+            {t('members.totalSessions', 'Total Sessions')}: {summary.totalVisits}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-amber-900">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-amber-800">
+                {summary.totalVisits ? Math.round(((summary.visitsByRole?.THEKEDAR || 0) / summary.totalVisits) * 100) : 0}%
+              </span>
+            </div>
+            <div className="text-2xl font-black text-amber-950 mt-1">
+              {(summary.visitsByRole?.THEKEDAR || 0).toLocaleString('en-IN')}
+            </div>
+            <div className="w-full bg-amber-200 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div
+                className="bg-amber-600 h-full rounded-full"
+                style={{
+                  width: `${summary.totalVisits ? Math.min(100, ((summary.visitsByRole?.THEKEDAR || 0) / summary.totalVisits) * 100) : 0}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-blue-900">{t('members.workersCount', 'Worker')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-blue-800">
+                {summary.totalVisits ? Math.round(((summary.visitsByRole?.WORKER || 0) / summary.totalVisits) * 100) : 0}%
+              </span>
+            </div>
+            <div className="text-2xl font-black text-blue-950 mt-1">
+              {(summary.visitsByRole?.WORKER || 0).toLocaleString('en-IN')}
+            </div>
+            <div className="w-full bg-blue-200 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div
+                className="bg-blue-600 h-full rounded-full"
+                style={{
+                  width: `${summary.totalVisits ? Math.min(100, ((summary.visitsByRole?.WORKER || 0) / summary.totalVisits) * 100) : 0}%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-3.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-purple-900">{t('members.ownersCount', 'Owner')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-purple-800">
+                {summary.totalVisits ? Math.round(((summary.visitsByRole?.OWNER || 0) / summary.totalVisits) * 100) : 0}%
+              </span>
+            </div>
+            <div className="text-2xl font-black text-purple-950 mt-1">
+              {(summary.visitsByRole?.OWNER || 0).toLocaleString('en-IN')}
+            </div>
+            <div className="w-full bg-purple-200 h-1.5 rounded-full mt-2 overflow-hidden">
+              <div
+                className="bg-purple-600 h-full rounded-full"
+                style={{
+                  width: `${summary.totalVisits ? Math.min(100, ((summary.visitsByRole?.OWNER || 0) / summary.totalVisits) * 100) : 0}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Members Directory */}
+      <Card
+        title={t('members.allMembers', 'Whole Application Members Directory')}
+        subtitle={`${t('members.allMembers', 'Complete listing of all')} ${members.length} registered system users`}
+      >
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('members.searchPlaceholder', 'Search by name, email, phone, or worker code...')}
+              className="w-full rounded-xl border border-slate-300 pl-9 pr-4 py-2 text-xs focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+            />
+          </div>
+
+          {/* Role Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'ALL', label: `${t('common.all', 'All')} (${summary.totalMembers})` },
+              { id: 'THEKEDAR', label: `${t('members.thekedarsCount', 'Thekedars')} (${summary.totalThekedars})` },
+              { id: 'WORKER', label: `${t('members.workersCount', 'Workers')} (${summary.totalWorkers})` },
+              { id: 'OWNER', label: `${t('members.ownersCount', 'Owners')} (${summary.totalOwners})` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedRole(tab.id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                  selectedRole === tab.id
+                    ? 'bg-purple-900 text-white shadow-xs'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700"
+            >
+              <option value="ALL">{t('common.all', 'All Status')}</option>
+              <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
+              <option value="SUSPENDED">{t('members.suspendedAccount', 'Suspended Only')}</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Members Table */}
+        {loading ? (
+          <div className="flex h-48 items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
+          </div>
+        ) : filteredMembers.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+            <Users className="mx-auto h-8 w-8 text-slate-400" />
+            <p className="mt-2 text-xs font-semibold text-slate-600">No members match your search or filter.</p>
+            <Button size="xs" variant="secondary" onClick={() => { setSearchQuery(''); setSelectedRole('ALL'); setStatusFilter('ALL'); }} className="mt-3">
+              Clear Filters
+            </Button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-slate-200">
+            <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
+              <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                <tr>
+                  <th className="px-4 py-3">{t('profile.accountDetails', 'Member Details')}</th>
+                  <th className="px-4 py-3">{t('profile.role', 'Role')}</th>
+                  <th className="px-4 py-3">{t('disputes.thekedar', 'Assigned Thekedar')}</th>
+                  <th className="px-4 py-3">{t('profile.phone', 'Contact')}</th>
+                  <th className="px-4 py-3 text-center">{t('members.totalVisits', 'App Visits')}</th>
+                  <th className="px-4 py-3">{t('members.lastVisit', 'Last Active')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.status', 'Status')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white">
+                {filteredMembers.map((m) => (
+                  <tr key={m._id} className="hover:bg-slate-50/70 transition-colors">
+                    {/* Member Details */}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-black text-xs ${
+                            m.role === 'OWNER'
+                              ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                              : m.role === 'THEKEDAR'
+                              ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                              : 'bg-blue-100 text-blue-900 border border-blue-200'
+                          }`}
+                        >
+                          <i className="fa-solid fa-user text-xs"></i>
+                        </div>
+                        <div>
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                            {m.name}
+                            {m.workerCode && (
+                              <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">
+                                {m.workerCode}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-slate-500">{m.email}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Role */}
+                    <td className="px-4 py-3">
+                      <Badge variant={getRoleBadgeVariant(m.role)} size="sm">
+                        {m.role === 'OWNER' ? 'Owner / Admin' : m.role === 'THEKEDAR' ? 'Thekedar (Contractor)' : 'Worker (Craftsman)'}
+                      </Badge>
+                    </td>
+
+                    {/* Assigned Thekedar */}
+                    <td className="px-4 py-3 text-slate-700">
+                      {m.role === 'WORKER' ? (
+                        m.assignedThekedar ? (
+                          <div className="space-y-0.5">
+                            <span className="font-bold text-slate-900 block">{m.assignedThekedar.name}</span>
+                            <span className="text-[11px] text-slate-500 block">{m.assignedThekedar.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">Unassigned</span>
+                        )
+                      ) : (
+                        <span className="text-slate-400 text-[11px]">— (Self Managed)</span>
+                      )}
+                    </td>
+
+                    {/* Contact */}
+                    <td className="px-4 py-3">
+                      <div className="text-slate-800 font-mono text-xs">{m.phone}</div>
+                      <div className="text-[10px] text-slate-500">Joined: {new Date(m.createdAt).toLocaleDateString()}</div>
+                    </td>
+
+                    {/* App Visits */}
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-900 border border-indigo-200">
+                        <Eye className="h-3 w-3 text-indigo-600" />
+                        {m.visitCount || 0}
+                      </span>
+                    </td>
+
+                    {/* Last Active */}
+                    <td className="px-4 py-3 text-slate-700 text-xs">
+                      {formatDateTime(m.lastLoginAt)}
+                    </td>
+
+                    {/* Status & Management */}
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Badge variant={m.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
+                          {m.status}
+                        </Badge>
+                        {m.role === 'THEKEDAR' ? (
+                          <button
+                            type="button"
+                            disabled={actionLoadingId === m._id}
+                            onClick={() => handleToggleThekedarStatus(m)}
+                            className={`px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer disabled:opacity-50 ${
+                              m.status === 'ACTIVE'
+                                ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                            }`}
+                            title={m.status === 'ACTIVE' ? 'Deactivate Thekedar' : 'Activate Thekedar'}
+                          >
+                            {actionLoadingId === m._id ? '...' : m.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                          </button>
+                        ) : m.role === 'WORKER' ? (
+                          <span className="text-[10px] text-slate-400 italic">Managed by Thekedar</span>
+                        ) : (
+                          <span className="text-[10px] text-purple-600 font-semibold">Protected</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* Live Application Visits Log */}
+      <Card
+        title="Live System Visits & Login Stream"
+        subtitle="Chronological audit stream of members visiting and authenticating into the application"
+      >
+        {recentVisits.length === 0 ? (
+          <p className="text-xs text-slate-500 italic py-4">No recent visits recorded.</p>
+        ) : (
+          <div className="space-y-2.5">
+            {recentVisits.map((v) => (
+              <div
+                key={v._id}
+                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs hover:bg-slate-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 font-bold">
+                    <Activity className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900">{v.actorName || 'User'}</span>
+                      <Badge variant={getRoleBadgeVariant(v.actorRole)} size="sm">
+                        {v.actorRole}
+                      </Badge>
+                      <span className="text-[10px] text-slate-400">• {v.action}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Session recorded from IP: {v.ipAddress || '127.0.0.1'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-semibold text-slate-700 block">{new Date(v.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-[10px] text-slate-400">{new Date(v.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+};
