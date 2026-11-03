@@ -116,7 +116,7 @@ export const recordProjectMoneyReceivedSchema = z.object({
 // Attendance Schemas
 export const submitAttendanceSchema = z.object({
   workerId: z.string().optional(), // If worker submits for themselves, inferred from token
-  projectId: z.string().min(1, 'Project ID is required'),
+  projectId: z.string().optional().nullable(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD'),
   shift: z.string().default('GENERAL'),
   code: z.enum(Object.values(ATTENDANCE_CODES)),

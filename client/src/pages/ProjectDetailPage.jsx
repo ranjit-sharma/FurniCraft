@@ -279,16 +279,6 @@ export const ProjectDetailPage = () => {
                 )}
               </p>
             </div>
-            {isThekedar && (
-              <Button
-                size="xs"
-                variant="primary"
-                onClick={() => setMoneyModalOpen(true)}
-                icon={Plus}
-              >
-                {t('projectDetail.recordPayment', 'Record Payment')}
-              </Button>
-            )}
           </div>
 
           {moneyReceived.length === 0 ? (
@@ -467,7 +457,7 @@ export const ProjectDetailPage = () => {
               {t('common.cancel', 'Cancel')}
             </Button>
             <Button type="submit" variant="primary" disabled={moneySubmitting}>
-              {moneySubmitting ? 'Recording...' : t('projectDetail.recordPayment', 'Record Payment')}
+              {moneySubmitting ? 'Recording...' : t('projectDetail.recordMoney', 'Record Money Received')}
             </Button>
           </div>
         </form>

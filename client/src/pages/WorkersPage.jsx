@@ -121,12 +121,10 @@ export const WorkersPage = () => {
   const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
   const [selectedAttendanceWorker, setSelectedAttendanceWorker] = useState(null);
   const [attendanceWorkerId, setAttendanceWorkerId] = useState('');
-  const [attendanceProjectId, setAttendanceProjectId] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(localToday);
   const [attendanceShift, setAttendanceShift] = useState('GENERAL');
   const [attendanceCode, setAttendanceCode] = useState('P');
   const [markAttendanceSubmitting, setMarkAttendanceSubmitting] = useState(false);
-  const [projectsList, setProjectsList] = useState([]);
 
   // Worker details sheet (attendance history, advances, payment bills)
   const [activityModalOpen, setActivityModalOpen] = useState(false);
@@ -201,19 +199,6 @@ export const WorkersPage = () => {
     }
   };
 
-  const fetchProjects = async () => {
-    try {
-      const res = await api.get('/projects');
-      const list = res.data?.projects || res.data?.data?.projects || [];
-      setProjectsList(list);
-      if (list.length > 0 && !attendanceProjectId) {
-        setAttendanceProjectId(list[0]._id);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const fetchThekedars = async () => {
     try {
       const res = await api.get('/users/thekedars');
@@ -229,7 +214,6 @@ export const WorkersPage = () => {
 
   useEffect(() => {
     fetchWorkers();
-    fetchProjects();
     if (isOwner) {
       fetchThekedars();
     }
@@ -263,9 +247,6 @@ export const WorkersPage = () => {
     setSelectedAttendanceWorker(worker);
     const targetWorkerId = worker?.userId?._id || worker?._id || '';
     setAttendanceWorkerId(targetWorkerId);
-    if (projectsList.length > 0 && !attendanceProjectId) {
-      setAttendanceProjectId(projectsList[0]._id);
-    }
     setAttendanceDate(localToday());
     setAttendanceShift('GENERAL');
     setAttendanceCode('P');
@@ -278,15 +259,10 @@ export const WorkersPage = () => {
       setMessage({ type: 'error', text: 'Please select a worker' });
       return;
     }
-    if (!attendanceProjectId) {
-      setMessage({ type: 'error', text: 'Please select an active project' });
-      return;
-    }
     try {
       setMarkAttendanceSubmitting(true);
       const res = await api.post('/attendance/submit', {
         workerId: attendanceWorkerId,
-        projectId: attendanceProjectId,
         date: attendanceDate,
         shift: attendanceShift,
         code: attendanceCode,
@@ -965,25 +941,6 @@ export const WorkersPage = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Furniture Project *
-            </label>
-            <select
-              required
-              value={attendanceProjectId}
-              onChange={(e) => setAttendanceProjectId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            >
-              <option value="">-- Choose Project --</option>
-              {projectsList.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} ({p.projectCode})
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -1230,7 +1187,6 @@ export const WorkersPage = () => {
                           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
                             <tr>
                               <th className="px-4 py-3">Date</th>
-                              <th className="px-4 py-3">Project / Site</th>
                               <th className="px-4 py-3">Code & Weight</th>
                               <th className="px-4 py-3">Earned</th>
                               <th className="px-4 py-3 text-right">Action</th>
@@ -1241,12 +1197,6 @@ export const WorkersPage = () => {
                               <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
                                 <td className="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                                   {att.date || formatDate(att.createdAt)}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <div className="font-medium text-slate-800 dark:text-slate-200">{att.projectId?.name || 'General Workshop'}</div>
-                                  {att.projectId?.projectCode && (
-                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">{att.projectId.projectCode}</div>
-                                  )}
                                 </td>
                                 <td className="px-4 py-3">
                                   <Badge variant={att.code} size="sm">{att.code}</Badge>
@@ -1315,7 +1265,6 @@ export const WorkersPage = () => {
                                 <th className="px-4 py-2.5">Requested Date</th>
                                 <th className="px-4 py-2.5">Amount</th>
                                 <th className="px-4 py-2.5">Reason</th>
-                                <th className="px-4 py-2.5">Project</th>
                                 <th className="px-4 py-2.5">Status</th>
                                 <th className="px-4 py-2.5">Reviewer Note</th>
                               </tr>
@@ -1331,9 +1280,6 @@ export const WorkersPage = () => {
                                   </td>
                                   <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400 max-w-xs truncate">
                                     {adv.reason}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
-                                    {adv.projectId?.name || 'General'}
                                   </td>
                                   <td className="px-4 py-2.5">
                                     <div className="flex flex-wrap items-center gap-2">
@@ -1569,7 +1515,7 @@ export const WorkersPage = () => {
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 text-sm">
               <div className="font-bold text-slate-900 dark:text-white">{activityWorker?.userId?.name}</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">
-                {editAttendance.projectId?.name || 'Project'} · now <strong>{editAttendance.code}</strong> (₹{(editAttendance.calculatedEarnings ?? 0).toLocaleString('en-IN')})
+                Current shift: <strong>{editAttendance.code}</strong> (₹{(editAttendance.calculatedEarnings ?? 0).toLocaleString('en-IN')})
               </div>
             </div>
             <div>

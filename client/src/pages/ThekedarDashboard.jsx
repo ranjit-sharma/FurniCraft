@@ -41,13 +41,6 @@ export const ThekedarDashboard = () => {
   const [loadError, setLoadError] = useState(null);
   const [message, setMessage] = useState(null);
   const [today] = useState(localToday);
-  const [projectId, setProjectId] = useState(() => {
-    try {
-      return localStorage.getItem(PROJECT_KEY) || '';
-    } catch {
-      return '';
-    }
-  });
   const [savingWorkerId, setSavingWorkerId] = useState(null);
 
   // Add New Craftsman Modal State
@@ -75,31 +68,15 @@ export const ThekedarDashboard = () => {
   }, []);
 
   const projects = data?.activeProjects || [];
-  // Remembered project if it is still active, otherwise the first active one.
-  const selectedProjectId = projects.some((p) => p._id === projectId) ? projectId : projects[0]?._id || '';
-
-  const handleSelectProject = (id) => {
-    setProjectId(id);
-    try {
-      localStorage.setItem(PROJECT_KEY, id);
-    } catch {
-      // storage blocked: the choice still applies for this visit
-    }
-  };
 
   // One tap marks today's shift; tapping again with another code edits it (server updates the same entry).
   const handleMark = async (worker, code) => {
-    if (!selectedProjectId) {
-      setMessage({ type: 'error', text: 'Create a project first, then mark attendance.' });
-      return;
-    }
     if (worker.today?.code === code) return;
     setSavingWorkerId(worker.userId);
     setMessage(null);
     try {
       const res = await api.post('/attendance/submit', {
         workerId: worker.userId,
-        projectId: worker.today?.projectId || selectedProjectId,
         date: today,
         shift: 'GENERAL',
         code,
@@ -214,22 +191,6 @@ export const ThekedarDashboard = () => {
         title={t('thekedarDash.todayAttendance', "Today's attendance")}
         subtitle={`${m.markedToday || 0} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}`}
       >
-        {projects.length > 0 && (
-          <label className="mb-3 block">
-            <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedarDash.site', 'Site for new entries')}</span>
-            <select
-              value={selectedProjectId}
-              onChange={(e) => handleSelectProject(e.target.value)}
-              className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none"
-            >
-              {projects.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} ({p.projectCode})
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
 
         {workers.length === 0 ? (
           <div className="py-6 text-center">

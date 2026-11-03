@@ -50,16 +50,21 @@ export const submitAttendance = async ({ data, user, req }) => {
 
   const { projectId, date, shift = 'GENERAL', code, checkInTime, checkOutTime, extraWorkCategory } = data;
 
-  // Verify Project exists
-  const project = await Project.findById(projectId);
-  if (!project) throw new NotFoundError('Project not found');
-
-  // Strict Rule: Worker can only submit attendance on projects of their permanent Thekedar
   const workerProfile = await WorkerProfile.findOne({ userId: workerId });
-  if (workerProfile && workerProfile.thekedarId.toString() !== project.thekedarId.toString()) {
-    throw new ForbiddenError(
-      'Strict Rule: Worker can only record attendance on projects managed by their permanent Thekedar.'
-    );
+  let project = null;
+  if (projectId) {
+    project = await Project.findById(projectId);
+    if (!project) throw new NotFoundError('Project not found');
+    if (workerProfile && workerProfile.thekedarId.toString() !== project.thekedarId.toString()) {
+      throw new ForbiddenError(
+        'Strict Rule: Worker can only record attendance on projects managed by their permanent Thekedar.'
+      );
+    }
+  }
+
+  const thekedarId = user.role === ROLES.THEKEDAR ? user._id : (project?.thekedarId || workerProfile?.thekedarId);
+  if (!thekedarId) {
+    throw new BadRequestError('Thekedar association is required to record attendance.');
   }
 
   // Prevent duplicate/conflicting attendance for same worker, date, and shift
@@ -74,7 +79,7 @@ export const submitAttendance = async ({ data, user, req }) => {
     if (existing.isPayrollProcessed) {
       throw new ForbiddenError(`Attendance for ${date} is already paid and locked; it cannot be changed.`);
     }
-    if (existing.projectId.toString() !== projectId && project.thekedarId.toString() === user._id.toString()) {
+    if (project && projectId && existing.projectId?.toString() !== projectId && project.thekedarId.toString() === user._id.toString()) {
       existing.projectId = projectId;
       await existing.save();
     }
@@ -91,7 +96,7 @@ export const submitAttendance = async ({ data, user, req }) => {
 
   if (existing) {
     throw new ConflictError(
-      `Attendance entry already exists for date ${date} (Project: ${existing.projectId.toString() === projectId ? 'Same' : 'Another Project'}). Overlapping attendance is prohibited.`
+      `Attendance entry already exists for date ${date}. Overlapping attendance is prohibited.`
     );
   }
 
@@ -102,14 +107,14 @@ export const submitAttendance = async ({ data, user, req }) => {
   const calculatedEarnings = multiplyMoney(applicableWage, multiplier);
 
   // Initial approval status:
-  // If submitter is Thekedar managing this project, auto-approve; if Worker, set to SUBMITTED
-  const isThekedarSelf = user.role === ROLES.THEKEDAR && project.thekedarId.toString() === user._id.toString();
+  // If submitter is Thekedar managing this worker/project, auto-approve; if Worker, set to SUBMITTED
+  const isThekedarSelf = user.role === ROLES.THEKEDAR && thekedarId.toString() === user._id.toString();
   const initialStatus = isThekedarSelf ? ATTENDANCE_STATUS.APPROVED : ATTENDANCE_STATUS.SUBMITTED;
 
   const attendance = await Attendance.create({
     workerId,
-    projectId,
-    thekedarId: project.thekedarId,
+    projectId: project?._id || null,
+    thekedarId,
     date,
     shift,
     code,

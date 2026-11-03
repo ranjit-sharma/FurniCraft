@@ -12,7 +12,8 @@ const attendanceSchema = new mongoose.Schema(
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Project',
-      required: true,
+      required: false,
+      default: null,
       index: true,
     },
     thekedarId: {
