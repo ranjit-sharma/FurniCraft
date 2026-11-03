@@ -79,6 +79,12 @@ api.interceptors.request.use((config) => {
   const lang = getLang();
   config.headers['Accept-Language'] = lang;
   config.headers['x-custom-lang'] = lang;
+  try {
+    const token = localStorage.getItem('furnicraft_token');
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+  } catch {}
   return config;
 });
 
@@ -87,6 +93,10 @@ api.interceptors.response.use(
   (error) => {
     const apiError = toApiError(error);
     if (apiError.kind === 'session') {
+      try {
+        localStorage.removeItem('furnicraft_token');
+        localStorage.removeItem('furnicraft_user');
+      } catch {}
       window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: apiError.message }));
     }
     return Promise.reject(apiError);

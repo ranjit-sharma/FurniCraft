@@ -5,11 +5,14 @@ import { USER_STATUS } from '../config/constants.js';
 
 export const requireAuthentication = async (req, res, next) => {
   try {
-    let token = req.cookies?.[COOKIE_NAME];
+    let token = null;
 
-    // Also support Authorization: Bearer token for programmatic API clients and automated tests
-    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    // Check Authorization: Bearer token header first, fallback to HTTP-only cookie
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
       token = req.headers.authorization.split(' ')[1];
+    }
+    if (!token) {
+      token = req.cookies?.[COOKIE_NAME];
     }
 
     if (!token) {

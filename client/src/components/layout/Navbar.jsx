@@ -3,35 +3,17 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, Sun, Moon, Monitor, Menu, X } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, Sun, Moon, Monitor } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { ThemeSelector } from '../common/ThemeSelector';
-import { useNavLinks } from './Sidebar';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
   const { theme, resolvedTheme, isDark } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const profileRef = useRef(null);
-  const links = useNavLinks();
-
-  // Close drawer on escape key and lock body scroll
-  useEffect(() => {
-    if (!drawerOpen) return undefined;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setDrawerOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [drawerOpen]);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -86,19 +68,8 @@ export const Navbar = () => {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
-    <>
-      <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] md:h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 px-3 sm:px-4 md:px-6 pt-[env(safe-area-inset-top)] backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] md:h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 px-3 sm:px-4 md:px-6 pt-[env(safe-area-inset-top)] backdrop-blur-md transition-colors">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          {user && (
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              className="lg:hidden flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition cursor-pointer"
-              aria-label="Open navigation menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-          )}
           <BrandLogo size="sm" variant={isDark ? 'dark' : 'light'} className="sm:hidden" />
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
         </div>
@@ -229,116 +200,5 @@ export const Navbar = () => {
         </div>
       )}
     </header>
-
-    {/* Responsive Slide-Over Navigation Drawer for Mobile & Tablet (< lg) */}
-    {drawerOpen && (
-      <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation drawer">
-        {/* Backdrop overlay */}
-        <div
-          onClick={() => setDrawerOpen(false)}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs animate-fade-in"
-        />
-
-        {/* Slide-in drawer container */}
-        <div className="relative z-10 flex h-full w-80 max-w-[85vw] flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl animate-in slide-in-from-left duration-200">
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3.5">
-            <BrandLogo size="sm" variant={isDark ? 'dark' : 'light'} />
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(false)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition"
-              aria-label="Close navigation drawer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* User identity card */}
-          {user && (
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${getRoleGradient(
-                    user.role
-                  )} text-sm font-black text-white shadow-sm`}
-                >
-                  <i className="fa-solid fa-user"></i>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                    {user.name}
-                  </h4>
-                  <span
-                    className={`inline-block mt-0.5 rounded-md border px-2 py-0.5 text-[10px] font-bold ${getRoleBadgeColor(
-                      user.role
-                    )}`}
-                  >
-                    {user.role}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Navigation links */}
-          <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-            <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              {t('nav.navigation', 'Navigation')}
-            </div>
-            {links.map((link) => {
-              const Icon = link.icon;
-              return (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  end={link.to === '/'}
-                  onClick={() => setDrawerOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors active:scale-98 ${
-                      isActive
-                        ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-xs'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                    }`
-                  }
-                >
-                  <Icon className="h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" />
-                  <span>{link.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
-
-          {/* Preferences (Theme & Language) */}
-          <div className="border-t border-slate-100 dark:border-slate-800 p-4 space-y-3 bg-slate-50/50 dark:bg-slate-800/30">
-            <div>
-              <span className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                {t('profile.themePreference', 'Theme')}
-              </span>
-              <ThemeSelector variant="buttons" />
-            </div>
-            <div>
-              <span className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1.5">
-                {t('profile.preferredLanguage', 'Language')}
-              </span>
-              <LanguageSelector variant="buttons" />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                setDrawerOpen(false);
-                logout();
-              }}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/80 dark:bg-rose-950/40 py-2.5 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 transition active:scale-95"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>{t('nav.logout', 'Sign Out')}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-  </>
-);
+  );
 };

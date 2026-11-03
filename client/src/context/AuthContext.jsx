@@ -6,9 +6,18 @@ const AuthContext = createContext(null);
 /** sessionStorage key holding the "why you were signed out" message shown once on the login page. */
 export const SESSION_NOTICE_KEY = 'furnicraft_session_notice';
 
+const getCachedUser = () => {
+  try {
+    const raw = localStorage.getItem('furnicraft_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(getCachedUser);
+  const [loading, setLoading] = useState(() => !getCachedUser());
 
   const fetchCurrentUser = async () => {
     try {
@@ -16,6 +25,9 @@ export const AuthProvider = ({ children }) => {
       const userData = res?.data?.user || res?.user || res?.data;
       if (userData && userData.role !== 'WORKER') {
         setUser(userData);
+        try {
+          localStorage.setItem('furnicraft_user', JSON.stringify(userData));
+        } catch {}
         api.post('/reports/track-visit').catch(() => {});
       } else {
         // Workers are managed entities and cannot maintain an application session
@@ -23,9 +35,19 @@ export const AuthProvider = ({ children }) => {
           api.post('/auth/logout').catch(() => {});
         }
         setUser(null);
+        try {
+          localStorage.removeItem('furnicraft_token');
+          localStorage.removeItem('furnicraft_user');
+        } catch {}
       }
     } catch (err) {
-      setUser(null);
+      if (err?.status === 401 || err?.kind === 'session') {
+        setUser(null);
+        try {
+          localStorage.removeItem('furnicraft_token');
+          localStorage.removeItem('furnicraft_user');
+        } catch {}
+      }
     } finally {
       setLoading(false);
     }
@@ -40,6 +62,8 @@ export const AuthProvider = ({ children }) => {
     const onSessionExpired = (e) => {
       try {
         sessionStorage.setItem(SESSION_NOTICE_KEY, e.detail);
+        localStorage.removeItem('furnicraft_token');
+        localStorage.removeItem('furnicraft_user');
       } catch {
         // storage blocked: the redirect alone still happens
       }
@@ -50,7 +74,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const updateUser = (updatedFields) => {
-    setUser((prev) => (prev ? { ...prev, ...updatedFields } : prev));
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updatedFields };
+      try {
+        localStorage.setItem('furnicraft_user', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const login = async (identifier, password) => {
@@ -60,11 +91,20 @@ export const AuthProvider = ({ children }) => {
       password,
     });
     const loggedUser = res?.data?.user || res?.user;
+    const token = res?.data?.token || res?.token;
     if (loggedUser?.role === 'WORKER') {
       await api.post('/auth/logout').catch(() => {});
       throw new Error('Worker login is disabled. Worker profiles are managed directly by Thekedars.');
     }
+    if (token) {
+      try {
+        localStorage.setItem('furnicraft_token', token);
+      } catch {}
+    }
     if (loggedUser) {
+      try {
+        localStorage.setItem('furnicraft_user', JSON.stringify(loggedUser));
+      } catch {}
       const savedLang = localStorage.getItem('furnicraft_lang') || localStorage.getItem('fc_language');
       if (savedLang && ['en', 'hi', 'hinglish'].includes(savedLang)) {
         if (loggedUser.preferredLanguage !== savedLang) {
@@ -83,6 +123,10 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
+      try {
+        localStorage.removeItem('furnicraft_token');
+        localStorage.removeItem('furnicraft_user');
+      } catch {}
       setUser(null);
     }
   };
