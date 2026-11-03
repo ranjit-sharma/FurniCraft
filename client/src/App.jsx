@@ -11,7 +11,6 @@ import { ThekedarDashboard } from './pages/ThekedarDashboard';
 import { OwnerDashboard } from './pages/OwnerDashboard';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
-import { AttendancePage } from './pages/AttendancePage';
 import { PayrollPage } from './pages/PayrollPage';
 import { ToolsPage } from './pages/ToolsPage';
 import { FinancePage } from './pages/FinancePage';
@@ -78,7 +77,7 @@ export const App = () => {
                 <Route index element={<DashboardRouter />} />
                 <Route path="projects" element={<ProjectsPage />} />
                 <Route path="projects/:projectId" element={<ProjectDetailPage />} />
-                <Route path="attendance" element={<AttendancePage />} />
+                <Route path="attendance" element={<Navigate to="/workers" replace />} />
                 <Route path="payroll" element={<PayrollPage />} />
                 <Route
                   path="tools"

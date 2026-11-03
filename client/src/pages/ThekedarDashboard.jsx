@@ -66,10 +66,9 @@ export const ThekedarDashboard = () => {
   const [addWorkerModalOpen, setAddWorkerModalOpen] = useState(false);
   const [newWorkerName, setNewWorkerName] = useState('');
   const [newWorkerPhone, setNewWorkerPhone] = useState('');
-  const [newWorkerTrade, setNewWorkerTrade] = useState('Carpentry');
+  const [newWorkerTrade, setNewWorkerTrade] = useState('Mistry');
   const [newWorkerWage, setNewWorkerWage] = useState('750');
   const [newWorkerProjectId, setNewWorkerProjectId] = useState('');
-  const [newWorkerAddress, setNewWorkerAddress] = useState('');
   const [addWorkerSubmitting, setAddWorkerSubmitting] = useState(false);
 
   // Edit Worker Modal State
@@ -77,7 +76,7 @@ export const ThekedarDashboard = () => {
   const [editingWorkerId, setEditingWorkerId] = useState(null);
   const [editWorkerName, setEditWorkerName] = useState('');
   const [editWorkerPhone, setEditWorkerPhone] = useState('');
-  const [editWorkerTrade, setEditWorkerTrade] = useState('Carpentry');
+  const [editWorkerTrade, setEditWorkerTrade] = useState('Mistry');
   const [editWorkerWage, setEditWorkerWage] = useState('');
   const [editWorkerAddress, setEditWorkerAddress] = useState('');
   const [editWorkerSubmitting, setEditWorkerSubmitting] = useState(false);
@@ -154,17 +153,16 @@ export const ThekedarDashboard = () => {
       const res = await api.post('/users/workers', {
         name: newWorkerName.trim(),
         phone: newWorkerPhone.trim(),
-        trade: newWorkerTrade,
+        trade: newWorkerTrade || 'Mistry',
         defaultDailyWage: parseFloat(newWorkerWage) || 750,
         projectId: newWorkerProjectId || undefined,
-        address: newWorkerAddress,
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
       setMessage({ type: 'success', text: `Craftsman ${newWorkerName} added with ID ${generatedCode}!` });
       setAddWorkerModalOpen(false);
       setNewWorkerName('');
       setNewWorkerPhone('');
-      setNewWorkerAddress('');
+      setNewWorkerTrade('Mistry');
       fetchWorkforceData();
       fetchDashboard();
     } catch (err) {
@@ -179,7 +177,7 @@ export const ThekedarDashboard = () => {
     setEditingWorkerId(userId);
     setEditWorkerName(worker.userId?.name || worker.name || '');
     setEditWorkerPhone(worker.userId?.phone || worker.phone || '');
-    setEditWorkerTrade(worker.skills?.[0] || 'Carpentry');
+    setEditWorkerTrade(worker.skills?.[0] || 'Mistry');
     setEditWorkerWage(worker.defaultDailyWage || '750');
     setEditWorkerAddress(worker.address || '');
     setEditWorkerModalOpen(true);
@@ -613,7 +611,7 @@ export const ThekedarDashboard = () => {
                     const wage = w.defaultDailyWage || 750;
                     const earned = w.unpaidEarnings || 0;
                     const advance = w.outstandingAdvanceBalance || 0;
-                    const primarySkill = w.skills?.[0] || 'Carpentry';
+                    const primarySkill = w.skills?.[0] || 'Mistry';
 
                     return (
                       <tr key={w._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
@@ -1030,12 +1028,8 @@ export const ThekedarDashboard = () => {
                 onChange={(e) => setNewWorkerTrade(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
-                <option value="Carpentry">Carpentry (Wood & Board)</option>
-                <option value="Polishing">Polishing & PU Coating</option>
-                <option value="Fitting">Modular Fitting & Hinges</option>
-                <option value="Assembly">Carcass Assembly</option>
-                <option value="Cutting">Edge Banding & Cutting</option>
-                <option value="Helper">Site Helper & Transport</option>
+                <option value="Mistry">Mistry</option>
+                <option value="Helper">Helper</option>
               </select>
             </div>
           </div>
@@ -1073,19 +1067,6 @@ export const ThekedarDashboard = () => {
                 ))}
               </select>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Workshop / Site Address (Optional)
-            </label>
-            <input
-              type="text"
-              value={newWorkerAddress}
-              onChange={(e) => setNewWorkerAddress(e.target.value)}
-              placeholder="e.g. Sector 62 Workshop, Noida"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
           </div>
 
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
@@ -1142,11 +1123,7 @@ export const ThekedarDashboard = () => {
                 onChange={(e) => setEditWorkerTrade(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
-                <option value="Carpentry">Carpentry</option>
-                <option value="Polishing">Polishing</option>
-                <option value="Fitting">Fitting</option>
-                <option value="Assembly">Assembly</option>
-                <option value="Cutting">Cutting</option>
+                <option value="Mistry">Mistry</option>
                 <option value="Helper">Helper</option>
               </select>
             </div>

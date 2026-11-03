@@ -58,11 +58,9 @@ export const WorkersPage = () => {
   // Register Worker Modal
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [workerName, setWorkerName] = useState('');
-  const [workerEmail, setWorkerEmail] = useState('');
   const [workerPhone, setWorkerPhone] = useState('');
-  const [workerTrade, setWorkerTrade] = useState('Carpentry');
+  const [workerTrade, setWorkerTrade] = useState('Mistry');
   const [defaultWage, setDefaultWage] = useState('750');
-  const [workerAddress, setWorkerAddress] = useState('');
   const [thekedarsList, setThekedarsList] = useState([]);
   const [selectedThekedarId, setSelectedThekedarId] = useState('');
 
@@ -71,10 +69,21 @@ export const WorkersPage = () => {
   const [editingWorker, setEditingWorker] = useState(null);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editTrade, setEditTrade] = useState('Carpentry');
+  const [editTrade, setEditTrade] = useState('Mistry');
   const [editWage, setEditWage] = useState('');
   const [editAddress, setEditAddress] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
+
+  // Mark Daily Attendance Modal (Direct from Worker Cards / Roster)
+  const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
+  const [attendanceWorkerId, setAttendanceWorkerId] = useState('');
+  const [attendanceProjectId, setAttendanceProjectId] = useState('');
+  const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [attendanceShift, setAttendanceShift] = useState('GENERAL');
+  const [attendanceCode, setAttendanceCode] = useState('P');
+  const [attendanceNotes, setAttendanceNotes] = useState('');
+  const [markAttendanceSubmitting, setMarkAttendanceSubmitting] = useState(false);
+  const [projectsList, setProjectsList] = useState([]);
 
   // Worker 360° Activity Modal
   const [activityModalOpen, setActivityModalOpen] = useState(false);
@@ -129,6 +138,19 @@ export const WorkersPage = () => {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const res = await api.get('/projects');
+      const list = res.data?.projects || res.data?.data?.projects || [];
+      setProjectsList(list);
+      if (list.length > 0 && !attendanceProjectId) {
+        setAttendanceProjectId(list[0]._id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const fetchThekedars = async () => {
     try {
       const res = await api.get('/users/thekedars');
@@ -144,6 +166,7 @@ export const WorkersPage = () => {
 
   useEffect(() => {
     fetchWorkers();
+    fetchProjects();
     if (isOwner) {
       fetchThekedars();
     }
@@ -155,22 +178,64 @@ export const WorkersPage = () => {
       const res = await api.post('/users/workers', {
         name: workerName.trim(),
         phone: workerPhone.trim(),
-        email: workerEmail ? workerEmail.trim() : undefined,
-        trade: workerTrade,
+        trade: workerTrade || 'Mistry',
         defaultDailyWage: parseFloat(defaultWage) || 750,
-        address: workerAddress,
         ...(isOwner && selectedThekedarId ? { thekedarId: selectedThekedarId } : {}),
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
       setMessage({ type: 'success', text: `Craftsman ${workerName} added successfully with ID ${generatedCode}!` });
       setRegisterModalOpen(false);
       setWorkerName('');
-      setWorkerEmail('');
       setWorkerPhone('');
-      setWorkerAddress('');
+      setWorkerTrade('Mistry');
+      setDefaultWage('750');
       fetchWorkers();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleOpenMarkAttendance = (worker = null) => {
+    const targetWorkerId = worker?.userId?._id || worker?._id || workers[0]?.userId?._id || workers[0]?._id || '';
+    setAttendanceWorkerId(targetWorkerId);
+    if (projectsList.length > 0 && !attendanceProjectId) {
+      setAttendanceProjectId(projectsList[0]._id);
+    }
+    setAttendanceDate(new Date().toISOString().split('T')[0]);
+    setAttendanceShift('GENERAL');
+    setAttendanceCode('P');
+    setAttendanceNotes('');
+    setMarkAttendanceModalOpen(true);
+  };
+
+  const handleMarkAttendance = async (e) => {
+    e.preventDefault();
+    if (!attendanceWorkerId) {
+      setMessage({ type: 'error', text: 'Please select a worker' });
+      return;
+    }
+    if (!attendanceProjectId) {
+      setMessage({ type: 'error', text: 'Please select an active project' });
+      return;
+    }
+    try {
+      setMarkAttendanceSubmitting(true);
+      await api.post('/attendance/submit', {
+        workerId: attendanceWorkerId,
+        projectId: attendanceProjectId,
+        date: attendanceDate,
+        shift: attendanceShift,
+        code: attendanceCode,
+        notes: attendanceNotes || undefined,
+      });
+      setMessage({ type: 'success', text: `Attendance for date ${attendanceDate} successfully marked and authorized!` });
+      setMarkAttendanceModalOpen(false);
+      setAttendanceNotes('');
+      fetchWorkers();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to submit attendance' });
+    } finally {
+      setMarkAttendanceSubmitting(false);
     }
   };
 
@@ -178,7 +243,7 @@ export const WorkersPage = () => {
     setEditingWorker(worker);
     setEditName(worker.userId?.name || worker.name || '');
     setEditPhone(worker.userId?.phone || worker.phone || '');
-    setEditTrade(worker.skills?.[0] || 'Carpentry');
+    setEditTrade(worker.skills?.[0] || 'Mistry');
     setEditWage(worker.defaultDailyWage || '750');
     setEditAddress(worker.address || '');
     setEditWorkerModalOpen(true);
@@ -483,6 +548,16 @@ export const WorkersPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {(isOwner || isThekedar) && (
+            <Button
+              variant="outline"
+              onClick={() => handleOpenMarkAttendance()}
+              icon={Calendar}
+              className="w-full sm:w-auto justify-center border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 font-bold"
+            >
+              Mark Attendance
+            </Button>
+          )}
           {isThekedar && (
             <Button
               variant="outline"
@@ -721,12 +796,24 @@ export const WorkersPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-[1] justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       onClick={() => handleOpenEditWorker(w)}
                       icon={Edit}
                       title="Edit Craftsman Details"
                     >
                       Edit
+                    </Button>
+                  )}
+                  {(isOwner || isThekedar) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
+                      onClick={() => handleOpenMarkAttendance(w)}
+                      icon={Calendar}
+                      title="Mark Attendance for this Craftsman"
+                    >
+                      Attendance
                     </Button>
                   )}
                   {isThekedar && (
@@ -787,50 +874,22 @@ export const WorkersPage = () => {
                 onChange={(e) => setWorkerTrade(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               >
-                <option value="Carpentry">Carpentry (Wood & Board)</option>
-                <option value="Polishing">Polishing & PU Coating</option>
-                <option value="Fitting">Modular Fitting & Hinges</option>
-                <option value="Assembly">Carcass Assembly</option>
-                <option value="Cutting">Edge Banding & Cutting</option>
-                <option value="Helper">Site Helper & Transport</option>
+                <option value="Mistry">Mistry</option>
+                <option value="Helper">Helper</option>
               </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Default Daily Wage (₹/day) *</label>
-              <input
-                type="number"
-                min="0"
-                step="50"
-                required
-                value={defaultWage}
-                onChange={(e) => setDefaultWage(e.target.value)}
-                placeholder="750"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Email Address (Optional)</label>
-              <input
-                type="email"
-                value={workerEmail}
-                onChange={(e) => setWorkerEmail(e.target.value)}
-                placeholder="Optional or auto-generated"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-          </div>
-
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Site / Workshop Address</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Default Daily Wage (₹/day) *</label>
             <input
-              type="text"
-              value={workerAddress}
-              onChange={(e) => setWorkerAddress(e.target.value)}
-              placeholder="e.g. Sector 62 Workshop, Noida"
+              type="number"
+              min="0"
+              step="50"
+              required
+              value={defaultWage}
+              onChange={(e) => setDefaultWage(e.target.value)}
+              placeholder="750"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
@@ -900,11 +959,7 @@ export const WorkersPage = () => {
                 onChange={(e) => setEditTrade(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               >
-                <option value="Carpentry">Carpentry</option>
-                <option value="Polishing">Polishing</option>
-                <option value="Fitting">Fitting</option>
-                <option value="Assembly">Assembly</option>
-                <option value="Cutting">Cutting</option>
+                <option value="Mistry">Mistry</option>
                 <option value="Helper">Helper</option>
               </select>
             </div>
@@ -937,6 +992,139 @@ export const WorkersPage = () => {
             <Button variant="secondary" onClick={() => setEditWorkerModalOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={editSubmitting}>
               {editSubmitting ? 'Saving...' : 'Save Profile Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Mark Worker Daily Attendance */}
+      <Modal
+        isOpen={markAttendanceModalOpen}
+        onClose={() => setMarkAttendanceModalOpen(false)}
+        title="Mark Worker Daily Attendance"
+      >
+        <form onSubmit={handleMarkAttendance} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Select Craftsman *
+            </label>
+            <select
+              required
+              value={attendanceWorkerId}
+              onChange={(e) => setAttendanceWorkerId(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+            >
+              <option value="">-- Choose Worker --</option>
+              {workers.map((w) => {
+                const uId = w.userId?._id || w._id;
+                const name = w.userId?.name || w.name || 'Worker';
+                const code = w.workerCode || 'FC-WRK';
+                return (
+                  <option key={uId} value={uId}>
+                    {name} ({code}) — ₹{w.defaultDailyWage || 750}/day
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Assigned Furniture Project *
+            </label>
+            <select
+              required
+              value={attendanceProjectId}
+              onChange={(e) => setAttendanceProjectId(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+            >
+              <option value="">-- Choose Project --</option>
+              {projectsList.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name} ({p.projectCode})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Attendance Date *
+              </label>
+              <input
+                type="date"
+                required
+                value={attendanceDate}
+                onChange={(e) => setAttendanceDate(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Working Shift
+              </label>
+              <select
+                value={attendanceShift}
+                onChange={(e) => setAttendanceShift(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+              >
+                <option value="GENERAL">General Shift (9 AM – 6 PM)</option>
+                <option value="NIGHT">Night Shift</option>
+                <option value="OVERTIME">Overtime Shift</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Attendance Multiplier Code *
+            </label>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-1">
+              {[
+                { code: 'P', label: 'P (1.0x)', desc: 'Full Day' },
+                { code: 'HALF', label: 'HALF (0.5x)', desc: 'Half Day' },
+                { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
+                { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
+                { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
+              ].map((item) => (
+                <button
+                  type="button"
+                  key={item.code}
+                  onClick={() => setAttendanceCode(item.code)}
+                  className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
+                    attendanceCode === item.code
+                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-black shadow-xs ring-2 ring-amber-500/30'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="text-xs font-black">{item.label}</div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400">{item.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Work Notes / Tasks Completed (Optional)
+            </label>
+            <input
+              type="text"
+              value={attendanceNotes}
+              onChange={(e) => setAttendanceNotes(e.target.value)}
+              placeholder="e.g. Wardrobe carcass installation or edge polishing"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="secondary" onClick={() => setMarkAttendanceModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" disabled={markAttendanceSubmitting}>
+              {markAttendanceSubmitting ? 'Recording...' : 'Authorize & Save Attendance'}
             </Button>
           </div>
         </form>

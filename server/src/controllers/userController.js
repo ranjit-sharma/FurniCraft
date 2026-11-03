@@ -664,7 +664,7 @@ export const createWorker = async (req, res, next) => {
     });
 
     const wage = parseFloat(defaultDailyWage) || 750;
-    const skillsList = trade ? [trade] : (Array.isArray(skills) ? skills : ['Carpentry']);
+    const skillsList = trade ? [trade] : (Array.isArray(skills) && skills.length > 0 ? skills : ['Mistry']);
 
     const profile = await WorkerProfile.create({
       userId: workerUser._id,
