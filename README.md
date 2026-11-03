@@ -283,7 +283,7 @@ FurniCraft/
 │       │   ├── ProjectsPage.jsx         # Furniture project list, milestones & creation
 │       │   ├── ProjectDetailPage.jsx   # Project rooms, worker assignments & materials
 │       │   ├── WorkersPage.jsx          # Worker directory, balances, pay net modal, safe delete
-│       │   ├── AttendancePage.jsx       # Contractor attendance approvals & bulk actions
+│       │   ├── WorkersPage.jsx          # Contractor workforce hub, attendance logging & wage payouts
 │       │   ├── PayrollPage.jsx          # Monthly payroll generation, adjustments & lock
 │       │   ├── FinancePage.jsx          # Cash advance disbursements, ledger transactions
 │       │   ├── ToolsPage.jsx            # Central workshop machinery & tool tracking

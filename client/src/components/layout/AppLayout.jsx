@@ -12,7 +12,7 @@ export const AppLayout = () => {
       <Navbar onMenuClick={() => setSidebarOpen((prev) => !prev)} />
       <div className="flex flex-1 items-start">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main className="flex-1 min-w-0 px-3.5 py-4 sm:px-6 md:px-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 px-3.5 py-4 sm:px-6 md:px-8 overflow-x-clip">
           <div className="mx-auto max-w-7xl">
             <ErrorBoundary>
               <Outlet />
