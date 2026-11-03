@@ -255,6 +255,30 @@ export const rectifyAttendance = async ({ attendanceId, code, dailyWage, reason,
     throw new ForbiddenError('Cannot modify attendance that has already been finalized in payroll');
   }
 
+  // Business Rule: Worker attendance can only be edited on the same day it was recorded/taken
+  const now = new Date();
+  const todayUtc = now.toISOString().slice(0, 10);
+  const todayIst = new Date(now.getTime() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const todayLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const validTodayDates = new Set([todayUtc, todayIst, todayLocal]);
+
+  const attDate = attendance.date ? String(attendance.date).slice(0, 10) : '';
+  const attCreatedUtc = attendance.createdAt ? attendance.createdAt.toISOString().slice(0, 10) : '';
+  const attCreatedIst = attendance.createdAt
+    ? new Date(attendance.createdAt.getTime() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    : '';
+
+  const isSameDay =
+    validTodayDates.has(attDate) ||
+    validTodayDates.has(attCreatedUtc) ||
+    validTodayDates.has(attCreatedIst);
+
+  if (!isSameDay) {
+    throw new ForbiddenError(
+      'Worker attendance can only be edited on the same day it was recorded. Past attendance is locked.'
+    );
+  }
+
   const oldStatus = attendance.approvalStatus;
   const oldCode = attendance.code;
   const oldWage = attendance.applicableDailyWage;

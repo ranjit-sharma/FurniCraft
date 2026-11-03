@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -7,6 +7,41 @@ import { LogOut, Phone, Mail, CheckCircle2, Globe, Sun, Moon, Monitor } from 'lu
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { ThemeSelector } from '../common/ThemeSelector';
+
+const LogoLinkWithRouter = ({ children }) => {
+  const navigate = useNavigate();
+  return (
+    <a
+      href="/"
+      onClick={(e) => {
+        e.preventDefault();
+        navigate('/');
+      }}
+      className="flex items-center gap-2 sm:gap-3 min-w-0 transition-opacity hover:opacity-90 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl select-none"
+      title="FurniCraft Dashboard"
+      aria-label="FurniCraft Dashboard"
+    >
+      {children}
+    </a>
+  );
+};
+
+const LogoLink = ({ children }) => {
+  const inRouter = useInRouterContext();
+  if (inRouter) {
+    return <LogoLinkWithRouter>{children}</LogoLinkWithRouter>;
+  }
+  return (
+    <a
+      href="/"
+      className="flex items-center gap-2 sm:gap-3 min-w-0 transition-opacity hover:opacity-90 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl select-none"
+      title="FurniCraft Dashboard"
+      aria-label="FurniCraft Dashboard"
+    >
+      {children}
+    </a>
+  );
+};
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -69,10 +104,10 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] md:h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 px-3 sm:px-4 md:px-6 pt-[env(safe-area-inset-top)] backdrop-blur-md transition-colors">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <LogoLink>
           <BrandLogo size="sm" variant={isDark ? 'dark' : 'light'} className="sm:hidden" />
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
-        </div>
+        </LogoLink>
 
         {/* Right: Profile Icon Toggler */}
         {user && (

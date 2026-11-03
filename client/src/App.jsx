@@ -75,6 +75,7 @@ export const App = () => {
                 }
               >
                 <Route index element={<DashboardRouter />} />
+                <Route path="dashboard" element={<Navigate to="/" replace />} />
                 <Route path="projects" element={<ProjectsPage />} />
                 <Route path="projects/:projectId" element={<ProjectDetailPage />} />
                 <Route path="attendance" element={<Navigate to="/workers" replace />} />

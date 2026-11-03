@@ -18,6 +18,7 @@ import {
   Calendar,
   Receipt,
   CheckCircle2,
+  Lock,
   FileText,
   UserX,
   UserCheck,
@@ -27,6 +28,32 @@ import {
   Check,
   X,
 } from 'lucide-react';
+
+/**
+ * Worker attendance can only be edited on the same day it was recorded/taken.
+ * An entry is editable ONLY if:
+ * 1. It is not already finalized/locked in payroll
+ * 2. The shift date or record creation date matches today's local date
+ */
+const isAttendanceEditableToday = (att) => {
+  if (!att) return false;
+  if (att.isPayrollProcessed) return false;
+
+  const todayStr = localToday(); // YYYY-MM-DD in local time
+  const attDate = att.date ? String(att.date).slice(0, 10) : '';
+
+  let createdDateStr = '';
+  if (att.createdAt) {
+    try {
+      const cd = new Date(att.createdAt);
+      if (!isNaN(cd.getTime())) {
+        createdDateStr = new Date(cd.getTime() - cd.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      }
+    } catch {}
+  }
+
+  return attDate === todayStr || createdDateStr === todayStr;
+};
 
 const formatDate = (dateStr) => {
   if (!dateStr) return 'N/A';
@@ -289,6 +316,10 @@ export const WorkersPage = () => {
   };
 
   const handleOpenEditAttendance = (att) => {
+    if (!isAttendanceEditableToday(att)) {
+      setMessage({ type: 'error', text: 'Worker attendance can only be edited on the same day it was taken.' });
+      return;
+    }
     setEditAttendance(att);
     setEditAttendanceCode(att.code);
     setEditAttendanceReason('');
@@ -296,6 +327,12 @@ export const WorkersPage = () => {
 
   const handleSaveAttendanceEdit = async (e) => {
     e.preventDefault();
+    if (!editAttendance) return;
+    if (!isAttendanceEditableToday(editAttendance)) {
+      setMessage({ type: 'error', text: 'Worker attendance can only be edited on the same day it was taken.' });
+      setEditAttendance(null);
+      return;
+    }
     setEditAttendanceSubmitting(true);
     try {
       await api.patch(`/attendance/${editAttendance._id}/rectify`, {
@@ -1147,7 +1184,7 @@ export const WorkersPage = () => {
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl">
-                        Every logged shift with its earnings. Tap Edit to correct a shift; paid entries are locked.
+                        Every logged shift with its earnings. Attendance is only editable on the same day it was taken; paid and past entries are locked.
                       </p>
                       <div className="flex items-center gap-2.5">
                         <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
@@ -1199,10 +1236,17 @@ export const WorkersPage = () => {
                                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                                       <CheckCircle2 className="h-3.5 w-3.5" /> Paid (locked)
                                     </span>
-                                  ) : (
+                                  ) : isAttendanceEditableToday(att) ? (
                                     <Button size="sm" variant="outline" icon={Edit} onClick={() => handleOpenEditAttendance(att)}>
                                       {t('common.edit', 'Edit')}
                                     </Button>
+                                  ) : (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500"
+                                      title="Attendance can only be edited on the same day it was taken"
+                                    >
+                                      <Lock className="h-3.5 w-3.5" /> Locked
+                                    </span>
                                   )}
                                 </td>
                               </tr>

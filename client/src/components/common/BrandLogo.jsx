@@ -45,7 +45,7 @@ export const BrandLogo = ({
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
       {/* Official Signature FC Furniture Monogram Emblem */}
-      <div className="shrink-0 transition-transform duration-200 hover:scale-105">
+      <div className="shrink-0 transition-transform duration-200 hover:scale-105 cursor-pointer">
         <img
           src="/furnicraft-logo.png"
           alt="FurniCraft FC Logo"
