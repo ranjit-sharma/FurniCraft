@@ -262,7 +262,7 @@ export const LoginPage = () => {
 
               {/* Success Alert */}
               {successMessage && (
-                <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 sm:p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in duration-200">
+                <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 sm:p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-fade-in">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <div className="font-semibold">{successMessage}</div>
                 </div>
@@ -270,7 +270,7 @@ export const LoginPage = () => {
 
               {/* Error Alert */}
               {error && (
-                <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3 sm:p-3.5 text-xs text-rose-800 dark:text-rose-300 animate-in fade-in duration-200">
+                <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3 sm:p-3.5 text-xs text-rose-800 dark:text-rose-300 animate-fade-in">
                   <div className="font-bold text-rose-900 dark:text-rose-200 mb-0.5">Authentication Issue</div>
                   <div>{error}</div>
                 </div>
@@ -395,7 +395,7 @@ export const LoginPage = () => {
           </div>
 
           {modalNotice && (
-            <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2 animate-in fade-in">
+            <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2 animate-fade-in">
               <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
               <div>{modalNotice}</div>
             </div>
@@ -403,7 +403,7 @@ export const LoginPage = () => {
 
           {modalError && (
             <div
-              className={`rounded-xl border p-3.5 text-xs animate-in fade-in flex items-start gap-2.5 ${
+              className={`rounded-xl border p-3.5 text-xs animate-fade-in flex items-start gap-2.5 ${
                 otpStep === 'EMAIL_INPUT'
                   ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-sm'
                   : 'border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200'

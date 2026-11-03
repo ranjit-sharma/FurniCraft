@@ -164,7 +164,7 @@ export const ThekedarRegisterPage = () => {
 
           {/* Success Banner */}
           {success && (
-            <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
+            <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-fade-in">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div className="font-semibold">{success}</div>
             </div>
@@ -172,7 +172,7 @@ export const ThekedarRegisterPage = () => {
 
           {/* Error Banner */}
           {error && (
-            <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3.5 text-xs text-rose-800 dark:text-rose-300 flex items-start gap-2 animate-in fade-in">
+            <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3.5 text-xs text-rose-800 dark:text-rose-300 flex items-start gap-2 animate-fade-in">
               <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
               <div>
                 <div className="font-bold text-rose-900 dark:text-rose-200">Registration Issue</div>

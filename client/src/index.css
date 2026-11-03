@@ -33,12 +33,12 @@
     overscroll-behavior-y: none;
   }
 
-  /* Pressed feedback on touch, since there is no hover on phones. */
-  button:not(:disabled), a, [role='button'] {
-    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  /* Smooth interactive feedback on clicks and taps */
+  button:not(:disabled), [role='button']:not(:disabled) {
+    transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms ease, color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
   }
-  button:not(:disabled):active, [role='button']:active {
-    transform: scale(0.97);
+  button:not(:disabled):active, [role='button']:not(:disabled):active {
+    transform: scale(0.98);
   }
 
   @media (max-width: 639px) {
@@ -93,14 +93,25 @@
     }
     .overflow-x-auto > table > tbody > tr > td:last-child:has(button, a)::before { display: none; }
   }
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 1ms !important;
-      transition-duration: 1ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
+/* Animation helper utilities */
+.animate-in {
+  animation-duration: 180ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+.animate-in.fade-in {
+  animation-name: fade-in;
+}
+.animate-in.zoom-in-95 {
+  animation-name: pop-in;
+}
+.animate-in.duration-150 {
+  animation-duration: 150ms;
+}
+.animate-in.duration-200 {
+  animation-duration: 200ms;
 }
 
 /* Hide scrollbar for clean horizontal swipe tabs on mobile */

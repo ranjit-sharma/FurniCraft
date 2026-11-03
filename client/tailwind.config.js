@@ -32,16 +32,43 @@ export default {
         }
       },
       keyframes: {
-        'page-in': { from: { opacity: '0', transform: 'translateY(6px)' }, to: { opacity: '1', transform: 'none' } },
-        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
-        'sheet-up': { from: { transform: 'translateY(100%)' }, to: { transform: 'none' } },
-        'pop-in': { from: { opacity: '0', transform: 'scale(0.96)' }, to: { opacity: '1', transform: 'none' } },
+        'page-in': {
+          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'fade-out': {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        'sheet-up': {
+          '0%': { transform: 'translateY(100%)', opacity: '0.85' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'pop-in': {
+          '0%': { opacity: '0', transform: 'scale(0.96) translateY(4px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        'dropdown': {
+          '0%': { opacity: '0', transform: 'scale(0.96) translateY(-4px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.94)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
-        'page-in': 'page-in 220ms ease-out both',
-        'fade-in': 'fade-in 180ms ease-out both',
-        'sheet-up': 'sheet-up 280ms cubic-bezier(0.32, 0.72, 0, 1) both',
-        'pop-in': 'pop-in 180ms ease-out both',
+        'page-in': 'page-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'fade-in': 'fade-in 150ms ease-out both',
+        'fade-out': 'fade-out 120ms ease-in both',
+        'sheet-up': 'sheet-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'pop-in': 'pop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'dropdown': 'dropdown 160ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'scale-in': 'scale-in 150ms cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
   },

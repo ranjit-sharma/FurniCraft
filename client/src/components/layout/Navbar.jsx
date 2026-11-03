@@ -99,7 +99,7 @@ export const Navbar = () => {
 
           {/* Profile Dropdown Menu */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in zoom-in-95 duration-150 z-50 text-slate-900 dark:text-slate-100">
+            <div className="absolute right-0 mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 animate-dropdown z-50 text-slate-900 dark:text-slate-100">
               {/* User Identity Card */}
               <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-slate-800/40 p-3.5 border border-slate-200/80 dark:border-slate-700/80">
                 <div className="flex items-center gap-3">
