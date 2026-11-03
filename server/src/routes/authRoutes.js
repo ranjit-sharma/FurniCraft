@@ -10,6 +10,7 @@ import {
   resetPasswordRequestSchema,
   resetPasswordSchema,
   thekedarRegisterSchema,
+  sendRegistrationOtpSchema,
   forgotPasswordOtpRequestSchema,
   verifyResetOtpSchema,
   resetPasswordWithOtpSchema,
@@ -23,7 +24,7 @@ router.post('/login', authLimiter, validate(loginSchema), authController.login);
 
 // Public Thekedar Registration ONLY (never public Worker or Owner registration)
 router.post('/register-thekedar', authLimiter, validate(thekedarRegisterSchema), authController.registerThekedar);
-router.post('/send-registration-otp', authLimiter, validate(forgotPasswordOtpRequestSchema), authController.sendRegistrationOtp);
+router.post('/send-registration-otp', authLimiter, validate(sendRegistrationOtpSchema), authController.sendRegistrationOtp);
 
 // OTP Password Reset (Thekedars & Workers only, 6-digit OTP, 5 min expiry, 60s cooldown, attempt limits)
 router.post('/forgot-password-otp', authLimiter, validate(forgotPasswordOtpRequestSchema), authController.requestPasswordResetOtp);

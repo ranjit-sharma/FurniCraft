@@ -114,7 +114,12 @@ export const LoginPage = () => {
 
     const trimmedEmail = resetEmail.trim();
     if (!trimmedEmail || !trimmedEmail.includes('@')) {
-      setModalError('Please enter a valid registered email address.');
+      setModalError(
+        t(
+          'login.recoveryMobileWarning',
+          'Please enter a valid email address (e.g. craftsman@furnicraft.com). Password reset OTP cannot be sent to mobile numbers.'
+        )
+      );
       setModalLoading(false);
       return;
     }
@@ -436,7 +441,7 @@ export const LoginPage = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  {t('login.emailLabel', 'Registered Email Address')}
+                  {t('login.recoveryEmailLabel', 'Registered Email Address')}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
@@ -450,7 +455,7 @@ export const LoginPage = () => {
                       setResetEmail(e.target.value);
                       if (modalError) setModalError(null);
                     }}
-                    placeholder="e.g. craftsman@furnicraft.com"
+                    placeholder={t('login.recoveryEmailPlaceholder', 'e.g. craftsman@furnicraft.com')}
                     className={`block w-full min-h-[44px] rounded-xl border py-2.5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition ${
                       modalError && otpStep === 'EMAIL_INPUT'
                         ? 'border-amber-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-amber-50/20 dark:bg-amber-950/20'

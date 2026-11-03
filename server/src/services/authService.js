@@ -476,16 +476,16 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
     message: 'If an eligible account is registered with this email address, a 6-digit verification code has been sent. Please also check your Spam or Junk folder.',
   };
 
-  const identifier = email || phone;
-  if (!identifier) {
-    throw new BadRequestError('Please provide a valid registered email address.');
+  const trimmedEmail = (email || '').trim().toLowerCase();
+  if (!trimmedEmail || !trimmedEmail.includes('@')) {
+    throw new BadRequestError('Password reset OTP can only be sent to a registered email address. Mobile numbers cannot receive reset OTPs.');
   }
 
-  const user = await findUserByIdentifier(identifier);
+  const user = await findUserByIdentifier(trimmedEmail);
 
   // If user is not found, warn the user to provide a valid registered email address
   if (!user) {
-    console.warn(`[Auth - Password Reset Warning] Requested password reset for "${identifier}", but user is NOT found in database.`);
+    console.warn(`[Auth - Password Reset Warning] Requested password reset for "${trimmedEmail}", but user is NOT found in database.`);
     throw new NotFoundError('This email address is not registered with FurniCraft. Please provide a valid registered email address.');
   }
 
@@ -499,13 +499,13 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
     return genericResponse;
   }
 
-  const userEmail = (user.email || (email && email.includes('@') ? email : null))?.toLowerCase()?.trim();
-  const normalizedPhone = user.phone ? normalizePhone(user.phone) : (phone ? normalizePhone(phone) : null);
+  const userEmail = (user.email || trimmedEmail)?.toLowerCase()?.trim();
+  if (!userEmail) {
+    throw new BadRequestError('No email address registered for this account. Please contact your contractor or administrator.');
+  }
 
   // Enforce 60-second resend cooldown
-  const cooldownQuery = userEmail
-    ? { email: userEmail, purpose: 'PASSWORD_RESET', isUsed: false }
-    : { phone: normalizedPhone, purpose: 'PASSWORD_RESET', isUsed: false };
+  const cooldownQuery = { email: userEmail, purpose: 'PASSWORD_RESET', isUsed: false };
 
   const existingOtp = await OtpRecord.findOne(cooldownQuery);
   if (existingOtp && existingOtp.resendAfter > new Date()) {
@@ -518,16 +518,10 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
   const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
 
   // Clear previous pending OTPs
-  if (userEmail) {
-    await OtpRecord.deleteMany({ email: userEmail, purpose: 'PASSWORD_RESET' });
-  }
-  if (normalizedPhone) {
-    await OtpRecord.deleteMany({ phone: normalizedPhone, purpose: 'PASSWORD_RESET' });
-  }
+  await OtpRecord.deleteMany({ email: userEmail, purpose: 'PASSWORD_RESET' });
 
   await OtpRecord.create({
     email: userEmail,
-    phone: normalizedPhone,
     purpose: 'PASSWORD_RESET',
     userId: user._id,
     otpHash,
@@ -538,21 +532,12 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
 
   let dispatchResult;
   try {
-    if (userEmail) {
-      dispatchResult = await sendOtpEmail({
-        to: userEmail,
-        otp,
-        purpose: 'PASSWORD_RESET',
-        name: user.name,
-      });
-    } else if (normalizedPhone) {
-      dispatchResult = await sendOtpSms({
-        phone: normalizedPhone,
-        otp,
-        purpose: 'PASSWORD_RESET',
-        name: user.name,
-      });
-    }
+    dispatchResult = await sendOtpEmail({
+      to: userEmail,
+      otp,
+      purpose: 'PASSWORD_RESET',
+      name: user.name,
+    });
   } catch (err) {
     // Nothing was delivered: drop the code so the 60s resend cooldown doesn't block an immediate retry.
     await OtpRecord.deleteMany({ userId: user._id, purpose: 'PASSWORD_RESET' });
@@ -579,22 +564,17 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
  * Verify 6-digit OTP and issue single-use short-lived reset token
  * Security: Max 5 attempts, constant-time compare, OTP nullified after verification
  */
-export const verifyPasswordResetOtp = async ({ email, phone, otp, req }) => {
-  if ((!email && !phone) || !otp) {
-    throw new BadRequestError('Email address (or mobile number) and 6-digit verification code are required');
+export const verifyPasswordResetOtp = async ({ email, otp, req }) => {
+  if (!email || !otp) {
+    throw new BadRequestError('Registered email address and 6-digit verification code are required');
   }
 
   const query = {
+    email: email.toLowerCase().trim(),
     purpose: 'PASSWORD_RESET',
     isUsed: false,
     resetTokenHash: null,
   };
-
-  if (email) {
-    query.email = email.toLowerCase().trim();
-  } else if (phone) {
-    query.phone = normalizePhone(phone);
-  }
 
   const record = await OtpRecord.findOne(query).select('+otpHash');
 
@@ -655,9 +635,9 @@ export const verifyPasswordResetOtp = async ({ email, phone, otp, req }) => {
  * Reset password using single-use reset token
  * Security: Consumes token, increments user.tokenVersion (session invalidation), preserves role
  */
-export const resetPasswordWithOtp = async ({ email, phone, resetToken, newPassword, req }) => {
-  if ((!email && !phone) || !resetToken || !newPassword) {
-    throw new BadRequestError('Email address (or mobile number), reset token, and new password are required');
+export const resetPasswordWithOtp = async ({ email, resetToken, newPassword, req }) => {
+  if (!email || !resetToken || !newPassword) {
+    throw new BadRequestError('Registered email address, reset token, and new password are required');
   }
   if (newPassword.length < 6) {
     throw new BadRequestError('New password must be at least 6 characters');
@@ -666,17 +646,12 @@ export const resetPasswordWithOtp = async ({ email, phone, resetToken, newPasswo
   const tokenHash = crypto.createHash('sha256').update(resetToken.trim()).digest('hex');
 
   const query = {
+    email: email.toLowerCase().trim(),
     purpose: 'PASSWORD_RESET',
     resetTokenHash: tokenHash,
     isUsed: false,
     resetTokenExpiresAt: { $gt: new Date() },
   };
-
-  if (email) {
-    query.email = email.toLowerCase().trim();
-  } else if (phone) {
-    query.phone = normalizePhone(phone);
-  }
 
   const record = await OtpRecord.findOne(query);
 

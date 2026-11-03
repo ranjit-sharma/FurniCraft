@@ -30,31 +30,23 @@ export const thekedarRegisterSchema = z.object({
   otp: z.string().optional(),
 });
 
+export const sendRegistrationOtpSchema = z.object({
+  phone: z.string().min(10, 'Valid 10-digit mobile number required').max(16),
+});
+
 export const forgotPasswordOtpRequestSchema = z.object({
-  email: z.string().email('Valid registered email address is required').optional(),
-  phone: z.string().min(10).optional(),
-}).refine((data) => data.email || data.phone, {
-  message: 'Valid registered email address is required',
-  path: ['email'],
+  email: z.string().email('Valid registered email address is required'),
 });
 
 export const verifyResetOtpSchema = z.object({
-  email: z.string().email('Valid registered email address is required').optional(),
-  phone: z.string().min(10).optional(),
+  email: z.string().email('Valid registered email address is required'),
   otp: z.string().regex(/^\d{6}$/, 'OTP must be exactly 6 digits'),
-}).refine((data) => data.email || data.phone, {
-  message: 'Valid registered email address is required',
-  path: ['email'],
 });
 
 export const resetPasswordWithOtpSchema = z.object({
-  email: z.string().email('Valid registered email address is required').optional(),
-  phone: z.string().min(10).optional(),
+  email: z.string().email('Valid registered email address is required'),
   resetToken: z.string().min(16, 'Valid reset token is required'),
   newPassword: z.string().min(6, 'New password must be at least 6 characters'),
-}).refine((data) => data.email || data.phone, {
-  message: 'Valid registered email address is required',
-  path: ['email'],
 });
 
 export const registerSchema = z.object({

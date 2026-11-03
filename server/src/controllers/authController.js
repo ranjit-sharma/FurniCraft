@@ -179,7 +179,6 @@ export const requestPasswordResetOtp = async (req, res, next) => {
   try {
     const result = await authService.requestPasswordResetOtp({
       email: req.body.email,
-      phone: req.body.phone,
       req,
     });
     res.status(200).json(result);
@@ -192,7 +191,6 @@ export const verifyPasswordResetOtp = async (req, res, next) => {
   try {
     const result = await authService.verifyPasswordResetOtp({
       email: req.body.email,
-      phone: req.body.phone,
       otp: req.body.otp,
       req,
     });
@@ -206,7 +204,6 @@ export const resetPasswordWithOtp = async (req, res, next) => {
   try {
     const result = await authService.resetPasswordWithOtp({
       email: req.body.email,
-      phone: req.body.phone,
       resetToken: req.body.resetToken,
       newPassword: req.body.newPassword,
       req,
