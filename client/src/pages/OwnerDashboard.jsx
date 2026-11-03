@@ -38,18 +38,23 @@ export const OwnerDashboard = () => {
 
   // Database Connection & Infrastructure Health State
   const [dbHealth, setDbHealth] = useState(null);
-  const [dbLoading, setDbLoading] = useState(false);
+  const [dbLoading, setDbLoading] = useState(true);
   const [dbError, setDbError] = useState(null);
 
   const fetchDbHealth = async () => {
     try {
       setDbLoading(true);
       const res = await api.get('/system/db-health');
-      setDbHealth(res.data);
-      setDbError(null);
+      const healthData = res?.data || res;
+      if (healthData && typeof healthData === 'object' && healthData.status) {
+        setDbHealth(healthData);
+        setDbError(null);
+      } else {
+        setDbHealth(healthData);
+      }
     } catch (err) {
       setDbError(err.message || 'Failed to ping database');
-      setDbHealth((prev) => prev ? { ...prev, isConnected: false, status: 'Disconnected' } : null);
+      setDbHealth((prev) => prev ? { ...prev, isConnected: false, status: 'Disconnected' } : { isConnected: false, status: 'Disconnected' });
     } finally {
       setDbLoading(false);
     }
@@ -195,7 +200,9 @@ export const OwnerDashboard = () => {
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
               dbHealth?.isConnected
                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+                : (dbLoading && !dbHealth
+                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
+                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800')
             }`}>
               <Database className="h-5 w-5" />
             </div>
@@ -207,9 +214,15 @@ export const OwnerDashboard = () => {
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                   dbHealth?.isConnected
                     ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700'
-                    : 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-700'
+                    : (dbLoading && !dbHealth
+                        ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700'
+                        : 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-700')
                 }`}>
-                  <span className={`h-2 w-2 rounded-full ${dbHealth?.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                  <span className={`h-2 w-2 rounded-full ${
+                    dbHealth?.isConnected
+                      ? 'bg-emerald-500 animate-pulse'
+                      : (dbLoading && !dbHealth ? 'bg-amber-500 animate-ping' : 'bg-rose-500')
+                  }`} />
                   {dbHealth?.status || (dbLoading ? 'Checking...' : 'Disconnected')}
                 </span>
               </div>
@@ -229,8 +242,8 @@ export const OwnerDashboard = () => {
           </button>
         </div>
 
-        {/* Disconnection Warning Alert */}
-        {(!dbHealth?.isConnected || dbError) && !dbLoading && (
+        {/* Disconnection Warning Alert: Only show when an actual confirmed disconnection or check error occurred */}
+        {((dbHealth && !dbHealth.isConnected) || dbError) && !dbLoading && (
           <div className="mt-3.5 flex items-center gap-2.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs text-rose-900 dark:text-rose-200">
             <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
             <div>

@@ -1,7 +1,7 @@
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { createApp } from './app.js';
-import { connectDB } from './config/db.js';
+import { connectDB, disconnectDB } from './config/db.js';
 import { env } from './config/env.js';
 
 const startServer = async () => {
@@ -49,8 +49,14 @@ const startServer = async () => {
     });
 
     // 5. Graceful Shutdown Handlers
-    const handleShutdown = (signal) => {
+    const handleShutdown = async (signal) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+      try {
+        await disconnectDB();
+        console.log('[MongoDB] Connection closed cleanly.');
+      } catch (err) {
+        // ignore
+      }
       server.close(() => {
         console.log('HTTP server closed.');
         process.exit(0);

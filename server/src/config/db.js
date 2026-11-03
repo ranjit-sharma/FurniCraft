@@ -28,15 +28,19 @@ export const connectDB = async (uri = env.MONGODB_URI, retries = 3) => {
         }
 
         const conn = await mongoose.connect(connectionUri, {
-          serverSelectionTimeoutMS: 8000,
-          connectTimeoutMS: 10000,
-          maxPoolSize: 150, // Concurrency connection pool for 500+ users
-          minPoolSize: 10,  // Pre-warmed pool for zero cold-start spikes
+          serverSelectionTimeoutMS: 15000, // Resilient timeout for replica-set discovery
+          connectTimeoutMS: 15000,
+          maxPoolSize: 50, // Resilient pool budget preventing Atlas free/shared tier exhaustion
+          minPoolSize: 2,  // Sensible baseline avoiding hoarding 30+ idle connections on replica sets
+          maxIdleTimeMS: 45000, // Clean up idle pool sockets before Atlas firewall TCP reset
+          heartbeatFrequencyMS: 10000, // 10s ping keeps NAT firewalls from dropping idle sockets
           socketTimeoutMS: 45000,
           family: 4, // Force IPv4 to prevent dual-stack DNS delays
           autoIndex: !env.isProduction, // Disable runtime index builds in production
         });
 
+        dbConnectedAt = new Date();
+        lastDbError = null;
         console.log(`[MongoDB] Connected: ${conn.connection.host}/${conn.connection.name}`);
         return conn;
       } catch (error) {
@@ -68,15 +72,18 @@ let lastDbError = null;
 mongoose.connection.on('connected', () => {
   dbConnectedAt = new Date();
   lastDbError = null;
+  console.log('[MongoDB] Connection state: Connected');
 });
 
 mongoose.connection.on('disconnected', () => {
   dbDisconnectedAt = new Date();
+  console.warn('[MongoDB] Connection state: Disconnected. Driver is attempting automatic reconnection...');
 });
 
 mongoose.connection.on('reconnected', () => {
   dbConnectedAt = new Date();
   lastDbError = null;
+  console.log('[MongoDB] Connection state: Reconnected successfully');
 });
 
 mongoose.connection.on('error', (err) => {
@@ -84,6 +91,7 @@ mongoose.connection.on('error', (err) => {
   lastDbError = err?.message
     ? err.message.replace(/mongodb(\+srv)?:\/\/[^@]+@/, 'mongodb://***:***@')
     : 'Database connection issue';
+  console.error('[MongoDB] Connection error:', lastDbError);
 });
 
 /**
