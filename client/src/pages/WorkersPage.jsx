@@ -733,18 +733,6 @@ export const WorkersPage = () => {
                   </strong>
                 </div>
               </div>
-
-              {(isOwner || isThekedar) && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-center font-semibold border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
-                  onClick={() => handleOpenMarkAttendance(w)}
-                  icon={Calendar}
-                  title="Mark Attendance for this Craftsman"
-                >
-                  {t('workers.markAttendance', 'Attendance')}
-                </Button>
-              )}
             </Card>
             );
           })}
