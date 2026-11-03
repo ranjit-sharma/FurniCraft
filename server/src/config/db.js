@@ -12,6 +12,11 @@ try {
 }
 
 export const connectDB = async (uri = env.MONGODB_URI, retries = 3) => {
+  if (!uri || (!uri.includes('mongodb.net') && !uri.startsWith('mongodb+srv://'))) {
+    const errorMsg = '[MongoDB] Only MongoDB Atlas connection is permitted. Local database connections are disabled.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
   let lastError;
   const targetUris = [uri].filter(Boolean);
   if (DIRECT_REPLICA_URI && uri && uri.startsWith('mongodb+srv://') && !targetUris.includes(DIRECT_REPLICA_URI)) {

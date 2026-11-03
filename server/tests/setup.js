@@ -1,10 +1,11 @@
-import { beforeAll, afterAll, beforeEach } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import mongoose from 'mongoose';
 import { connectDB, disconnectDB } from '../src/config/db.js';
+import { env } from '../src/config/env.js';
 
 beforeAll(async () => {
-  // Connect to local test database
-  const testUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/furnicraft_db';
+  // Connect to configured MongoDB Atlas database
+  const testUri = process.env.MONGODB_URI || env.MONGODB_URI;
   await connectDB(testUri);
 });
 
