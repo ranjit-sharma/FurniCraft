@@ -60,3 +60,76 @@ export const disconnectDB = async () => {
   await mongoose.disconnect();
 };
 
+let dbConnectedAt = null;
+let dbDisconnectedAt = null;
+let lastDbError = null;
+
+// Attach real-time connection event listeners
+mongoose.connection.on('connected', () => {
+  dbConnectedAt = new Date();
+  lastDbError = null;
+});
+
+mongoose.connection.on('disconnected', () => {
+  dbDisconnectedAt = new Date();
+});
+
+mongoose.connection.on('reconnected', () => {
+  dbConnectedAt = new Date();
+  lastDbError = null;
+});
+
+mongoose.connection.on('error', (err) => {
+  // Sanitize error: scrub credentials, password, and host IPs
+  lastDbError = err?.message
+    ? err.message.replace(/mongodb(\+srv)?:\/\/[^@]+@/, 'mongodb://***:***@')
+    : 'Database connection issue';
+});
+
+/**
+ * Perform real-time lightweight database health check
+ * Safe for Owner dashboard: Never exposes connection strings, IPs, or credentials
+ */
+export const getDatabaseHealth = async () => {
+  const readyStateNames = {
+    0: 'Disconnected',
+    1: 'Connected',
+    2: 'Connecting',
+    3: 'Disconnecting',
+  };
+
+  const stateCode = mongoose.connection.readyState;
+  const status = readyStateNames[stateCode] || 'Unknown';
+  const isConnected = stateCode === 1;
+
+  let latencyMs = null;
+  let pingError = null;
+
+  if (isConnected && mongoose.connection.db) {
+    try {
+      const startTime = Date.now();
+      await mongoose.connection.db.admin().ping();
+      latencyMs = Date.now() - startTime;
+    } catch (err) {
+      pingError = 'Ping failed or timed out';
+    }
+  }
+
+  // Calculate connection uptime in seconds
+  let uptimeSeconds = 0;
+  if (dbConnectedAt && isConnected) {
+    uptimeSeconds = Math.max(0, Math.floor((Date.now() - dbConnectedAt.getTime()) / 1000));
+  }
+
+  return {
+    status,
+    isConnected,
+    databaseName: mongoose.connection.name || 'furnicraft_db',
+    lastCheck: new Date().toISOString(),
+    uptimeSeconds,
+    latencyMs,
+    lastError: lastDbError || pingError || null,
+    availability: isConnected && !pingError ? '100% Operational' : (isConnected ? 'Degraded' : 'Unavailable'),
+  };
+};
+

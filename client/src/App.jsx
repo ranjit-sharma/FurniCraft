@@ -7,7 +7,6 @@ import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 import { ThekedarRegisterPage } from './pages/ThekedarRegisterPage';
-import { WorkerDashboard } from './pages/WorkerDashboard';
 import { ThekedarDashboard } from './pages/ThekedarDashboard';
 import { OwnerDashboard } from './pages/OwnerDashboard';
 import { ProjectsPage } from './pages/ProjectsPage';
@@ -30,7 +29,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-9 w-9 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+          <p className="text-xs font-semibold text-slate-400">Authenticating session...</p>
+        </div>
       </div>
     );
   }
@@ -48,10 +50,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const DashboardRouter = () => {
   const { user } = useAuth();
-  if (user?.role === 'WORKER') return <WorkerDashboard />;
   if (user?.role === 'THEKEDAR') return <ThekedarDashboard />;
   if (user?.role === 'OWNER') return <OwnerDashboard />;
-  return <div className="p-8 text-center text-slate-700">Unknown user role</div>;
+  return <Navigate to="/login" replace />;
 };
 
 export const App = () => {
@@ -82,7 +83,7 @@ export const App = () => {
                 <Route
                   path="tools"
                   element={
-                    <ProtectedRoute allowedRoles={['THEKEDAR', 'WORKER']}>
+                    <ProtectedRoute allowedRoles={['THEKEDAR', 'OWNER']}>
                       <ToolsPage />
                     </ProtectedRoute>
                   }

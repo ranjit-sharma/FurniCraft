@@ -13,7 +13,7 @@ import {
   Dispute,
 } from '../models/index.js';
 import { ROLES, USER_STATUS, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS } from '../config/constants.js';
-import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
 
 export const listUsers = async (req, res, next) => {
@@ -198,6 +198,14 @@ export const getWorkerProfile = async (req, res, next) => {
 
     if (!profile) throw new NotFoundError('Worker profile not found');
 
+    // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
+    if (req.user.role === ROLES.THEKEDAR) {
+      const thekedarIdStr = profile.thekedarId?._id?.toString() || profile.thekedarId?.toString();
+      if (thekedarIdStr !== req.user._id.toString()) {
+        throw new ForbiddenError('You can only view profiles for workers under your direct management');
+      }
+    }
+
     const [
       assignments,
       wageAgreements,
@@ -295,6 +303,14 @@ export const updateWorkerWage = async (req, res, next) => {
 
     const profile = await WorkerProfile.findOne({ userId: targetUserId });
     if (!profile) throw new NotFoundError('Worker profile not found');
+
+    // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
+    if (req.user.role === ROLES.THEKEDAR) {
+      const thekedarIdStr = profile.thekedarId?._id?.toString() || profile.thekedarId?.toString();
+      if (thekedarIdStr !== req.user._id.toString()) {
+        throw new ForbiddenError('You can only view profiles for workers under your direct management');
+      }
+    }
 
     if (req.user.role === ROLES.THEKEDAR && profile.thekedarId.toString() !== req.user._id.toString()) {
       throw new ForbiddenError('You can only update wages for workers under your management');
@@ -592,6 +608,201 @@ export const updateLanguagePreference = async (req, res, next) => {
       status: 'success',
       message: 'Language preference updated',
       data: { user: updatedUser },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createWorker = async (req, res, next) => {
+  try {
+    const {
+      name,
+      phone,
+      email,
+      trade,
+      skills,
+      defaultDailyWage = 750,
+      address,
+      emergencyContact,
+      bankDetails,
+      projectId,
+    } = req.body;
+
+    if (!name || !name.trim()) throw new BadRequestError('Worker name is required');
+    if (!phone || !phone.trim()) throw new BadRequestError('Worker phone number is required');
+
+    // Scoped strictly to Thekedar (or Owner)
+    let thekedarId;
+    if (req.user.role === ROLES.THEKEDAR) {
+      thekedarId = req.user._id;
+    } else if (req.user.role === ROLES.OWNER) {
+      thekedarId = req.body.thekedarId || req.user._id;
+    } else {
+      throw new ForbiddenError('Only Thekedars or Owners can create workers');
+    }
+
+    // Auto-generate unique Worker ID: sequential count + 1
+    const workerCount = await WorkerProfile.countDocuments();
+    const workerCode = `FC-WRK-${String(workerCount + 1).padStart(4, '0')}`;
+
+    // Auto-generate safe managed internal email if not provided
+    const internalEmail = email && email.trim()
+      ? email.trim().toLowerCase()
+      : `worker.${Date.now()}.${Math.floor(1000 + Math.random() * 9000)}@furnicraft.local`;
+
+    // Unusable password hash since workers cannot log in
+    const dummyPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const workerUser = await User.create({
+      name: name.trim(),
+      email: internalEmail,
+      phone: phone.trim(),
+      password: dummyPassword,
+      role: ROLES.WORKER,
+      assignedThekedar: thekedarId,
+      status: USER_STATUS.ACTIVE,
+    });
+
+    const wage = parseFloat(defaultDailyWage) || 750;
+    const skillsList = trade ? [trade] : (Array.isArray(skills) ? skills : ['Carpentry']);
+
+    const profile = await WorkerProfile.create({
+      userId: workerUser._id,
+      thekedarId,
+      workerCode,
+      skills: skillsList,
+      defaultDailyWage: wage,
+      address: address || '',
+      emergencyContact: emergencyContact || {},
+      bankDetails: bankDetails || {},
+    });
+
+    await WageAgreement.create({
+      workerId: workerUser._id,
+      thekedarId,
+      dailyWage: wage,
+      effectiveFrom: new Date(),
+      createdBy: req.user._id,
+      notes: 'Initial standard wage agreement on worker registration',
+    });
+
+    // Optional project assignment
+    if (projectId) {
+      await ProjectAssignment.create({
+        workerId: workerUser._id,
+        projectId,
+        thekedarId,
+        assignedBy: req.user._id,
+        status: 'ACTIVE',
+      });
+    }
+
+    await recordAuditLog({
+      req,
+      action: 'WORKER_CREATED_MANUALLY',
+      targetType: 'User',
+      targetId: workerUser._id,
+      newValues: { name: workerUser.name, workerCode, wage },
+    });
+
+    res.status(201).json({
+      status: 'success',
+      message: `Worker ${name} created successfully with ID ${workerCode}`,
+      data: {
+        worker: {
+          _id: workerUser._id,
+          name: workerUser.name,
+          phone: workerUser.phone,
+          email: workerUser.email,
+          status: workerUser.status,
+          profile,
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateWorker = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const {
+      name,
+      phone,
+      trade,
+      skills,
+      defaultDailyWage,
+      address,
+      emergencyContact,
+      bankDetails,
+    } = req.body;
+
+    const workerUser = await User.findById(userId);
+    if (!workerUser || workerUser.role !== ROLES.WORKER) {
+      throw new NotFoundError('Worker not found');
+    }
+
+    const profile = await WorkerProfile.findOne({ userId });
+    if (!profile) throw new NotFoundError('Worker profile not found');
+
+    // Strict Scope: Thekedar can ONLY edit their own workers
+    if (req.user.role === ROLES.THEKEDAR) {
+      const thekedarIdStr = profile.thekedarId?._id?.toString() || profile.thekedarId?.toString();
+      if (thekedarIdStr !== req.user._id.toString()) {
+        throw new ForbiddenError('You can only modify workers under your direct management');
+      }
+    }
+
+    // Update User fields
+    if (name && name.trim()) workerUser.name = name.trim();
+    if (phone && phone.trim()) workerUser.phone = phone.trim();
+    await workerUser.save();
+
+    // Update Profile fields
+    if (trade) {
+      profile.skills = [trade];
+    } else if (skills && Array.isArray(skills)) {
+      profile.skills = skills;
+    }
+    if (address !== undefined) profile.address = address;
+    if (emergencyContact !== undefined) profile.emergencyContact = emergencyContact;
+    if (bankDetails !== undefined) profile.bankDetails = { ...profile.bankDetails, ...bankDetails };
+
+    if (defaultDailyWage !== undefined && Number(defaultDailyWage) > 0) {
+      const wageNum = Number(defaultDailyWage);
+      profile.defaultDailyWage = wageNum;
+      await WageAgreement.create({
+        workerId: workerUser._id,
+        thekedarId: profile.thekedarId,
+        dailyWage: wageNum,
+        effectiveFrom: new Date(),
+        createdBy: req.user._id,
+        notes: `Wage adjusted during worker profile edit by ${req.user.role}`,
+      });
+    }
+
+    await profile.save();
+
+    await recordAuditLog({
+      req,
+      action: 'WORKER_DETAILS_UPDATED',
+      targetType: 'User',
+      targetId: workerUser._id,
+      newValues: { name: workerUser.name, phone: workerUser.phone, wage: profile.defaultDailyWage },
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Worker details updated successfully',
+      data: {
+        worker: {
+          _id: workerUser._id,
+          name: workerUser.name,
+          phone: workerUser.phone,
+          profile,
+        },
+      },
     });
   } catch (error) {
     next(error);

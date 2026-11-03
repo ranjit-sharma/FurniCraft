@@ -67,7 +67,7 @@ export const Navbar = ({ onMenuClick }) => {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-4 backdrop-blur md:px-6 transition-colors">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-4 backdrop-blur md:px-6 transition-colors">
       {/* Left: Mobile Menu & Redesigned Attractive Logo */}
       <div className="flex items-center gap-3">
         <button

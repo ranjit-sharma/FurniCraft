@@ -23,6 +23,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import disputeRoutes from './routes/disputeRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
+import systemRoutes from './routes/systemRoutes.js';
 
 export const createApp = () => {
   const app = express();
@@ -99,8 +100,11 @@ export const createApp = () => {
   apiRouter.use('/reports', reportRoutes);
   apiRouter.use('/disputes', disputeRoutes);
   apiRouter.use('/audit', auditRoutes);
+  apiRouter.use('/system', systemRoutes);
 
+  // Mount primary API router under both /api/v1 and /api for backward and session compatibility
   app.use('/api/v1', apiRouter);
+  app.use('/api', apiRouter);
 
   // Serve frontend static build in production or when client/dist exists
   const __filename = fileURLToPath(import.meta.url);

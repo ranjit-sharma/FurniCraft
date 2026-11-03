@@ -1,4 +1,5 @@
 import * as authService from '../services/authService.js';
+import { ForbiddenError } from '../utils/errors.js';
 
 export const login = async (req, res, next) => {
   try {
@@ -56,6 +57,9 @@ export const logout = async (req, res, next) => {
 
 export const getCurrentUser = async (req, res, next) => {
   try {
+    if (req.user.role === 'WORKER') {
+      throw new ForbiddenError('Worker accounts are managed entities and cannot access the application.');
+    }
     res.status(200).json({
       status: 'success',
       data: {

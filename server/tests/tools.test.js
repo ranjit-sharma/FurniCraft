@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { Tool, Project, User } from '../src/models/index.js';
+import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
@@ -19,8 +20,11 @@ describe('Tool Management & Movement History API Tests', () => {
       email: 'worker.ramesh@furnicraft.com',
       password: 'Worker@2026',
     });
-    workerToken = resW.body.data.token;
-    workerUser = resW.body.data.user;
+    expect(resW.status).toBe(403);
+    expect(resW.body.message).toContain('Worker login is disabled');
+
+    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
 
     project = await Project.findOne({ projectCode: 'FURN-2026-001' });
 
@@ -31,6 +35,7 @@ describe('Tool Management & Movement History API Tests', () => {
       category: 'ROUTER',
       condition: 'NEW',
       status: 'AVAILABLE',
+      thekedarId: resT.body.data.user._id,
     });
 
     expect(availableTool).toBeDefined();

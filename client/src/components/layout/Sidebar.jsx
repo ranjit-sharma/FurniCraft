@@ -22,28 +22,17 @@ import {
 } from 'lucide-react';
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const { user, isOwner, isThekedar, isWorker } = useAuth();
+  const { user, isOwner, isThekedar } = useAuth();
   const { t } = useLanguage();
   const { isDark } = useTheme();
 
   const getNavLinks = () => {
-    if (isWorker) {
-      return [
-        { to: '/', label: t('nav.myDashboard', 'My Dashboard'), icon: LayoutDashboard },
-        { to: '/projects', label: t('nav.assignedProjects', 'Assigned Projects'), icon: FolderKanban },
-        { to: '/finance', label: t('nav.salaryAndAdvances', 'Salary & Advances'), icon: Receipt },
-        { to: '/transactions/search', label: t('nav.transactionSearch', 'Transaction Search'), icon: Search },
-        { to: '/tools', label: t('nav.myAssignedTools', 'My Assigned Tools'), icon: Wrench },
-        { to: '/disputes', label: t('nav.disputes', 'Disputes & Grievances'), icon: AlertCircle },
-      ];
-    }
-
     if (isThekedar) {
       return [
         { to: '/', label: t('nav.thekedarDashboard', 'Thekedar Dashboard'), icon: LayoutDashboard },
         { to: '/projects', label: t('nav.furnitureProjects', 'Furniture Projects'), icon: FolderKanban },
         { to: '/workers', label: t('nav.workersAndWages', 'Workers & Wages'), icon: Users },
-        { to: '/attendance', label: t('nav.attendanceApprovals', 'Attendance Approvals'), icon: CalendarCheck2 },
+        { to: '/attendance', label: t('nav.attendanceApprovals', 'Attendance & Approvals'), icon: CalendarCheck2 },
         { to: '/transactions/search', label: t('nav.transactionSearch', 'Transaction Search'), icon: Search },
         { to: '/tools', label: t('nav.toolTracking', 'Tool Tracking & Issues'), icon: Wrench },
         { to: '/expenses', label: t('nav.expenses', 'Project Money Received'), icon: IndianRupee },

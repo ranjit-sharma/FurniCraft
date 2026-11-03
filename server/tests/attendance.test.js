@@ -1,7 +1,8 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { Project, ProjectAssignment, Attendance, User } from '../src/models/index.js';
+import { Project, ProjectAssignment, Attendance, User, WorkerProfile, WageAgreement } from '../src/models/index.js';
+import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
@@ -13,8 +14,21 @@ describe('Attendance & Calculation Engine API Tests', () => {
       email: 'worker.ramesh@furnicraft.com',
       password: 'Worker@2026',
     });
-    workerToken = resW.body.data.token;
-    workerUser = resW.body.data.user;
+    expect(resW.status).toBe(403);
+    expect(resW.body.message).toContain('Worker login is disabled');
+
+    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
+
+    // Ensure worker's standard wage is set to 800 for consistent rule testing
+    await WorkerProfile.updateOne(
+      { userId: workerUser._id },
+      { $set: { defaultDailyWage: 800 } }
+    );
+    await WageAgreement.updateMany(
+      { workerId: workerUser._id },
+      { $set: { dailyWage: 800 } }
+    );
 
     const resT = await request(app).post('/api/v1/auth/login').send({
       email: 'thekedar.rajesh@furnicraft.com',

@@ -14,22 +14,35 @@ export const verifyToken = (token) => {
 };
 
 export const getCookieOptions = () => {
+  // If COOKIE_DOMAIN is 'localhost' or contains '127.0.0.1', omit domain so browser handles host-only cookie
+  const rawDomain = env.COOKIE_DOMAIN;
+  const domain = (rawDomain && rawDomain !== 'localhost' && !rawDomain.includes('127.0.0.1')) ? rawDomain : undefined;
+
+  // For cross-origin production clients, 'none' with secure:true is required; otherwise 'lax' allows refresh & new tabs
+  const isProd = env.isProduction;
+  const isCrossOrigin = isProd && env.CLIENT_URL && !env.CLIENT_URL.includes('onrender.com');
+
   return {
     httpOnly: true,
-    secure: env.isProduction, // True in production HTTPS
-    sameSite: env.isProduction ? 'strict' : 'lax',
+    secure: isProd,
+    sameSite: isCrossOrigin ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
     path: '/',
-    domain: env.COOKIE_DOMAIN || undefined,
+    domain,
   };
 };
 
 export const clearCookieOptions = () => {
+  const rawDomain = env.COOKIE_DOMAIN;
+  const domain = (rawDomain && rawDomain !== 'localhost' && !rawDomain.includes('127.0.0.1')) ? rawDomain : undefined;
+  const isProd = env.isProduction;
+  const isCrossOrigin = isProd && env.CLIENT_URL && !env.CLIENT_URL.includes('onrender.com');
+
   return {
     httpOnly: true,
-    secure: env.isProduction,
-    sameSite: env.isProduction ? 'strict' : 'lax',
+    secure: isProd,
+    sameSite: isCrossOrigin ? 'none' : 'lax',
     path: '/',
-    domain: env.COOKIE_DOMAIN || undefined,
+    domain,
   };
 };

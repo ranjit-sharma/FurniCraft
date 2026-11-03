@@ -60,10 +60,21 @@ export const WorkersPage = () => {
   const [workerName, setWorkerName] = useState('');
   const [workerEmail, setWorkerEmail] = useState('');
   const [workerPhone, setWorkerPhone] = useState('');
-  const [workerPassword, setWorkerPassword] = useState('Worker@2026');
+  const [workerTrade, setWorkerTrade] = useState('Carpentry');
   const [defaultWage, setDefaultWage] = useState('750');
+  const [workerAddress, setWorkerAddress] = useState('');
   const [thekedarsList, setThekedarsList] = useState([]);
   const [selectedThekedarId, setSelectedThekedarId] = useState('');
+
+  // Edit Worker Details Modal
+  const [editWorkerModalOpen, setEditWorkerModalOpen] = useState(false);
+  const [editingWorker, setEditingWorker] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editTrade, setEditTrade] = useState('Carpentry');
+  const [editWage, setEditWage] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Update Wage Modal
   const [wageModalOpen, setWageModalOpen] = useState(false);
@@ -147,23 +158,58 @@ export const WorkersPage = () => {
   const handleRegisterWorker = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/auth/register', {
-        name: workerName,
-        email: workerEmail,
-        phone: workerPhone,
-        password: workerPassword,
-        role: 'WORKER',
+      const res = await api.post('/users/workers', {
+        name: workerName.trim(),
+        phone: workerPhone.trim(),
+        email: workerEmail ? workerEmail.trim() : undefined,
+        trade: workerTrade,
         defaultDailyWage: parseFloat(defaultWage) || 750,
-        ...(isOwner && selectedThekedarId ? { assignedThekedar: selectedThekedarId } : {}),
+        address: workerAddress,
+        ...(isOwner && selectedThekedarId ? { thekedarId: selectedThekedarId } : {}),
       });
-      setMessage({ type: 'success', text: 'Worker registered and added to workforce!' });
+      const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
+      setMessage({ type: 'success', text: `Craftsman ${workerName} added successfully with ID ${generatedCode}!` });
       setRegisterModalOpen(false);
       setWorkerName('');
       setWorkerEmail('');
       setWorkerPhone('');
+      setWorkerAddress('');
       fetchWorkers();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    }
+  };
+
+  const handleOpenEditWorker = (worker) => {
+    setEditingWorker(worker);
+    setEditName(worker.userId?.name || worker.name || '');
+    setEditPhone(worker.userId?.phone || worker.phone || '');
+    setEditTrade(worker.skills?.[0] || 'Carpentry');
+    setEditWage(worker.defaultDailyWage || '750');
+    setEditAddress(worker.address || '');
+    setEditWorkerModalOpen(true);
+  };
+
+  const handleUpdateWorkerDetails = async (e) => {
+    e.preventDefault();
+    if (!editingWorker) return;
+    const userId = editingWorker.userId?._id || editingWorker._id;
+    try {
+      setEditSubmitting(true);
+      await api.put(`/users/workers/${userId}`, {
+        name: editName.trim(),
+        phone: editPhone.trim(),
+        trade: editTrade,
+        defaultDailyWage: parseFloat(editWage) || undefined,
+        address: editAddress,
+      });
+      setMessage({ type: 'success', text: `Craftsman details for ${editName} updated successfully!` });
+      setEditWorkerModalOpen(false);
+      fetchWorkers();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Failed to update craftsman details' });
+    } finally {
+      setEditSubmitting(false);
     }
   };
 
@@ -698,6 +744,18 @@ export const WorkersPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      onClick={() => handleOpenEditWorker(w)}
+                      icon={Edit}
+                      title="Edit Craftsman Details"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  {(isOwner || isThekedar) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="flex-[0.8] justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       onClick={() => {
                         setSelectedWorker(w);
@@ -730,34 +788,27 @@ export const WorkersPage = () => {
       )}
 
       {/* Modal: Register Worker */}
-      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Register Modern Furniture Craftsman">
+      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Register Craftsman to Workforce">
         <form onSubmit={handleRegisterWorker} className="space-y-4">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
+            Craftsmen are managed workforce records. A unique Worker ID (e.g. <strong>FC-WRK-{String(workers.length + 1).padStart(4, '0')}</strong>) will be auto-generated. Workers do not need a password or login account.
+          </div>
+
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Full Name *</label>
             <input
               type="text"
               required
               value={workerName}
               onChange={(e) => setWorkerName(e.target.value)}
-              placeholder="e.g. Ramesh Carpenter"
+              placeholder="e.g. Ramesh Kumar"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
-              <input
-                type="email"
-                required
-                value={workerEmail}
-                onChange={(e) => setWorkerEmail(e.target.value)}
-                placeholder="ramesh@furnicraft.com"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Phone Number *</label>
               <input
                 type="text"
                 required
@@ -767,23 +818,31 @@ export const WorkersPage = () => {
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Primary Trade / Skill</label>
+              <select
+                value={workerTrade}
+                onChange={(e) => setWorkerTrade(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              >
+                <option value="Carpentry">Carpentry (Wood & Board)</option>
+                <option value="Polishing">Polishing & PU Coating</option>
+                <option value="Fitting">Modular Fitting & Hinges</option>
+                <option value="Assembly">Carcass Assembly</option>
+                <option value="Cutting">Edge Banding & Cutting</option>
+                <option value="Helper">Site Helper & Transport</option>
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Initial Password</label>
-              <input
-                type="text"
-                required
-                value={workerPassword}
-                onChange={(e) => setWorkerPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm font-mono focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Default Daily Wage (₹)</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Default Daily Wage (₹/day) *</label>
               <input
                 type="number"
+                min="0"
+                step="50"
                 required
                 value={defaultWage}
                 onChange={(e) => setDefaultWage(e.target.value)}
@@ -791,6 +850,28 @@ export const WorkersPage = () => {
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Email Address (Optional)</label>
+              <input
+                type="email"
+                value={workerEmail}
+                onChange={(e) => setWorkerEmail(e.target.value)}
+                placeholder="Optional or auto-generated"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Site / Workshop Address</label>
+            <input
+              type="text"
+              value={workerAddress}
+              onChange={(e) => setWorkerAddress(e.target.value)}
+              placeholder="e.g. Sector 62 Workshop, Noida"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
           </div>
 
           {/* Permanent Thekedar Selection */}
@@ -822,6 +903,80 @@ export const WorkersPage = () => {
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>Cancel</Button>
             <Button type="submit">Register Craftsman</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal: Edit Craftsman Details */}
+      <Modal isOpen={editWorkerModalOpen} onClose={() => setEditWorkerModalOpen(false)} title="Edit Craftsman Profile">
+        <form onSubmit={handleUpdateWorkerDetails} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
+            <input
+              type="text"
+              required
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
+              <input
+                type="text"
+                required
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Trade / Specialty</label>
+              <select
+                value={editTrade}
+                onChange={(e) => setEditTrade(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              >
+                <option value="Carpentry">Carpentry</option>
+                <option value="Polishing">Polishing</option>
+                <option value="Fitting">Fitting</option>
+                <option value="Assembly">Assembly</option>
+                <option value="Cutting">Cutting</option>
+                <option value="Helper">Helper</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Wage (₹/day)</label>
+            <input
+              type="number"
+              min="0"
+              step="50"
+              required
+              value={editWage}
+              onChange={(e) => setEditWage(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Address / Workshop Notes</label>
+            <input
+              type="text"
+              value={editAddress}
+              onChange={(e) => setEditAddress(e.target.value)}
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="secondary" onClick={() => setEditWorkerModalOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={editSubmitting}>
+              {editSubmitting ? 'Saving...' : 'Save Profile Changes'}
+            </Button>
           </div>
         </form>
       </Modal>

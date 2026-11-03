@@ -2,6 +2,7 @@ import { describe, it, expect, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { User, WorkerProfile, Payroll, AdvanceRequest, FinancialTransaction, Attendance } from '../src/models/index.js';
+import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
@@ -10,13 +11,16 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
   let initialWorkerAdvanceBalance = 0;
   const createdAdvanceIds = [];
 
-  it('should authenticate actors', async () => {
+  it('should authenticate actors and enforce worker login block', async () => {
     const resW = await request(app).post('/api/v1/auth/login').send({
       email: 'worker.ramesh@furnicraft.com',
       password: 'Worker@2026',
     });
-    workerToken = resW.body.data.token;
-    workerUser = resW.body.data.user;
+    expect(resW.status).toBe(403);
+    expect(resW.body.message).toContain('Worker login is disabled');
+
+    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
 
     const resT = await request(app).post('/api/v1/auth/login').send({
       email: 'thekedar.rajesh@furnicraft.com',

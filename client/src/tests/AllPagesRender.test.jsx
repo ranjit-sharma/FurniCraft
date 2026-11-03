@@ -20,6 +20,8 @@ import { AuditLogsPage } from '../pages/AuditLogsPage';
 import { MembersOverviewPage } from '../pages/MembersOverviewPage';
 import { DisputesPage } from '../pages/DisputesPage';
 import { TransactionSearchPage } from '../pages/TransactionSearchPage';
+import { OwnerDashboard } from '../pages/OwnerDashboard';
+import { ThekedarDashboard } from '../pages/ThekedarDashboard';
 
 // Mock AuthContext
 vi.mock('../context/AuthContext', () => ({
@@ -144,6 +146,43 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
           },
         });
       }
+      if (url.includes('/system/db-health')) {
+        return Promise.resolve({
+          data: {
+            status: 'Connected',
+            isConnected: true,
+            databaseName: 'furnicraft_db',
+            lastCheck: new Date().toISOString(),
+            uptimeSeconds: 7200,
+            latencyMs: 8,
+            lastError: null,
+            availability: '100% Operational',
+          },
+        });
+      }
+      if (url.includes('/reports/dashboard')) {
+        return Promise.resolve({
+          data: {
+            metrics: {
+              activeProjectsCount: 3,
+              managedWorkersCount: 8,
+              totalMembers: 12,
+              totalThekedars: 2,
+              totalWorkers: 10,
+              totalVisits: 150,
+              todayVisits: 22,
+            },
+            activeProjects: [],
+            pendingAdvanceRequests: [],
+            pendingTaskApprovals: [],
+            issuedTools: [],
+            recentDisputes: [],
+            allMembers: [],
+            recentAudits: [],
+            recentTransactions: [],
+          },
+        });
+      }
       if (url.includes('/disputes')) {
         return Promise.resolve({ data: { disputes: [] } });
       }
@@ -228,5 +267,17 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
   it('renders TransactionSearchPage without crashing or blank screen', async () => {
     const { container } = renderWithProviders(TransactionSearchPage);
     expect(container).not.toBeEmptyDOMElement();
+  });
+
+  it('renders OwnerDashboard without crashing or blank screen', async () => {
+    const { container } = renderWithProviders(OwnerDashboard);
+    expect(container).not.toBeEmptyDOMElement();
+    expect(await screen.findByText(/Database Infrastructure Health/i)).toBeInTheDocument();
+  });
+
+  it('renders ThekedarDashboard without crashing or blank screen', async () => {
+    const { container } = renderWithProviders(ThekedarDashboard);
+    expect(container).not.toBeEmptyDOMElement();
+    expect(await screen.findByText(/Workforce & Craftsmen Management/i)).toBeInTheDocument();
   });
 });

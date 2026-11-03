@@ -31,6 +31,11 @@ export const loginUser = async ({ email, identifier, phone, password, req, res }
     throw new UnauthorizedError(invalidCredentialsMsg);
   }
 
+  // Strict Rule: Workers cannot log in to the portal; all management is performed by Thekedars
+  if (user.role === ROLES.WORKER) {
+    throw new ForbiddenError('Worker login is disabled. Worker profiles and operations are managed directly by Thekedars.');
+  }
+
   // Update last login and increment visit count
   user.lastLoginAt = new Date();
   user.visitCount = (user.visitCount || 0) + 1;

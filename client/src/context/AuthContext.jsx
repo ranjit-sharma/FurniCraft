@@ -10,9 +10,16 @@ export const AuthProvider = ({ children }) => {
   const fetchCurrentUser = async () => {
     try {
       const res = await api.get('/auth/me');
-      setUser(res.data.user);
-      if (res.data.user) {
+      const userData = res?.data?.user || res?.user || res?.data;
+      if (userData && userData.role !== 'WORKER') {
+        setUser(userData);
         api.post('/reports/track-visit').catch(() => {});
+      } else {
+        // Workers are managed entities and cannot maintain an application session
+        if (userData?.role === 'WORKER') {
+          api.post('/auth/logout').catch(() => {});
+        }
+        setUser(null);
       }
     } catch (err) {
       setUser(null);
@@ -36,6 +43,10 @@ export const AuthProvider = ({ children }) => {
       password,
     });
     const loggedUser = res?.data?.user || res?.user;
+    if (loggedUser?.role === 'WORKER') {
+      await api.post('/auth/logout').catch(() => {});
+      throw new Error('Worker login is disabled. Worker profiles are managed directly by Thekedars.');
+    }
     if (loggedUser) {
       const savedLang = localStorage.getItem('furnicraft_lang') || localStorage.getItem('fc_language');
       if (savedLang && ['en', 'hi', 'hinglish'].includes(savedLang)) {

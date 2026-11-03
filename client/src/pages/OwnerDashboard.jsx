@@ -21,6 +21,12 @@ import {
   HardHat,
   Shield,
   ArrowUpRight,
+  Database,
+  Server,
+  RefreshCw,
+  Clock,
+  Zap,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const OwnerDashboard = () => {
@@ -29,6 +35,35 @@ export const OwnerDashboard = () => {
   const [data, setData] = useState(null);
   const [memberRoleFilter, setMemberRoleFilter] = useState('ALL');
   const [memberSearch, setMemberSearch] = useState('');
+
+  // Database Connection & Infrastructure Health State
+  const [dbHealth, setDbHealth] = useState(null);
+  const [dbLoading, setDbLoading] = useState(false);
+  const [dbError, setDbError] = useState(null);
+
+  const fetchDbHealth = async () => {
+    try {
+      setDbLoading(true);
+      const res = await api.get('/system/db-health');
+      setDbHealth(res.data);
+      setDbError(null);
+    } catch (err) {
+      setDbError(err.message || 'Failed to ping database');
+      setDbHealth((prev) => prev ? { ...prev, isConnected: false, status: 'Disconnected' } : null);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  const formatUptime = (seconds) => {
+    if (!seconds && seconds !== 0) return 'N/A';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -43,6 +78,9 @@ export const OwnerDashboard = () => {
 
   useEffect(() => {
     fetchDashboard();
+    fetchDbHealth();
+    const interval = setInterval(fetchDbHealth, 30000); // 30s background health ping
+    return () => clearInterval(interval);
   }, []);
 
   const handleExportAttendance = () => {
@@ -147,6 +185,99 @@ export const OwnerDashboard = () => {
           >
             {t('calendar.exportPdf') || 'Export Attendance (PDF)'}
           </Button>
+        </div>
+      </div>
+
+      {/* Database Connection & Infrastructure Health Monitor (Owner Exclusive) */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+              dbHealth?.isConnected
+                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+            }`}>
+              <Database className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  Database Infrastructure Health
+                </h3>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                  dbHealth?.isConnected
+                    ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700'
+                    : 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-700'
+                }`}>
+                  <span className={`h-2 w-2 rounded-full ${dbHealth?.isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                  {dbHealth?.status || (dbLoading ? 'Checking...' : 'Disconnected')}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Real-time MongoDB connection state, query response latency, and cluster availability.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={fetchDbHealth}
+            disabled={dbLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${dbLoading ? 'animate-spin' : ''}`} />
+            Refresh Check
+          </button>
+        </div>
+
+        {/* Disconnection Warning Alert */}
+        {(!dbHealth?.isConnected || dbError) && !dbLoading && (
+          <div className="mt-3.5 flex items-center gap-2.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs text-rose-900 dark:text-rose-200">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+            <div>
+              <strong className="font-bold">Database Disconnected / Unavailable:</strong>{' '}
+              {dbHealth?.lastError || dbError || 'The database cluster is currently unreachable. Write operations will be rejected until reconnected.'}
+            </div>
+          </div>
+        )}
+
+        {/* Health Metrics Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-3.5 pt-1">
+          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Database Name</span>
+            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 truncate">
+              {dbHealth?.databaseName || 'furnicraft_db'}
+            </div>
+            <span className="text-[10px] text-slate-400">Target Database</span>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ping Latency</span>
+            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 flex items-center gap-1">
+              <Zap className="h-3.5 w-3.5 text-amber-500" />
+              {dbHealth?.latencyMs !== null && dbHealth?.latencyMs !== undefined ? `${dbHealth.latencyMs} ms` : 'N/A'}
+            </div>
+            <span className="text-[10px] text-slate-400">Round-trip response time</span>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Connection Uptime</span>
+            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5 text-blue-500" />
+              {formatUptime(dbHealth?.uptimeSeconds)}
+            </div>
+            <span className="text-[10px] text-slate-400">Since last connect</span>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Availability</span>
+            <div className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 truncate">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+              {dbHealth?.availability || 'Operational'}
+            </div>
+            <span className="text-[10px] text-slate-400 truncate block">
+              Checked: {dbHealth?.lastCheck ? new Date(dbHealth.lastCheck).toLocaleTimeString('en-IN') : 'Just now'}
+            </span>
+          </div>
         </div>
       </div>
 

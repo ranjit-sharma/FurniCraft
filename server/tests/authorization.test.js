@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { User, WorkerProfile } from '../src/models/index.js';
+import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
@@ -11,22 +12,27 @@ describe('Authorization & RBAC API Tests', () => {
   let thekedarToken, thekedarUser;
   let ownerToken, ownerUser;
 
-  it('should authenticate test actors', async () => {
-    // 1. Worker Ramesh
+  it('should authenticate test actors and enforce worker login block', async () => {
+    // 1. Worker Ramesh - Worker login must be rejected with 403 Forbidden
     const resW1 = await request(app).post('/api/v1/auth/login').send({
       email: 'worker.ramesh@furnicraft.com',
       password: 'Worker@2026',
     });
-    workerToken = resW1.body.data.token;
-    workerUser = resW1.body.data.user;
+    expect(resW1.status).toBe(403);
+    expect(resW1.body.message).toContain('Worker login is disabled');
 
-    // 2. Worker Suresh
+    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
+
+    // 2. Worker Suresh - Worker login must be rejected with 403 Forbidden
     const resW2 = await request(app).post('/api/v1/auth/login').send({
       email: 'worker.suresh@furnicraft.com',
       password: 'Worker@2026',
     });
-    otherWorkerToken = resW2.body.data.token;
-    otherWorkerUser = resW2.body.data.user;
+    expect(resW2.status).toBe(403);
+
+    otherWorkerUser = await User.findOne({ email: 'worker.suresh@furnicraft.com' });
+    otherWorkerToken = signToken({ id: otherWorkerUser._id, role: 'WORKER' });
 
     // 3. Thekedar Rajesh
     const resT = await request(app).post('/api/v1/auth/login').send({
@@ -324,22 +330,24 @@ describe('Authorization & RBAC API Tests', () => {
     expect(resActivateWorker.body.message).toContain('Worker account activated');
     expect(resActivateWorker.body.data.user.status).toBe('ACTIVE');
 
-    // 4. Activated worker can log in
-    const resWorkerLoginSuccess = await request(app)
+    // 4. Worker login remains blocked even when active (workers are managed records)
+    const resWorkerLogin = await request(app)
       .post('/api/v1/auth/login')
       .send({
         email: 'worker.ramesh@furnicraft.com',
         password: 'Worker@2026',
       });
 
-    expect(resWorkerLoginSuccess.status).toBe(200);
-    expect(resWorkerLoginSuccess.body.data.token).toBeDefined();
+    expect(resWorkerLogin.status).toBe(403);
+    expect(resWorkerLogin.body.message).toContain('Worker login is disabled');
 
     // 5. Worker cannot change anyone's status
     const resWorkerUnauth = await request(app)
       .patch(`/api/v1/users/${workerUser._id}/status`)
-      .set('Authorization', `Bearer ${resWorkerLoginSuccess.body.data.token}`)
+      .set('Authorization', `Bearer ${workerToken}`)
       .send({ status: 'SUSPENDED' });
+
+    expect([401, 403]).toContain(resWorkerUnauth.status);
 
     expect(resWorkerUnauth.status).toBe(403);
   });
