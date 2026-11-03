@@ -76,12 +76,6 @@ export const WorkersPage = () => {
   const [editAddress, setEditAddress] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
-  // Update Wage Modal
-  const [wageModalOpen, setWageModalOpen] = useState(false);
-  const [selectedWorker, setSelectedWorker] = useState(null);
-  const [newWage, setNewWage] = useState('');
-  const [wageReason, setWageReason] = useState('');
-
   // Worker 360° Activity Modal
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
@@ -210,23 +204,6 @@ export const WorkersPage = () => {
       setMessage({ type: 'error', text: err.message || 'Failed to update craftsman details' });
     } finally {
       setEditSubmitting(false);
-    }
-  };
-
-  const handleUpdateWage = async (e) => {
-    e.preventDefault();
-    try {
-      await api.put(`/users/workers/${selectedWorker.userId._id}/wage`, {
-        dailyWage: parseFloat(newWage),
-        notes: wageReason,
-      });
-      setMessage({ type: 'success', text: `Daily wage updated for ${selectedWorker.userId.name}!` });
-      setWageModalOpen(false);
-      setNewWage('');
-      setWageReason('');
-      fetchWorkers();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
     }
   };
 
@@ -744,28 +721,12 @@ export const WorkersPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      className="flex-[1] justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                       onClick={() => handleOpenEditWorker(w)}
                       icon={Edit}
                       title="Edit Craftsman Details"
                     >
                       Edit
-                    </Button>
-                  )}
-                  {(isOwner || isThekedar) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-[0.8] justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      onClick={() => {
-                        setSelectedWorker(w);
-                        setNewWage(w.defaultDailyWage);
-                        setWageModalOpen(true);
-                      }}
-                      icon={Edit}
-                      title="Update Base Wage"
-                    >
-                      {t('common.wage', 'Wage')}
                     </Button>
                   )}
                   {isThekedar && (
@@ -979,47 +940,6 @@ export const WorkersPage = () => {
             </Button>
           </div>
         </form>
-      </Modal>
-
-      {/* Modal: Update Wage */}
-      <Modal isOpen={wageModalOpen} onClose={() => setWageModalOpen(false)} title="Update Craftsman Daily Wage">
-        {selectedWorker && (
-          <form onSubmit={handleUpdateWage} className="space-y-4">
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/50 p-3 text-xs text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              Worker: <strong className="text-sm text-slate-900 dark:text-white">{selectedWorker.userId?.name || 'Worker'}</strong> ({selectedWorker.workerCode})
-              <div className="mt-1">Current Base Wage: ₹{selectedWorker.defaultDailyWage} / day</div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">New Daily Wage (INR ₹)</label>
-              <input
-                type="number"
-                required
-                min="100"
-                value={newWage}
-                onChange={(e) => setNewWage(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Reason / Wage Agreement Revision Note</label>
-              <textarea
-                required
-                rows={2}
-                value={wageReason}
-                onChange={(e) => setWageReason(e.target.value)}
-                placeholder="e.g. Master level edge-banding promotion, annual skill revision..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-              <Button variant="secondary" onClick={() => setWageModalOpen(false)}>Cancel</Button>
-              <Button type="submit">Save Revised Wage</Button>
-            </div>
-          </form>
-        )}
       </Modal>
 
       {/* Modal: Worker 360° Activity, Tasks, Attendance & Payments */}

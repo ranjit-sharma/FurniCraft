@@ -233,7 +233,7 @@ export const AttendancePage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('nav.attendance') || 'Attendance Calendar'} & {t('dashboard.attendanceApprovals') || 'Approvals'}</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('nav.attendance') || 'Attendance Calendar'}</h2>
           <p className="text-xs text-slate-700 dark:text-slate-300">{t('calendar.legend') || 'Daily multiplier calculations'} (P = 1.0x, HALF = 0.5x, P1/5 = 1.5x, PP = 2.0x).</p>
         </div>
 

@@ -463,14 +463,14 @@ export const ThekedarDashboard = () => {
 
         <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('dashboard.pendingAttendance') || 'Pending Approvals'}</span>
+            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('projects.tasksAwaitingReview') || 'Pending Task Reviews'}</span>
             <CheckCircle className="h-4 w-4 text-amber-700 dark:text-amber-400" />
           </div>
           <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-2">
-            {pendingAttendance.length + pendingTasks.length}
+            {pendingTasks.length}
           </div>
           <span className="text-[11px] text-amber-800 dark:text-amber-400">
-            {pendingAttendance.length} {t('nav.attendance') || 'Attendance'} • {pendingTasks.length} {t('nav.tasks') || 'Tasks'}
+            {pendingTasks.length} {t('nav.tasks') || 'Quality checks & tasks'}
           </span>
         </Card>
 
@@ -685,109 +685,6 @@ export const ThekedarDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Pending Attendance Approvals Table */}
-      <Card
-        title={`${t('thekedarDashboard.pendingApprovalsTitle') || 'Pending Attendance Approvals'} (${pendingAttendance.length})`}
-        subtitle={t('thekedarDashboard.pendingApprovalsSubtitle') || 'Review worker shift submissions and correction requests'}
-      >
-        {pendingAttendance.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">
-            {t('thekedarDashboard.allReviewed') || 'All attendance submissions and corrections are currently reviewed!'}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="p-3">{t('thekedarDashboard.tableWorker') || 'Worker'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableProject') || 'Project'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableDate') || 'Date'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableCode') || 'Code'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableCalculated') || 'Calculated'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableStatus') || 'Status'}</th>
-                  <th className="p-3 text-right">{t('thekedarDashboard.tableActions') || 'Actions'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {pendingAttendance.map((att) => (
-                  <tr key={att._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="p-3">
-                      <span className="font-bold text-slate-900 dark:text-white block">{att.workerId?.name}</span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{att.workerId?.phone}</span>
-                    </td>
-                    <td className="p-3 text-slate-700 dark:text-slate-300">{att.projectId?.name}</td>
-                    <td className="p-3 font-medium text-slate-800 dark:text-slate-200">{att.date}</td>
-                    <td className="p-3">
-                      {(() => {
-                        const currentCode = approvalCodes[att._id] || att.code;
-                        return (
-                          <div className="flex flex-col gap-1 min-w-[130px]">
-                            <select
-                              value={currentCode}
-                              onChange={(e) => setApprovalCodes((prev) => ({ ...prev, [att._id]: e.target.value }))}
-                              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                            >
-                              <option value="P">P (1.0x Full Day)</option>
-                              <option value="HALF">HALF (0.5x Half Day)</option>
-                              <option value="P1/5">P1/5 (1.5x Overtime)</option>
-                              <option value="PP">PP (2.0x Double Shift)</option>
-                              <option value="ABSENT">ABSENT (0x)</option>
-                              <option value="LEAVE">LEAVE (0x)</option>
-                            </select>
-                            {att.code !== currentCode && (
-                              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
-                                Submitted: {att.code}
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="p-3 font-semibold text-slate-900 dark:text-white">
-                      {(() => {
-                        const MULTIPLIERS = { P: 1.0, HALF: 0.5, 'P1/5': 1.5, PP: 2.0, ABSENT: 0, LEAVE: 0 };
-                        const currentCode = approvalCodes[att._id] || att.code;
-                        const mult = MULTIPLIERS[currentCode] ?? att.wageMultiplier ?? 1.0;
-                        const wage = att.applicableDailyWage || 800;
-                        const computed = Math.round(wage * mult);
-                        return (
-                          <div>
-                            <span className="font-bold text-emerald-800 dark:text-emerald-400">₹{computed}</span>
-                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">₹{wage}/d ({mult}x)</span>
-                          </div>
-                        );
-                      })()}
-                    </td>
-                    <td className="p-3">
-                      <Badge variant={att.approvalStatus} size="sm">{att.approvalStatus}</Badge>
-                    </td>
-                    <td className="p-3 text-right space-x-1">
-                      <Button
-                        size="sm"
-                        variant="success"
-                        onClick={() => handleApproveAttendance(att._id)}
-                      >
-                        {t('common.approve') || 'Approve'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => {
-                          setRejectAttendanceId(att._id);
-                          setRejectModalOpen(true);
-                        }}
-                      >
-                        {t('common.reject') || 'Reject'}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
 
       {/* Pending Task Approvals & Quality Inspection Card */}
       <Card
