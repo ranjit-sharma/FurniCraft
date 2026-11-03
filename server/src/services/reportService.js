@@ -1,5 +1,5 @@
-import { User, WorkerProfile, Project, ProjectAssignment, Attendance, Payroll, FinancialTransaction, Tool, AdvanceRequest, Dispute, AuditLog, Notification, FurnitureTask } from '../models/index.js';
-import { ROLES, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS, PAYROLL_STATUS, TOOL_STATUS, MAX_ADVANCE_LIMIT } from '../config/constants.js';
+import { User, WorkerProfile, Project, ProjectAssignment, ProjectMoneyReceived, Attendance, Payroll, FinancialTransaction, AdvanceRequest, AuditLog, Notification } from '../models/index.js';
+import { ROLES, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS, PAYROLL_STATUS, MAX_ADVANCE_LIMIT, FINANCIAL_CATEGORIES } from '../config/constants.js';
 
 export const getWorkerDashboardData = async (workerId) => {
   const todayStr = new Date().toISOString().split('T')[0];
@@ -11,12 +11,6 @@ export const getWorkerDashboardData = async (workerId) => {
   const assignmentFilter = { workerId, ...(thekedarId ? { thekedarId } : {}) };
   const activeAssignments = await ProjectAssignment.find({ ...assignmentFilter, status: 'ACTIVE' }).populate('projectId', 'name projectCode projectType siteAddress');
   const allAssignments = await ProjectAssignment.find(assignmentFilter).sort({ updatedAt: -1 }).limit(10).populate('projectId', 'name projectCode projectType siteAddress');
-
-  const assignedTasks = await FurnitureTask.find({ assignedWorkerId: workerId, ...(thekedarId ? { thekedarId } : {}) })
-    .populate('projectId', 'name projectCode')
-    .sort({ createdAt: -1 });
-
-  const issuedTools = await Tool.find({ 'currentAssignment.workerId': workerId });
 
   const pendingAdvanceRequests = await AdvanceRequest.find({ workerId, status: ADVANCE_REQUEST_STATUS.PENDING });
 
@@ -33,94 +27,85 @@ export const getWorkerDashboardData = async (workerId) => {
     todayAttendance,
     activeAssignments,
     allAssignments,
-    assignedTasks,
-    issuedTools,
     pendingAdvanceRequests,
     recentTransactions,
     notifications,
   };
 };
 
-export const getThekedarDashboardData = async (thekedarId) => {
-  const activeProjects = await Project.find({ thekedarId, status: { $in: ['PLANNED', 'IN_PROGRESS'] } });
-  
-  // Workers under this thekedar
-  const workerProfiles = await WorkerProfile.find({ thekedarId }).populate('userId', 'name phone status');
+export const getThekedarDashboardData = async (thekedarId, date) => {
+  // The phone sends its local date so "today" matches what the Thekedar sees (server may run in UTC).
+  const today = /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? date : new Date().toISOString().slice(0, 10);
+  const startOfMonth = new Date(`${today.slice(0, 7)}-01T00:00:00`);
 
-  const pendingAttendanceCount = await Attendance.countDocuments({
-    thekedarId,
-    approvalStatus: { $in: [ATTENDANCE_STATUS.SUBMITTED, ATTENDANCE_STATUS.CORRECTION_REQUESTED] },
-    workerId: { $ne: thekedarId },
-  });
+  const [activeProjects, workerProfiles, todayAttendance, unpaidByWorker, pendingAdvanceRequests, moneyByProject, monthTotals, recentTransactions] =
+    await Promise.all([
+      Project.find({ thekedarId, status: { $in: ['PLANNED', 'IN_PROGRESS'] } }).select('name projectCode status siteAddress clientName priority').lean(),
+      WorkerProfile.find({ thekedarId }).populate('userId', 'name phone status').lean(),
+      Attendance.find({ thekedarId, date: today }).select('workerId projectId code calculatedEarnings isPayrollProcessed').lean(),
+      Attendance.aggregate([
+        { $match: { thekedarId, approvalStatus: ATTENDANCE_STATUS.APPROVED, isPayrollProcessed: false } },
+        { $group: { _id: '$workerId', amount: { $sum: '$calculatedEarnings' } } },
+      ]),
+      AdvanceRequest.find({ thekedarId, status: ADVANCE_REQUEST_STATUS.PENDING }).populate('workerId', 'name phone').lean(),
+      ProjectMoneyReceived.aggregate([{ $match: { thekedarId } }, { $group: { _id: '$projectId', amount: { $sum: '$amount' } } }]),
+      FinancialTransaction.aggregate([
+        { $match: { thekedarId, isReversed: false, transactionDate: { $gte: startOfMonth }, category: { $in: [FINANCIAL_CATEGORIES.SALARY_PAYMENT, FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT] } } },
+        { $group: { _id: '$category', amount: { $sum: '$amount' } } },
+      ]),
+      FinancialTransaction.find({ thekedarId, isReversed: false }).sort({ transactionDate: -1 }).limit(6).populate('workerId', 'name').lean(),
+    ]);
 
-  const pendingAdvanceRequests = await AdvanceRequest.find({
-    thekedarId,
-    status: ADVANCE_REQUEST_STATUS.PENDING,
-  }).populate('workerId', 'name phone').populate('projectId', 'name projectCode');
+  const unpaidMap = new Map(unpaidByWorker.map((u) => [u._id.toString(), u.amount]));
+  const todayMap = new Map(todayAttendance.map((a) => [a.workerId.toString(), a]));
+  const moneyMap = new Map(moneyByProject.map((m) => [m._id?.toString(), m.amount]));
+  const monthMap = new Map(monthTotals.map((m) => [m._id, m.amount]));
 
-  const wpMap = new Map();
-  workerProfiles.forEach((wp) => {
-    const uid = wp.userId?._id?.toString() || wp.userId?.toString();
-    if (uid) wpMap.set(uid, wp);
-  });
+  // Same "earned" rule as the Workers page: unpaid approved attendance + any carried-over salary balance.
+  const workers = workerProfiles
+    .filter((wp) => wp.userId)
+    .map((wp) => {
+      const uid = wp.userId._id.toString();
+      const unpaidWages = (unpaidMap.get(uid) || 0) + (wp.outstandingSalaryBalance || 0);
+      const advance = wp.outstandingAdvanceBalance || 0;
+      return {
+        userId: wp.userId._id,
+        name: wp.userId.name,
+        phone: wp.userId.phone,
+        status: wp.userId.status,
+        workerCode: wp.workerCode,
+        defaultDailyWage: wp.defaultDailyWage,
+        skills: wp.skills,
+        unpaidWages,
+        outstandingAdvanceBalance: advance,
+        netPayable: unpaidWages - advance,
+        today: todayMap.get(uid) || null,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
-  const enrichedPendingAdvanceRequests = pendingAdvanceRequests.map((adv) => {
-    const wId = (adv.workerId?._id || adv.workerId)?.toString();
-    const wp = wpMap.get(wId);
-    const currentAdvanceBalance = wp?.outstandingAdvanceBalance || 0;
-    const exceedsLimit = currentAdvanceBalance >= MAX_ADVANCE_LIMIT || (currentAdvanceBalance + (adv.amount || 0)) > MAX_ADVANCE_LIMIT;
-    return {
-      ...adv.toObject(),
-      currentAdvanceBalance,
-      exceedsLimit,
-    };
-  });
-
-  const recentPayrolls = await Payroll.find({ thekedarId })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .populate('workerId', 'name');
-
-  // Sum of outstanding advances and salary
-  let totalOutstandingAdvances = 0;
-  let totalOutstandingSalary = 0;
-  workerProfiles.forEach((wp) => {
-    totalOutstandingAdvances += wp.outstandingAdvanceBalance || 0;
-    totalOutstandingSalary += wp.outstandingSalaryBalance || 0;
-  });
-
-  const issuedTools = await Tool.find({
-    status: TOOL_STATUS.ISSUED,
-    'currentAssignment.projectId': { $in: activeProjects.map((p) => p._id) },
-  }).populate('currentAssignment.workerId', 'name').populate('currentAssignment.projectId', 'name projectCode');
-
-  const pendingTaskApprovals = await FurnitureTask.find({
-    thekedarId,
-    status: TASK_STATUS.COMPLETED,
-  })
-    .populate('projectId', 'name projectCode siteAddress')
-    .populate('assignedWorkerId', 'name phone')
-    .sort({ actualCompletionDate: -1, updatedAt: -1 });
+  const activeWorkers = workers.filter((w) => w.status === 'ACTIVE');
+  const sum = (list, key) => list.reduce((acc, w) => acc + (w[key] || 0), 0);
+  const unpaidWages = sum(workers, 'unpaidWages');
+  const outstandingAdvances = sum(workers, 'outstandingAdvanceBalance');
 
   return {
+    today,
     metrics: {
-      activeProjectsCount: activeProjects.length,
-      managedWorkersCount: workerProfiles.length,
-      pendingAttendanceCount,
-      pendingAdvanceCount: pendingAdvanceRequests.length,
-      pendingTaskApprovalCount: pendingTaskApprovals.length,
-      totalOutstandingAdvances,
-      totalOutstandingSalary,
-      issuedToolsCount: issuedTools.length,
-      openDisputesCount: recentDisputes.length,
+      workers: workers.length,
+      activeWorkers: activeWorkers.length,
+      markedToday: activeWorkers.filter((w) => w.today).length,
+      activeProjects: activeProjects.length,
+      unpaidWages,
+      outstandingAdvances,
+      netPayable: unpaidWages - outstandingAdvances,
+      paidThisMonth: monthMap.get(FINANCIAL_CATEGORIES.SALARY_PAYMENT) || 0,
+      advancesThisMonth: monthMap.get(FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT) || 0,
     },
-    activeProjects,
-    workerProfiles,
-    pendingAdvanceRequests: enrichedPendingAdvanceRequests,
-    pendingTaskApprovals,
-    recentPayrolls,
-    issuedTools,
-    recentDisputes,
+    workers,
+    activeProjects: activeProjects.map((pr) => ({ ...pr, totalMoneyReceived: moneyMap.get(pr._id.toString()) || 0 })),
+    pendingAdvanceRequests,
+    recentTransactions,
   };
 };
 
@@ -213,112 +198,72 @@ export const getMembersOverview = async ({ role, search } = {}) => {
 };
 
 export const getOwnerDashboardData = async () => {
-  const totalProjects = await Project.countDocuments();
-  const activeProjects = await Project.countDocuments({ status: 'IN_PROGRESS' });
-  const totalThekedars = await User.countDocuments({ role: ROLES.THEKEDAR });
-  const activeThekedars = await User.countDocuments({ role: ROLES.THEKEDAR, status: 'ACTIVE' });
-  const totalWorkers = await User.countDocuments({ role: ROLES.WORKER });
-  const activeWorkers = await User.countDocuments({ role: ROLES.WORKER, status: 'ACTIVE' });
-  const totalOwners = await User.countDocuments({ role: ROLES.OWNER });
-  const totalMembers = await User.countDocuments();
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
 
-  // Application Visits
-  const visitActions = ['USER_LOGIN', 'APP_VISIT'];
-  const totalVisits = await AuditLog.countDocuments({ action: { $in: visitActions } });
-  const startOfToday = new Date();
-  startOfToday.setHours(0, 0, 0, 0);
-  const todayVisits = await AuditLog.countDocuments({
-    action: { $in: visitActions },
-    createdAt: { $gte: startOfToday },
-  });
-  const workerVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.WORKER });
-  const thekedarVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.THEKEDAR });
-  const ownerVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.OWNER });
+  const [thekedars, profiles, unpaidByWorker, projectsByThekedar, monthTotals, recentAudits, recentTransactions] = await Promise.all([
+    User.find({ role: ROLES.THEKEDAR }).select('name phone status lastLoginAt').sort({ name: 1 }).lean(),
+    WorkerProfile.find().select('userId thekedarId outstandingAdvanceBalance outstandingSalaryBalance').lean(),
+    // Earned but not yet paid = approved attendance not settled by a payment (same rule as the Workers page)
+    Attendance.aggregate([
+      { $match: { approvalStatus: ATTENDANCE_STATUS.APPROVED, isPayrollProcessed: false } },
+      { $group: { _id: '$workerId', amount: { $sum: '$calculatedEarnings' } } },
+    ]),
+    Project.aggregate([
+      { $group: { _id: '$thekedarId', total: { $sum: 1 }, active: { $sum: { $cond: [{ $in: ['$status', ['PLANNED', 'IN_PROGRESS']] }, 1, 0] } } } },
+    ]),
+    FinancialTransaction.aggregate([
+      { $match: { isReversed: false, transactionDate: { $gte: startOfMonth }, category: { $in: [FINANCIAL_CATEGORIES.SALARY_PAYMENT, FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT] } } },
+      { $group: { _id: '$category', amount: { $sum: '$amount' } } },
+    ]),
+    AuditLog.find({ action: { $nin: ['USER_LOGIN', 'APP_VISIT'] } }).sort({ createdAt: -1 }).limit(6).lean(),
+    FinancialTransaction.find({ isReversed: false })
+      .sort({ transactionDate: -1 })
+      .limit(8)
+      .populate('workerId', 'name')
+      .populate('thekedarId', 'name')
+      .lean(),
+  ]);
 
-  // Organization-wide financial liabilities
-  const profiles = await WorkerProfile.find();
-  let totalAdvanceLiability = 0;
-  let totalSalaryLiability = 0;
-  profiles.forEach((p) => {
-    totalAdvanceLiability += p.outstandingAdvanceBalance || 0;
-    totalSalaryLiability += p.outstandingSalaryBalance || 0;
-  });
+  const unpaidMap = new Map(unpaidByWorker.map((u) => [u._id.toString(), u.amount]));
+  const projectMap = new Map(projectsByThekedar.map((p) => [p._id?.toString(), p]));
+  const monthMap = new Map(monthTotals.map((m) => [m._id, m.amount]));
 
-  // Tools status
-  const totalTools = await Tool.countDocuments();
-  const availableTools = await Tool.countDocuments({ status: TOOL_STATUS.AVAILABLE });
-  const issuedTools = await Tool.countDocuments({ status: TOOL_STATUS.ISSUED });
-  const maintenanceTools = await Tool.countDocuments({ status: TOOL_STATUS.MAINTENANCE });
+  const perThekedar = new Map();
+  for (const wp of profiles) {
+    const key = wp.thekedarId?.toString();
+    const row = perThekedar.get(key) || { workers: 0, unpaidWages: 0, outstandingAdvances: 0 };
+    row.workers += 1;
+    row.unpaidWages += (unpaidMap.get(wp.userId?.toString()) || 0) + (wp.outstandingSalaryBalance || 0);
+    row.outstandingAdvances += wp.outstandingAdvanceBalance || 0;
+    perThekedar.set(key, row);
+  }
 
-  // Recent Audit events
-  const recentAudits = await AuditLog.find().sort({ createdAt: -1 }).limit(10);
-
-  // Recent transactions
-  const recentTransactions = await FinancialTransaction.find({ isReversed: false })
-    .sort({ transactionDate: -1 })
-    .limit(10)
-    .populate('workerId', 'name')
-    .populate('thekedarId', 'name');
-
-  // Load all registered members with their profiles
-  const allUsers = await User.find()
-    .select('-password')
-    .populate('assignedThekedar', 'name phone email')
-    .sort({ createdAt: -1 });
-
-  const wpMap = new Map();
-  profiles.forEach((wp) => {
-    const uid = wp.userId?.toString();
-    if (uid) wpMap.set(uid, wp);
+  const thekedarSummaries = thekedars.map((th) => {
+    const money = perThekedar.get(th._id.toString()) || { workers: 0, unpaidWages: 0, outstandingAdvances: 0 };
+    const proj = projectMap.get(th._id.toString()) || { total: 0, active: 0 };
+    return { ...th, ...money, netPayable: money.unpaidWages - money.outstandingAdvances, projects: proj.total, activeProjects: proj.active };
   });
 
-  const allMembers = allUsers.map((u) => {
-    const uObj = u.toObject();
-    const wp = wpMap.get(u._id.toString());
-    return {
-      ...uObj,
-      workerCode: wp?.workerCode || null,
-      defaultDailyWage: wp?.defaultDailyWage || null,
-      outstandingAdvanceBalance: wp?.outstandingAdvanceBalance || 0,
-      outstandingSalaryBalance: wp?.outstandingSalaryBalance || 0,
-      visitCount: uObj.visitCount || 0,
-    };
-  });
-
-  // Recent visit events
-  const recentVisits = await AuditLog.find({ action: { $in: visitActions } })
-    .sort({ createdAt: -1 })
-    .limit(10);
+  const sum = (key) => thekedarSummaries.reduce((acc, th) => acc + th[key], 0);
+  const unpaidWages = sum('unpaidWages');
+  const outstandingAdvances = sum('outstandingAdvances');
 
   return {
     metrics: {
-      totalProjects,
-      activeProjects,
-      totalMembers,
-      totalThekedars,
-      activeThekedars,
-      totalWorkers,
-      activeWorkers,
-      totalOwners,
-      totalVisits,
-      todayVisits,
-      visitsByRole: {
-        WORKER: workerVisits,
-        THEKEDAR: thekedarVisits,
-        OWNER: ownerVisits,
-      },
-      totalAdvanceLiability,
-      totalSalaryLiability,
-      totalLiabilities: totalAdvanceLiability + totalSalaryLiability,
-      toolInventory: {
-        total: totalTools,
-        available: availableTools,
-        issued: issuedTools,
-        maintenance: maintenanceTools,
-      },
+      totalThekedars: thekedars.length,
+      activeThekedars: thekedars.filter((th) => th.status === 'ACTIVE').length,
+      totalWorkers: profiles.length,
+      totalProjects: sum('projects'),
+      activeProjects: sum('activeProjects'),
+      unpaidWages,
+      outstandingAdvances,
+      netPayable: unpaidWages - outstandingAdvances,
+      paidThisMonth: monthMap.get(FINANCIAL_CATEGORIES.SALARY_PAYMENT) || 0,
+      advancesThisMonth: monthMap.get(FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT) || 0,
     },
-    allMembers,
-    recentVisits,
+    thekedars: thekedarSummaries,
     recentAudits,
     recentTransactions,
   };

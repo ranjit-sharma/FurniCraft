@@ -1,5 +1,5 @@
 import * as projectService from '../services/projectService.js';
-import { Project, ProjectAssignment, ProjectMoneyReceived, FurnitureTask, WorkerProfile } from '../models/index.js';
+import { Project, ProjectAssignment, ProjectMoneyReceived, WorkerProfile } from '../models/index.js';
 import { ROLES, PROJECT_STATUS } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
@@ -51,13 +51,7 @@ export const listProjects = async (req, res, next) => {
         workerId: req.user._id,
         ...(permanentThekedarId ? { thekedarId: permanentThekedarId } : {}),
       });
-      const tasksAssigned = await FurnitureTask.find({
-        assignedWorkerId: req.user._id,
-        ...(permanentThekedarId ? { thekedarId: permanentThekedarId } : {}),
-      });
-      const projectIdsFromAssignments = assignments.map((a) => a.projectId);
-      const projectIdsFromTasks = tasksAssigned.map((t) => t.projectId);
-      const allWorkerProjectIds = [...new Set([...projectIdsFromAssignments, ...projectIdsFromTasks].map((id) => id.toString()))];
+      const allWorkerProjectIds = [...new Set(assignments.map((a) => a.projectId.toString()))];
       filter._id = { $in: allWorkerProjectIds };
       if (permanentThekedarId) {
         filter.thekedarId = permanentThekedarId;
@@ -70,16 +64,10 @@ export const listProjects = async (req, res, next) => {
 
     if (req.user.role === ROLES.WORKER) {
       const allWorkerProjectIds = projects.map((p) => p._id);
-      const [workerTasks, workerAssignments] = await Promise.all([
-        FurnitureTask.find({
-          assignedWorkerId: req.user._id,
-          projectId: { $in: allWorkerProjectIds },
-        }).sort({ createdAt: -1 }),
-        ProjectAssignment.find({
-          workerId: req.user._id,
-          projectId: { $in: allWorkerProjectIds },
-        }),
-      ]);
+      const workerAssignments = await ProjectAssignment.find({
+        workerId: req.user._id,
+        projectId: { $in: allWorkerProjectIds },
+      });
 
       // Workers should NOT see project money, budget, or expenses
       const sanitized = projects.map((p) => {
@@ -88,7 +76,6 @@ export const listProjects = async (req, res, next) => {
         delete obj.paymentsCount;
         delete obj.estimatedBudget;
         delete obj.totalExpense;
-        obj.assignedTasks = workerTasks.filter((t) => t.projectId.toString() === p._id.toString());
         obj.myAssignment = workerAssignments.find((a) => a.projectId.toString() === p._id.toString()) || null;
         return obj;
       });
@@ -100,18 +87,15 @@ export const listProjects = async (req, res, next) => {
     }
 
     const projectIds = projects.map((p) => p._id);
-    const [allTasks, paymentsSummary] = await Promise.all([
-      FurnitureTask.find({ projectId: { $in: projectIds } }),
-      ProjectMoneyReceived.aggregate([
-        { $match: { projectId: { $in: projectIds } } },
-        {
-          $group: {
-            _id: '$projectId',
-            totalMoneyReceived: { $sum: '$amount' },
-            paymentsCount: { $sum: 1 },
-          },
+    const paymentsSummary = await ProjectMoneyReceived.aggregate([
+      { $match: { projectId: { $in: projectIds } } },
+      {
+        $group: {
+          _id: '$projectId',
+          totalMoneyReceived: { $sum: '$amount' },
+          paymentsCount: { $sum: 1 },
         },
-      ]),
+      },
     ]);
 
     const paymentsMap = new Map();
@@ -127,10 +111,6 @@ export const listProjects = async (req, res, next) => {
       const stats = paymentsMap.get(project._id.toString()) || { totalMoneyReceived: 0, paymentsCount: 0 };
       pObj.totalMoneyReceived = stats.totalMoneyReceived;
       pObj.paymentsCount = stats.paymentsCount;
-      const projTasks = allTasks.filter((t) => t.projectId.toString() === project._id.toString());
-      pObj.totalTasksCount = projTasks.length;
-      pObj.pendingApprovalTasksCount = projTasks.filter((t) => t.status === 'COMPLETED').length;
-      pObj.verifiedTasksCount = projTasks.filter((t) => t.status === 'VERIFIED').length;
       return pObj;
     });
 
@@ -211,66 +191,6 @@ export const updateProject = async (req, res, next) => {
   }
 };
 
-export const assignWorker = async (req, res, next) => {
-  try {
-    const assignment = await projectService.assignWorkerToProject({
-      data: { ...req.body, projectId: req.params.projectId },
-      user: req.user,
-      req,
-    });
-
-    res.status(201).json({
-      status: 'success',
-      message: 'Worker assigned to project successfully',
-      data: { assignment },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateAssignmentStatus = async (req, res, next) => {
-  try {
-    const { assignmentId } = req.params;
-    const { status, endDate } = req.body;
-
-    const assignment = await ProjectAssignment.findById(assignmentId);
-    if (!assignment) throw new NotFoundError('Assignment not found');
-
-    if (req.user.role === ROLES.THEKEDAR && assignment.thekedarId.toString() !== req.user._id.toString()) {
-      throw new ForbiddenError('You can only update assignments for your projects');
-    }
-
-    if (req.user.role === ROLES.WORKER && assignment.workerId.toString() !== req.user._id.toString()) {
-      throw new ForbiddenError('You can only update your own work assignments');
-    }
-
-    assignment.status = status;
-    if (endDate) {
-      assignment.endDate = new Date(endDate);
-    } else if (status === 'COMPLETED' && !assignment.endDate) {
-      assignment.endDate = new Date();
-    }
-    await assignment.save();
-
-    await recordAuditLog({
-      req,
-      action: 'ASSIGNMENT_STATUS_UPDATED',
-      targetType: 'ProjectAssignment',
-      targetId: assignment._id,
-      newValues: { status, endDate: assignment.endDate },
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Assignment status updated successfully',
-      data: { assignment },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const recordMoneyReceived = async (req, res, next) => {
   try {
     const payment = await projectService.recordProjectMoneyReceived({
@@ -300,126 +220,6 @@ export const listProjectMoneyReceived = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       data: { payments },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteAssignment = async (req, res, next) => {
-  try {
-    const { assignmentId } = req.params;
-    const assignment = await ProjectAssignment.findById(assignmentId);
-    if (!assignment) throw new NotFoundError('Project assignment not found');
-
-    if (req.user.role === ROLES.THEKEDAR && assignment.thekedarId.toString() !== req.user._id.toString()) {
-      throw new ForbiddenError('You can only remove workers from your own projects');
-    }
-
-    await ProjectAssignment.findByIdAndDelete(assignmentId);
-
-    await recordAuditLog({
-      req,
-      action: 'WORKER_UNASSIGNED_FROM_PROJECT',
-      targetType: 'ProjectAssignment',
-      targetId: assignment._id,
-      oldValues: {
-        workerId: assignment.workerId,
-        projectId: assignment.projectId,
-        roleInProject: assignment.roleInProject,
-      },
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Worker removed from project assignment successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const shiftWorkerProject = async (req, res, next) => {
-  try {
-    const { assignmentId } = req.params;
-    const { toProjectId, roleInProject, wageOverride, notes } = req.body;
-
-    const currentAssignment = await ProjectAssignment.findById(assignmentId);
-    if (!currentAssignment) throw new NotFoundError('Current assignment not found');
-
-    if (req.user.role === ROLES.THEKEDAR && currentAssignment.thekedarId.toString() !== req.user._id.toString()) {
-      throw new ForbiddenError('You can only shift workers from your own projects');
-    }
-
-    const targetProject = await Project.findById(toProjectId);
-    if (!targetProject) throw new NotFoundError('Destination project not found');
-
-    if (req.user.role === ROLES.THEKEDAR && targetProject.thekedarId.toString() !== req.user._id.toString()) {
-      throw new ForbiddenError('Destination project must be managed by you');
-    }
-
-    // Strict Rule: Worker can only be shifted to projects managed by their permanent Thekedar
-    const workerProfile = await WorkerProfile.findOne({ userId: currentAssignment.workerId });
-    if (workerProfile && targetProject.thekedarId.toString() !== workerProfile.thekedarId.toString()) {
-      throw new ForbiddenError(
-        'Strict Rule: This worker belongs to another permanent Thekedar and can only work on projects managed by their permanent Thekedar.'
-      );
-    }
-
-    if (currentAssignment.projectId.toString() === toProjectId.toString()) {
-      throw new BadRequestError('Worker is already assigned to this project');
-    }
-
-    // 1. Mark current assignment as TRANSFERRED and close it
-    currentAssignment.status = 'TRANSFERRED';
-    currentAssignment.endDate = new Date();
-    if (notes) currentAssignment.scheduleNotes = `${currentAssignment.scheduleNotes || ''} (Shifted: ${notes})`.trim();
-    await currentAssignment.save();
-
-    // 2. Check if worker already has active assignment on target project, or create new
-    let newAssignment = await ProjectAssignment.findOne({
-      projectId: toProjectId,
-      workerId: currentAssignment.workerId,
-      status: 'ACTIVE',
-    });
-
-    if (newAssignment) {
-      newAssignment.roleInProject = roleInProject || newAssignment.roleInProject;
-      if (wageOverride !== undefined) newAssignment.wageOverride = wageOverride;
-      await newAssignment.save();
-    } else {
-      newAssignment = await ProjectAssignment.create({
-        workerId: currentAssignment.workerId,
-        projectId: toProjectId,
-        thekedarId: req.user._id,
-        assignedBy: req.user._id,
-        startDate: new Date(),
-        status: 'ACTIVE',
-        wageOverride: wageOverride !== undefined ? wageOverride : currentAssignment.wageOverride,
-        roleInProject: roleInProject || currentAssignment.roleInProject,
-        scheduleNotes: notes || `Shifted from project ${currentAssignment.projectId}`,
-      });
-    }
-
-    await recordAuditLog({
-      req,
-      action: 'WORKER_SHIFTED_PROJECT',
-      targetType: 'ProjectAssignment',
-      targetId: newAssignment._id,
-      newValues: {
-        fromProjectId: currentAssignment.projectId,
-        toProjectId,
-        workerId: currentAssignment.workerId,
-      },
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: `Worker shifted successfully to ${targetProject.name}`,
-      data: {
-        previousAssignment: currentAssignment,
-        newAssignment,
-      },
     });
   } catch (error) {
     next(error);

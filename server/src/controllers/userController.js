@@ -5,12 +5,9 @@ import {
   ProjectAssignment,
   Project,
   Attendance,
-  FurnitureTask,
   FinancialTransaction,
   AdvanceRequest,
   Payroll,
-  ToolIssue,
-  Dispute,
 } from '../models/index.js';
 import { ROLES, USER_STATUS, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../utils/errors.js';
@@ -207,30 +204,16 @@ export const getWorkerProfile = async (req, res, next) => {
     }
 
     const [
-      assignments,
       wageAgreements,
-      tasks,
       attendanceHistory,
       transactions,
       advanceRequests,
       payrolls,
-      assignedTools,
-      disputes,
     ] = await Promise.all([
-      // 1. Projects Assignments
-      ProjectAssignment.find({ workerId: targetUserId })
-        .populate('projectId', 'name projectCode projectType siteAddress status')
-        .sort({ createdAt: -1 }),
-
       // 2. Wage Agreements
       WageAgreement.find({ workerId: targetUserId })
         .populate('thekedarId', 'name')
         .sort({ effectiveFrom: -1 }),
-
-      // 3. Assigned Furniture Tasks
-      FurnitureTask.find({ assignedWorkerId: targetUserId })
-        .populate('projectId', 'name projectCode siteAddress')
-        .sort({ createdAt: -1 }),
 
       // 4. Attendance History (last 30 entries)
       Attendance.find({ workerId: targetUserId })
@@ -254,32 +237,17 @@ export const getWorkerProfile = async (req, res, next) => {
       // 7. Finalized Payrolls
       Payroll.find({ workerId: targetUserId })
         .sort({ periodYear: -1, periodMonth: -1 }),
-
-      // 8. Assigned Tools
-      ToolIssue.find({ workerId: targetUserId, status: 'ISSUED' })
-        .populate('toolId', 'name toolCode category brand modelNumber condition')
-        .populate('projectId', 'name projectCode')
-        .sort({ issueDate: -1 }),
-
-      // 9. Grievances / Disputes
-      Dispute.find({ workerId: targetUserId })
-        .populate('projectId', 'name projectCode')
-        .sort({ createdAt: -1 }),
     ]);
 
     res.status(200).json({
       status: 'success',
       data: {
         profile,
-        assignments,
         wageAgreements,
-        tasks,
         attendanceHistory,
         transactions,
         advanceRequests,
         payrolls,
-        assignedTools,
-        disputes,
       },
     });
   } catch (error) {
@@ -626,7 +594,6 @@ export const createWorker = async (req, res, next) => {
       address,
       emergencyContact,
       bankDetails,
-      projectId,
     } = req.body;
 
     if (!name || !name.trim()) throw new BadRequestError('Worker name is required');
@@ -685,17 +652,6 @@ export const createWorker = async (req, res, next) => {
       createdBy: req.user._id,
       notes: 'Initial standard wage agreement on worker registration',
     });
-
-    // Optional project assignment
-    if (projectId) {
-      await ProjectAssignment.create({
-        workerId: workerUser._id,
-        projectId,
-        thekedarId,
-        assignedBy: req.user._id,
-        status: 'ACTIVE',
-      });
-    }
 
     await recordAuditLog({
       req,

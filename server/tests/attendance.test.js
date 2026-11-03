@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { Project, ProjectAssignment, Attendance, User, WorkerProfile, WageAgreement } from '../src/models/index.js';
+import { Project, Attendance, User, WorkerProfile, WageAgreement } from '../src/models/index.js';
 import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
@@ -39,17 +39,6 @@ describe('Attendance & Calculation Engine API Tests', () => {
     project = await Project.findOne({ projectCode: 'FURN-2026-001' });
     expect(project).toBeDefined();
 
-    await ProjectAssignment.findOneAndUpdate(
-      { workerId: workerUser._id, projectId: project._id },
-      {
-        status: 'ACTIVE',
-        roleInProject: 'Master Assembly Carpenter',
-        wageOverride: null,
-        thekedarId: project.thekedarId,
-        assignedBy: project.thekedarId,
-      },
-      { upsert: true }
-    );
   });
 
   it('RULE: P code computes 1.0x daily wage (₹800)', async () => {

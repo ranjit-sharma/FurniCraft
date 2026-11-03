@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api/client';
+import api, { SESSION_EXPIRED_EVENT } from '../api/client';
 
 const AuthContext = createContext(null);
+
+/** sessionStorage key holding the "why you were signed out" message shown once on the login page. */
+export const SESSION_NOTICE_KEY = 'furnicraft_session_notice';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -30,6 +33,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     fetchCurrentUser();
+  }, []);
+
+  // Any API call that gets a 401 mid-session: drop the user (ProtectedRoute sends them to /login) and tell them why.
+  useEffect(() => {
+    const onSessionExpired = (e) => {
+      try {
+        sessionStorage.setItem(SESSION_NOTICE_KEY, e.detail);
+      } catch {
+        // storage blocked: the redirect alone still happens
+      }
+      setUser(null);
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
   }, []);
 
   const updateUser = (updatedFields) => {

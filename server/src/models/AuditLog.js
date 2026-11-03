@@ -23,7 +23,7 @@ const auditLogSchema = new mongoose.Schema(
     targetType: {
       type: String,
       required: true,
-      index: true, // e.g., 'User', 'Attendance', 'Payroll', 'Tool', 'Transaction'
+      index: true, // e.g., 'User', 'Attendance', 'Payroll', 'Transaction'
     },
     targetId: {
       type: String,

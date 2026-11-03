@@ -63,14 +63,12 @@ flowchart TD
         PE["Payroll & Wage Engine"]
         AE["Attendance & Multiplier Engine"]
         FE["Finance & Advance Recovery Engine"]
-        TE["Tool Inventory & Issue Engine"]
         SE["Email & OTP Service (Nodemailer)"]
         EE["Export Engine (PDFKit & SheetJS)"]
         
         SERVICES --> PE
         SERVICES --> AE
         SERVICES --> FE
-        SERVICES --> TE
         SERVICES --> SE
         SERVICES --> EE
     end
@@ -109,7 +107,7 @@ flowchart TD
     IssueToken --> RoleSwitch{Identify Role}
     RoleSwitch -- OWNER --> OwnerDash["Executive Dashboard (/audit, /members, /thekedars)"]
     RoleSwitch -- THEKEDAR --> ThekedarDash["Contractor Dashboard (/projects, /workers, /attendance)"]
-    RoleSwitch -- WORKER --> WorkerDash["Craftsman Dashboard (/attendance, /finance, /tools)"]
+    RoleSwitch -- WORKER --> WorkerBlock["Login Rejected (403)<br/>(Worker records are managed by their Thekedar)"]
 ```
 
 ---
@@ -121,7 +119,7 @@ $$\text{Calculated Earnings} = \text{Wage Multiplier} \times \text{Default Daily
 
 ```mermaid
 flowchart LR
-    WMark["Worker Marks Shift<br/>(P=1.0x, HALF=0.5x, P1/5=1.5x, PP=2.0x)"] --> StatusPending["Attendance Status: PENDING"]
+    WMark["Thekedar Logs Shift from Worker Card<br/>(P=1.0x, HALF=0.5x, P1/5=1.5x, PP=2.0x)"] --> StatusPending["Attendance Status: PENDING"]
     StatusPending --> TReview["Thekedar Reviews on Calendar / List"]
     
     TReview --> TAction{Approval Action}
@@ -178,26 +176,20 @@ flowchart TD
 
 ---
 
-### D. Tool Inventory & Maintenance Tracking Flow
-Machinery and high-value tools (drills, routers, jigs, circular saws) are tracked across sites:
-
-```mermaid
-flowchart TD
-    Inv["Central Tool Inventory<br/>(Code, Model, Serial, Condition)"] --> IssueReq["Thekedar Issues Tool to Worker / Project"]
-    IssueReq --> ActiveAssign["Tool Marked ASSIGNED (Active Issue Record)"]
-    ActiveAssign --> WorkerAck["Worker Acknowledges Receipt on Dashboard"]
-    
-    WorkerAck --> UsagePeriod["Tool In Use on Site"]
-    UsagePeriod --> ReturnCheck{Return / Incident?}
-    
-    ReturnCheck -- Normal Return --> GoodCond["Returned in GOOD Condition → Re-enters Inventory"]
-    ReturnCheck -- Damaged --> MaintLog["Logged to Maintenance (Cost, Technician, Cause)"]
-    ReturnCheck -- Missing/Lost --> DisputeLog["Logged to Loss/Dispute for Resolution"]
-```
-
----
-
 ## 3. Technology Stack
+
+### Mobile-First Interface
+
+FurniCraft is designed primarily for contractors on their phones; desktop gets the same screens with a sidebar.
+
+- **Bottom tab bar** (below 768px): the four most-used screens per role plus a **More** sheet for the rest. The sidebar is shown from 768px up.
+- **Bottom sheets**: every dialog (`Modal.jsx`) slides up from the bottom on phones, lock background scroll, and close on backdrop tap or ESC.
+- **Stacked tables**: any table inside `.overflow-x-auto` turns into labelled cards below 640px; labels are copied from the `<th>` headers automatically (`AppLayout.jsx` + `index.css`), so new tables get this for free.
+- **Touch & readability**: 44px primary buttons, 36px minimum for pills/selects, 16px inputs (no iOS zoom), no 9-10px text on phones, pinch-zoom allowed.
+- **Smooth motion**: route fade-in, sheet slide-up and press feedback, all disabled under `prefers-reduced-motion`.
+- **Installable**: `manifest.webmanifest` + safe-area insets (`viewport-fit=cover`) so "Add to Home Screen" opens it full-screen like an app.
+
+To try it on a real phone on the same Wi-Fi, run the client with `npm run dev -- --host` and open the printed Network URL.
 
 ### Frontend Architecture
 | Technology | Version | Purpose |
@@ -266,27 +258,23 @@ FurniCraft/
 │       │   │   ├── Card.jsx             # Themed content card container
 │       │   │   ├── ErrorBoundary.jsx    # Graceful React crash fallback container
 │       │   │   ├── LanguageSelector.jsx # Pill & button variants for language switching
-│       │   │   ├── Modal.jsx            # Keyboard-accessible overlay dialog with ESC handling
+│       │   │   ├── Modal.jsx            # Bottom sheet on phones, centered dialog on desktop (ESC, scroll lock)
 │       │   │   └── ThemeSelector.jsx    # Light / Dark / System mode switch controls
 │       │   ├── layout/                  # Shell layout components
-│       │   │   ├── AppLayout.jsx        # Navigation shell (Navbar + Sidebar + Main Outlet)
-│       │   │   ├── Navbar.jsx           # Top bar with mobile menu, BrandLogo & Profile Toggler
-│       │   │   └── Sidebar.jsx          # Role-filtered sidebar navigation links & craft scope tag
+│       │   │   ├── AppLayout.jsx        # Shell: Navbar + Sidebar/BottomNav + animated page outlet, phone table stacking
+│       │   │   ├── Navbar.jsx           # Sticky top bar with BrandLogo & profile (theme, language, sign out)
+│       │   │   ├── Sidebar.jsx          # Desktop sidebar + shared role-filtered nav links (useNavLinks)
+│       │   │   └── BottomNav.jsx        # Phone bottom tab bar with "More" sheet
 │       │   └── attendance/
 │       │       └── AttendanceCalendar.jsx # Interactive monthly grid with multiplier badges
 │       ├── pages/                       # Dedicated application views
 │       │   ├── LoginPage.jsx            # Sign in, demo credentials & Email OTP reset modal
 │       │   ├── ThekedarRegisterPage.jsx # Public self-registration for contractors
-│       │   ├── OwnerDashboard.jsx       # Executive high-level metrics & liabilities overview
+│       │   ├── OwnerDashboard.jsx       # Owner overview: net payable, unpaid wages, advances, per-Thekedar breakdown, recent payments & activity
 │       │   ├── ThekedarDashboard.jsx    # Contractor daily operations & quick action center
-│       │   ├── WorkerDashboard.jsx      # Craftsman shift records, salary ledger & tools
 │       │   ├── ProjectsPage.jsx         # Furniture project list, milestones & creation
-│       │   ├── ProjectDetailPage.jsx   # Project rooms, worker assignments & materials
-│       │   ├── WorkersPage.jsx          # Worker directory, balances, pay net modal, safe delete
-│       │   ├── WorkersPage.jsx          # Contractor workforce hub, attendance logging & wage payouts
-│       │   ├── PayrollPage.jsx          # Monthly payroll generation, adjustments & lock
-│       │   ├── FinancePage.jsx          # Cash advance disbursements, ledger transactions
-│       │   ├── ToolsPage.jsx            # Central workshop machinery & tool tracking
+│       │   ├── ProjectDetailPage.jsx   # Project money received & site summary
+│       │   ├── WorkersPage.jsx          # Worker cards (attendance) + tap-to-open sheet: editable attendance history & PDF, give advance, payment bills, pay net
 │       │   ├── ExpensesPage.jsx         # Project money received & site material expenses
 │       │   ├── TransactionSearchPage.jsx# Search transactions by code with voucher breakdown
 │       │   ├── DisputesPage.jsx         # Grievances & transparent issue resolution
@@ -304,18 +292,13 @@ FurniCraft/
     ├── package.json                     # Server scripts, dependencies & Vitest config
     ├── vitest.config.js                 # Server test runner configuration
     ├── .env.example                     # Environment configuration template
-    ├── scratch/                         # Administrative maintenance scripts
-    │   ├── fix_unpaid_attendance.js     # Synchronize processed attendance flags
-    │   ├── reset_ramesh_test_payment.js # Reset test worker balance for clean verification
-    │   └── test_list_workers.js         # Command-line ledger audit utility
     ├── tests/                           # Vitest server integration test suites
     │   ├── setup.js                     # Test database connection setup & teardown
     │   ├── auth.test.js                 # Authentication & token verification tests
     │   ├── auth_rules.test.js           # Password reset OTP lifecycle tests
     │   ├── authorization.test.js        # Strict RBAC & IDOR prevention tests
     │   ├── attendance.test.js           # Multiplier calculation & duplicate shift tests
-    │   ├── finance.test.js              # Advance recovery & ledger transaction tests
-    │   └── tools.test.js                # Machinery issue & assignment tests
+    │   └── finance.test.js              # Advance recovery & ledger transaction tests
     └── src/
         ├── server.js                    # HTTP server startup & Socket.IO initialization
         ├── app.js                       # Express app configuration, middleware & route mounting
@@ -337,14 +320,11 @@ FurniCraft/
         │   ├── Attendance.js            # Daily shifts, multiplier (1.0x, 0.5x, 1.5x, 2.0x), approval
         │   ├── AttendanceRuleVersion.js # Audit versioning for shift multiplier rules
         │   ├── Project.js               # Furniture project details, scope & deadlines
-        │   ├── ProjectAssignment.js     # Worker-to-project allocations & custom wage rates
+        │   ├── ProjectAssignment.js     # Legacy worker-to-project records (read-only; wage overrides)
         │   ├── FinancialTransaction.js  # Immutable double-entry financial ledger records
         │   ├── AdvanceRequest.js        # Worker cash advance requests & approval states
         │   ├── Payroll.js               # Finalized monthly payroll sheets
         │   ├── PayrollAdjustment.js     # Post-finalization debit/credit adjustments
-        │   ├── Tool.js                  # Machinery records, serial numbers, condition status
-        │   ├── ToolIssue.js             # Active & historical tool assignment logs
-        │   ├── ToolMaintenance.js       # Repair records, costs & servicing logs
         │   ├── ProjectExpense.js        # Hardware, laminates, fittings & site expenses
         │   ├── ProjectMoneyReceived.js  # Client milestone payment receipts
         │   ├── Dispute.js               # Worker grievances & resolution status
@@ -355,12 +335,10 @@ FurniCraft/
         ├── routes/                      # REST API Endpoint Routers
         │   ├── authRoutes.js            # /api/v1/auth (Login, Logout, Me, OTP Reset)
         │   ├── userRoutes.js            # /api/v1/users (Workers, Thekedars, Status changes)
-        │   ├── projectRoutes.js         # /api/v1/projects (CRUD, assignments, milestones)
+        │   ├── projectRoutes.js         # /api/v1/projects (CRUD, money received)
         │   ├── attendanceRoutes.js      # /api/v1/attendance (Mark, Approve, Bulk, Calendar)
         │   ├── payrollRoutes.js         # /api/v1/payroll (Preview, Finalize, Lock, Adjust)
-        │   ├── financeRoutes.js         # /api/v1/finance (Ledger, Advances, Pay Net Wages)
-        │   ├── toolRoutes.js            # /api/v1/tools (Inventory, Issue, Return, Maintenance)
-        │   ├── furnitureTaskRoutes.js   # /api/v1/furniture-tasks (Assembly & installation jobs)
+        │   ├── financeRoutes.js         # /api/v1/finance (Ledger, Advances, Give Advance, Pay Net Wages)
         │   ├── expenseRoutes.js         # /api/v1/expenses (Client payments & project costs)
         │   ├── reportRoutes.js          # /api/v1/reports (PDF vouchers, Excel attendance)
         │   ├── disputeRoutes.js         # /api/v1/disputes (Filing & administrative resolution)
@@ -370,8 +348,7 @@ FurniCraft/
         │   ├── attendanceService.js     # Shift evaluation, earnings aggregation, calendar data
         │   ├── financeService.js        # Advance disbursements, net pay computation, ledger
         │   ├── payrollEngineService.js  # Monthly salary computation & immutable locking
-        │   ├── projectService.js        # Furniture project lifecycle & contractor assignment
-        │   ├── toolService.js           # Inventory checkouts, returns & condition updates
+        │   ├── projectService.js        # Furniture project lifecycle & money received
         │   ├── reportService.js         # Tabular data preparation for exports
         │   ├── exportService.js         # PDFKit payslip documents & Excel workbook formatting
         │   ├── emailService.js          # Transactional email dispatcher with Nodemailer
@@ -403,17 +380,16 @@ FurniCraft has **exactly three user roles** (no ambiguous supervisor roles):
 | **View Organization Audit Logs** | ✅ *(Exclusive)* | ❌ | ❌ |
 | **Suspend / Activate Contractor Accounts** | ✅ | ❌ | ❌ |
 | **Suspend / Activate Worker Accounts** | ❌ *(Thekedar responsibility)* | ✅ *(Under their supervision)* | ❌ |
-| **Create & Manage Furniture Projects** | 👁️ *(Read-Only)* | ✅ *(Full Management)* | 👁️ *(Assigned Only)* |
+| **Create & Manage Furniture Projects** | 👁️ *(Read-Only)* | ✅ *(Full Management)* | ❌ |
 | **Register & Wage-Rate New Workers** | ✅ | ✅ | ❌ |
-| **Mark Shift Attendance** | ❌ | ❌ | ✅ *(Personal shifts)* |
+| **Log Shift Attendance** | ❌ | ✅ *(From worker cards)* | ❌ |
 | **Approve / Reject Attendance Shifts** | ❌ | ✅ *(Single & Bulk)* | ❌ |
-| **Request Cash / UPI Advance** | ❌ | ❌ | ✅ |
 | **Disburse Advance & Pay Net Wages** | ❌ | ✅ | ❌ |
 | **Deduct Advance Directly from Bonus** | ❌ | ✅ *(In Pay Net Modal)* | ❌ |
 | **Delete Worker Account** | ❌ | ✅ *(ONLY if Net Balance = ₹0)* | ❌ |
-| **Issue Machinery & Tools to Site** | ✅ | ✅ | ❌ |
-| **Acknowledge Tool Receipt on Site** | ❌ | ❌ | ✅ |
-| **Theme & Language Preference Toggle** | ✅ | ✅ | ✅ |
+| **Theme & Language Preference Toggle** | ✅ | ✅ | ❌ |
+
+> Workers cannot sign in (`POST /auth/login` returns 403). Their profiles, attendance, advances and payouts are managed by their Thekedar.
 
 ---
 
@@ -518,7 +494,9 @@ FurniCraft is configured for zero-friction cloud deployment on [Render](https://
 
 ## 8. Safe Seed Demo Accounts
 
-The seed script provides ready-to-test accounts representing all three operational roles:
+The seed script provides ready-to-test accounts representing all three operational roles (worker accounts exist as records only; their login is rejected):
+
+> ⚠️ `npm run seed` **deletes every collection** before inserting demo data. Never run it against a production `MONGODB_URI`.
 
 | Role | Email / Login Identifier | Password | Name & Operational Scope |
 | :--- | :--- | :--- | :--- |
@@ -539,6 +517,7 @@ FurniCraft includes rigorous end-to-end integration and component test suites ve
 npm test
 
 # Run Server Tests Only (Vitest + Supertest):
+# ⚠️ Uses MONGODB_URI from server/.env and creates/deletes records — point it at a test database first.
 cd server
 npm test
 
@@ -552,14 +531,15 @@ npm test
 - **`auth_rules.test.js`**: 6-digit email OTP generation, 5-minute expiration, attempt rate-limiting, secure password reset.
 - **`authorization.test.js`**: In-depth RBAC, IDOR prevention, worker ledger isolation, read-only project limits for Owner, safe worker deletion ($₹0$ net balance enforcement).
 - **`attendance.test.js`**: Precision multiplier calculations (`P`, `HALF`, `P1/5`, `PP`), single and bulk approval transitions, duplicate shift prevention.
+- **`errorHandler.test.js`**: Friendly messages for unexpected errors, database outages, malformed JSON and invalid record links (no database needed).
 - **`finance.test.js`**: Cash advance disbursement, wage settlement, bonus-to-advance offsets, immutable payment transactions.
-- **`tools.test.js`**: Central tool inventory checkouts, active assignment conflicts, return condition logging.
 
 ### Client Component Test Suites (`client/src/tests/`)
 - **`ThemeMode.test.jsx`**: Light, Dark (`#020617` slate), and System mode toggles, localStorage persistence, profile toggler dropdown verification.
 - **`AttendanceCalendar.test.jsx`**: Shift badge rendering, multiplier tag colors, day-wise calculations.
 - **`LoginPage.test.jsx`**: Responsive login form inputs, show/hide password toggle, contractor registration redirect.
-- **`AllPagesRender.test.jsx`**: 12-page comprehensive zero-blank-screen smoke test across all application views.
+- **`apiErrors.test.js`**: Offline, timeout, session-expiry, 4xx/5xx and translated error messages from the API client.
+- **`AllPagesRender.test.jsx`**: 11-page comprehensive zero-blank-screen smoke test across all application views.
 
 ---
 
@@ -568,8 +548,12 @@ npm test
 1. **HTTP-Only Cookie Storage**: JWTs are stored in secure HTTP-only cookies (`furnicraft_token`). Tokens cannot be stolen via Cross-Site Scripting (XSS).
 2. **Server-Side Authorization**: UI component hiding is never trusted as a security boundary. Every API endpoint checks actor identity and resource ownership (`resourceAuthMiddleware.js`).
 3. **Double-Entry Financial Transactions**: Advance disbursements and salary payments create immutable `FinancialTransaction` records with unique transaction codes (e.g. `TXN-NET-2026-001`).
-4. **Tamper-Evident Audit Logs**: All administrative actions (user suspensions, wage agreement revisions, project deletions, tool disposals) are logged asynchronously to the `AuditLog` collection.
+4. **Tamper-Evident Audit Logs**: All administrative actions (user suspensions, wage agreement revisions, project deletions) are logged asynchronously to the `AuditLog` collection.
 5. **Safe Worker Deletion Guard**: A worker record cannot be deleted from the system while having unrecovered cash advances or unsettled earned wages. The net balance must be resolved to exactly ₹0.
+6. **User-Friendly Error Handling**: The server never sends internal error text to users — unexpected failures return a generic message (and are logged with method + URL), a database outage returns `503`, and malformed JSON, bad record links and duplicate records get plain-language messages (`middleware/errorHandler.js`). Uncaught exceptions are logged and exit the process so the host restarts it.
+7. **Clear Errors on the Phone**: every API failure becomes an `ApiError` with a translated message (English / Hindi / Hinglish) for offline, timeout (30s), unreachable server, expired session (auto sign-out with a notice on the login screen), rate limits and server errors (`client/src/api/client.js`). Screens that fail to load show a retry card (`LoadError`), an offline banner appears when the connection drops, and a crashed or failed-to-download screen shows a friendly recovery card instead of technical details (`ErrorBoundary`).
+8. **Modern PDFs**: attendance statements (per worker or all workers, **one month at a time** via `?year=YYYY&month=M`) and payment / advance receipts share one design (`services/pdfTheme.js`) using the bundled open-source Noto Sans font (`server/src/assets/fonts`, SIL OFL), so ₹ prints correctly.
+9. **Email OTP**: password-reset codes are sent through Gmail SMTP with a Google App Password (`EMAIL_SERVICE=gmail`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`). The server checks the SMTP login at startup and logs `[EmailService] SMTP ready` or the exact failure. In production it never reports "code sent" unless Gmail accepted the email. Owner accounts are intentionally not recoverable by email. On Render, set these variables in the dashboard (they are listed in `render.yaml`).
 
 ---
 

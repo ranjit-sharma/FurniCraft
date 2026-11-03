@@ -9,6 +9,7 @@ import {
   recordTransactionSchema,
   reverseTransactionSchema,
   payWorkerNetSchema,
+  giveAdvanceSchema,
 } from '../validators/schemas.js';
 import { ROLES } from '../config/constants.js';
 
@@ -22,6 +23,7 @@ router.patch('/advance-requests/:requestId/review', requireRole(ROLES.OWNER, ROL
 router.post('/advance-requests/:requestId/disburse', requireRole(ROLES.OWNER, ROLES.THEKEDAR), financeController.disburseAdvance);
 
 router.post('/salary-payments', requireRole(ROLES.OWNER, ROLES.THEKEDAR), financeController.recordSalaryPayment);
+router.post('/workers/:workerId/advance', requireRole(ROLES.OWNER, ROLES.THEKEDAR), validate(giveAdvanceSchema), financeController.giveAdvance);
 router.post('/workers/:workerId/pay-net', requireRole(ROLES.OWNER, ROLES.THEKEDAR), validate(payWorkerNetSchema), financeController.payWorkerNet);
 router.get('/ledger/:workerId', authorizeWorkerAccess, financeController.getWorkerLedger);
 router.get('/transactions', financeController.listTransactions);

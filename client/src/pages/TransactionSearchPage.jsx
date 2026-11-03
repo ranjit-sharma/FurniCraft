@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/client';
+import { Button } from '../components/common/Button';
+import { PageHeader } from '../components/common/PageHeader';
+import { LoadError } from '../components/common/LoadError';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
@@ -8,22 +11,17 @@ import {
   Search,
   Receipt,
   FileText,
-  IndianRupee,
-  Calendar,
   User,
   Building,
   CheckCircle2,
   Copy,
   Check,
   ArrowRight,
-  Filter,
-  X,
   CreditCard,
   Utensils,
   Home,
   AlertCircle,
   Clock,
-  Sparkles,
 } from 'lucide-react';
 
 export const TransactionSearchPage = () => {
@@ -39,8 +37,11 @@ export const TransactionSearchPage = () => {
   const [copiedId, setCopiedId] = useState(false);
 
   // Fetch initial recent transactions
+  const [loadError, setLoadError] = useState(null);
+
   const fetchRecentTransactions = async () => {
     try {
+      setLoadError(null);
       setLoading(true);
       const res = await api.get('/finance/transactions');
       const list = res.data?.transactions || [];
@@ -49,7 +50,7 @@ export const TransactionSearchPage = () => {
         setSelectedTx(list[0]);
       }
     } catch (err) {
-      console.error('Failed to load transactions:', err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -108,12 +109,10 @@ export const TransactionSearchPage = () => {
 
   const getCategoryBadgeVariant = (cat) => {
     switch (cat) {
-      case 'WAGE_PAYMENT':
+      case 'SALARY_PAYMENT':
         return 'success';
-      case 'ADVANCE_PAYMENT':
+      case 'ADVANCE_DISBURSEMENT':
         return 'warning';
-      case 'TOOL_DEPOSIT':
-        return 'info';
       default:
         return 'default';
     }
@@ -121,96 +120,49 @@ export const TransactionSearchPage = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header Banner */}
-      <div className="rounded-2xl sm:rounded-3xl border border-blue-900/20 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 p-4 sm:p-6 md:p-8 text-white shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-xs font-bold text-blue-300">
-              <Sparkles className="h-3.5 w-3.5 text-blue-400" />
-              <span>{t('transactionSearch.officialAuditLedger') || 'Official Financial Audit Ledger'}</span>
-            </div>
-            <h1 className="mt-3 text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white">
-              {t('transactionSearch.title') || 'Transaction Search & Voucher Verification'}
-            </h1>
-            <p className="mt-1 text-xs md:text-sm text-blue-200/80 max-w-2xl leading-relaxed">
-              {t('transactionSearch.subtitle') || (isWorker
-                ? 'Lookup your official wage disbursements, advance receipts, and deduction statements via Transaction ID.'
-                : 'Search, audit, and download signed vouchers for all contractor salary disbursements and advance payments.')}
-            </p>
-          </div>
+      <LoadError message={loadError} onRetry={fetchRecentTransactions} />
+      <PageHeader
+        title={t('transactionSearch.pageTitle', 'Transactions')}
+        subtitle={`${transactions.length} ${t('transactionSearch.recordsLower', 'records')} · ${t('transactionSearch.pageSub', 'find a payment or advance and download its bill')}`}
+      />
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right backdrop-blur w-full sm:w-auto">
-              <span className="block text-[11px] font-semibold text-blue-300 uppercase tracking-wider">
-                {t('transactionSearch.recordsLoaded') || 'Records Loaded'}
-              </span>
-              <span className="text-xl font-black text-white">{transactions.length} {t('transactionSearch.transactions') || 'Transactions'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Search Input Bar */}
-        <form onSubmit={handleSearch} className="mt-6">
-          <div className="relative flex items-center">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-              <Search className="h-5 w-5 text-blue-400" />
-            </div>
+      {/* Search + category filter */}
+      <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
-              type="text"
+              type="search"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={t('transactionSearch.searchPlaceholder') || 'Enter exact or partial Transaction ID (e.g. TXN-ADV-2026-0001, TXN-WAGE-...) or Reference / UTR...'}
-              className="block w-full rounded-2xl border border-slate-700 bg-white/10 py-3.5 pl-12 pr-28 text-sm text-white placeholder-slate-400 backdrop-blur focus:border-blue-400 focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-inner font-mono tracking-wide"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (!e.target.value) fetchRecentTransactions();
+              }}
+              placeholder={t('transactionSearch.searchPlaceholder', 'Transaction ID or UPI / receipt ref')}
+              aria-label="Search transactions"
+              className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-9 pr-3 text-sm text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
             />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchTerm('');
-                  fetchRecentTransactions();
-                }}
-                className="absolute right-24 text-slate-400 hover:text-white p-1"
-                title="Clear input"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={searching}
-              className="absolute right-2.5 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 transition-colors shadow-md disabled:opacity-50 cursor-pointer"
-            >
-              {searching ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : (
-                <>
-                  <Search className="h-3.5 w-3.5" />
-                  <span>{t('transactionSearch.searchBtn') || t('common.search') || 'Search'}</span>
-                </>
-              )}
-            </button>
           </div>
+          <Button type="submit" loading={searching} icon={Search}>
+            {t('transactionSearch.searchBtn', 'Search')}
+          </Button>
         </form>
-
-        {/* Quick Filter Category Pills */}
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400 flex items-center gap-1 mr-1">
-            <Filter className="h-3 w-3" /> {t('transactionSearch.filterCategory') || 'Filter Category:'}
-          </span>
+        <div className="-mx-3 flex gap-2 overflow-x-auto px-3 no-scrollbar sm:mx-0 sm:px-0" role="tablist" aria-label="Category">
           {[
-            { id: 'ALL', label: t('transactionSearch.allCategories') || 'All Categories' },
-            { id: 'WAGE_PAYMENT', label: t('transactionSearch.wagePayments') || 'Wage Payments' },
-            { id: 'ADVANCE_PAYMENT', label: t('transactionSearch.advanceDisbursements') || 'Advance Disbursements' },
-            { id: 'TOOL_DEPOSIT', label: t('transactionSearch.toolDeposits') || 'Tool Security Deposits' },
+            { id: 'ALL', label: t('transactionSearch.allCategories', 'All') },
+            { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage payments') },
+            { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advanceDisbursements', 'Advances') },
           ].map((cat) => (
             <button
               key={cat.id}
               type="button"
+              role="tab"
+              aria-selected={selectedCategory === cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
+              className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold transition ${
                 selectedCategory === cat.id
-                  ? 'bg-blue-500 text-white shadow-sm ring-1 ring-blue-300'
-                  : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
+                  ? 'border-amber-600 bg-amber-600 text-white'
+                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
               }`}
             >
               {cat.label}

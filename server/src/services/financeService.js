@@ -172,6 +172,37 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
 };
 
 /**
+ * Thekedar hands an advance to their worker on the spot: request, approval and disbursement in one step.
+ * The disbursement raises outstandingAdvanceBalance, which the next net payment deducts.
+ */
+export const giveAdvance = async ({ workerId, amount, reason, paymentMethod, receiptReference, user, req }) => {
+  const workerProfile = await WorkerProfile.findOne({ userId: workerId });
+  if (!workerProfile) throw new NotFoundError('Worker profile not found');
+  if (user.role === ROLES.THEKEDAR && workerProfile.thekedarId.toString() !== user._id.toString()) {
+    throw new ForbiddenError('You can only give advances to workers under your management');
+  }
+
+  const advanceRequest = await createAdvanceRequest({ workerId, amount, reason, user, req });
+  await reviewAdvanceRequest({
+    requestId: advanceRequest._id,
+    status: ADVANCE_REQUEST_STATUS.APPROVED,
+    reviewNotes: 'Given directly by Thekedar',
+    reviewerUser: user,
+    req,
+  });
+  const transaction = await disburseAdvance({
+    requestId: advanceRequest._id,
+    paymentMethod,
+    receiptReference,
+    notes: `Advance given: ${reason}`,
+    recordedBy: user,
+    req,
+  });
+
+  return { advanceRequest: await AdvanceRequest.findById(advanceRequest._id), transaction };
+};
+
+/**
  * Record Salary Payment against a Finalized Payroll (Supports Partial & Full Payments)
  */
 export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, receiptReference, notes, recordedBy, req }) => {

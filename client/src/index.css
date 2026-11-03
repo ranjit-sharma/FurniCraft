@@ -27,6 +27,80 @@
   code, pre {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  html {
+    scroll-behavior: smooth;
+    overscroll-behavior-y: none;
+  }
+
+  /* Pressed feedback on touch, since there is no hover on phones. */
+  button:not(:disabled), a, [role='button'] {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+  }
+  button:not(:disabled):active, [role='button']:active {
+    transform: scale(0.97);
+  }
+
+  @media (max-width: 639px) {
+    /* iOS zooms into inputs under 16px; keep them at 16px on phones. */
+    input:not([type='checkbox']):not([type='radio']), select, textarea {
+      font-size: 16px !important;
+    }
+
+    /* Comfortable thumb targets for pills, chips and selects. */
+    main button:is(.flex, .inline-flex), main select, main a:is(.flex, .inline-flex) {
+      min-height: 2.25rem;
+    }
+
+    /* 9-10px text is unreadable on a phone held at arm's length. */
+    html .text-\[9px\], html .text-\[10px\] {
+      font-size: 11px;
+    }
+  }
+
+  /* Phones: scrollable data tables stack into labelled cards (labels set by AppLayout from <th>). */
+  @media (max-width: 639px) {
+    .overflow-x-auto > table { display: block; min-width: 0 !important; }
+    .overflow-x-auto > table > thead { display: none; }
+    .overflow-x-auto > table > tbody { display: block; }
+    .overflow-x-auto > table > tbody > tr {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.625rem 0.75rem;
+      padding: 0.875rem 1rem;
+    }
+    .overflow-x-auto > table > tbody > tr > td {
+      display: block;
+      padding: 0 !important;
+      text-align: left !important;
+      max-width: none !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+    }
+    .overflow-x-auto > table > tbody > tr > td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 2px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: rgb(100 116 139);
+    }
+    .overflow-x-auto > table > tbody > tr > td[colspan],
+    .overflow-x-auto > table > tbody > tr > td:last-child:has(button, a) {
+      grid-column: 1 / -1;
+    }
+    .overflow-x-auto > table > tbody > tr > td:last-child:has(button, a)::before { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* Hide scrollbar for clean horizontal swipe tabs on mobile */

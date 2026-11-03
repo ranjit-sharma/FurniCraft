@@ -54,16 +54,6 @@ export const submitAttendance = async ({ data, user, req }) => {
   const project = await Project.findById(projectId);
   if (!project) throw new NotFoundError('Project not found');
 
-  // Verify Worker is assigned to this Project
-  const assignment = await ProjectAssignment.findOne({
-    workerId,
-    projectId,
-    status: 'ACTIVE',
-  });
-  if (!assignment) {
-    throw new ForbiddenError('Worker is not actively assigned to this furniture project');
-  }
-
   // Strict Rule: Worker can only submit attendance on projects of their permanent Thekedar
   const workerProfile = await WorkerProfile.findOne({ userId: workerId });
   if (workerProfile && workerProfile.thekedarId.toString() !== project.thekedarId.toString()) {
@@ -78,6 +68,26 @@ export const submitAttendance = async ({ data, user, req }) => {
     date,
     shift,
   });
+
+  // Thekedar re-marking their own worker's day = edit that entry (paid entries stay locked).
+  if (existing && user.role === ROLES.THEKEDAR && existing.thekedarId.toString() === user._id.toString()) {
+    if (existing.isPayrollProcessed) {
+      throw new ForbiddenError(`Attendance for ${date} is already paid and locked; it cannot be changed.`);
+    }
+    if (existing.projectId.toString() !== projectId && project.thekedarId.toString() === user._id.toString()) {
+      existing.projectId = projectId;
+      await existing.save();
+    }
+    const updated = await rectifyAttendance({
+      attendanceId: existing._id,
+      code,
+      reason: `Re-marked ${existing.code} → ${code} from attendance screen`,
+      reviewerUser: user,
+      req,
+    });
+    updated.$locals.wasUpdate = true;
+    return updated;
+  }
 
   if (existing) {
     throw new ConflictError(

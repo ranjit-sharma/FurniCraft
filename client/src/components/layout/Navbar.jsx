@@ -2,12 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, User as UserIcon, Menu, ChevronDown, Phone, Mail, Shield, CheckCircle2, Globe, Sun, Moon, Monitor } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, Sun, Moon, Monitor } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { ThemeSelector } from '../common/ThemeSelector';
 
-export const Navbar = ({ onMenuClick }) => {
+export const Navbar = () => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
   const { theme, resolvedTheme, isDark } = useTheme();
@@ -67,18 +67,10 @@ export const Navbar = ({ onMenuClick }) => {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-4 backdrop-blur-md md:px-6 transition-colors shadow-xs">
-      {/* Left: Mobile Menu & Redesigned Attractive Logo */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onMenuClick}
-          className="rounded-lg p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 md:hidden transition-colors"
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} />
+    <header className="sticky top-0 z-40 flex h-[calc(3.5rem+env(safe-area-inset-top))] md:h-16 w-full items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-md md:px-6 transition-colors">
+      <div className="flex items-center min-w-0">
+        <BrandLogo size="sm" variant={isDark ? 'dark' : 'light'} className="md:hidden" />
+        <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden md:flex" />
       </div>
 
       {/* Right: Profile Icon Toggler */}

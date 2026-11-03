@@ -537,20 +537,26 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
   });
 
   let dispatchResult;
-  if (userEmail) {
-    dispatchResult = await sendOtpEmail({
-      to: userEmail,
-      otp,
-      purpose: 'PASSWORD_RESET',
-      name: user.name,
-    });
-  } else if (normalizedPhone) {
-    dispatchResult = await sendOtpSms({
-      phone: normalizedPhone,
-      otp,
-      purpose: 'PASSWORD_RESET',
-      name: user.name,
-    });
+  try {
+    if (userEmail) {
+      dispatchResult = await sendOtpEmail({
+        to: userEmail,
+        otp,
+        purpose: 'PASSWORD_RESET',
+        name: user.name,
+      });
+    } else if (normalizedPhone) {
+      dispatchResult = await sendOtpSms({
+        phone: normalizedPhone,
+        otp,
+        purpose: 'PASSWORD_RESET',
+        name: user.name,
+      });
+    }
+  } catch (err) {
+    // Nothing was delivered: drop the code so the 60s resend cooldown doesn't block an immediate retry.
+    await OtpRecord.deleteMany({ userId: user._id, purpose: 'PASSWORD_RESET' });
+    throw err;
   }
 
   await recordAuditLog({

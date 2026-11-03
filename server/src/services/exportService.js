@@ -4,9 +4,10 @@ import fs from 'fs';
 import mongoose from 'mongoose';
 import PDFDocument from 'pdfkit';
 import XLSX from 'xlsx';
-import { Attendance, Payroll, FinancialTransaction, ToolIssue, User, WorkerProfile } from '../models/index.js';
+import { Attendance, Payroll, FinancialTransaction, User, WorkerProfile } from '../models/index.js';
 import { ROLES } from '../config/constants.js';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
+import { C, PAGE, CONTENT_W, BOTTOM_LIMIT, inr, createPdf, text, drawHeader, drawRunningHeader, drawInfoCards, drawTable, drawTotal, drawSignatures, drawFooters } from './pdfTheme.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -222,283 +223,158 @@ const PDF_TRANSLATIONS = {
   },
 };
 
+// Labels for the redesigned PDFs (Hindi kept in Latin script, like the rest of PDF_TRANSLATIONS).
+const PDF_LABELS = {
+  en: {
+    attendanceTitle: 'Attendance Statement', allTime: 'All attendance', worker: 'Worker', dailyWage: 'Daily wage', thekedar: 'Thekedar',
+    daysWorked: 'Days worked', manDays: 'Man-days', earned: 'Earned', unpaid: 'Unpaid', paid: 'Paid', date: 'Date', project: 'Project',
+    shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'No attendance recorded for this period.', totalEarned: 'Total earned',
+    legend: 'Shift codes: P = full day (1x) · HALF = half day (0.5x) · P1/5 = till 9 PM (1.5x) · PP = till midnight (2x) · ABSENT = no wage',
+    wageReceipt: 'Wage Payment Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Payment Receipt', paidBy: 'Paid by', paidTo: 'Paid to',
+    payment: 'Payment', description: 'Description', amount: 'Amount', wagesEarned: 'Wages earned (attendance)', bonus: 'Bonus / allowance',
+    advanceCut: 'Advance recovered', food: 'Food / mess', room: 'Room rent', advanceGiven: 'Advance given', netPaid: 'Net paid',
+    advanceAfter: 'Advance balance after this payment', advanceNow: 'Advance balance now', notes: 'Notes', authorised: 'Authorised by (Thekedar)',
+    received: 'Received by (worker signature / thumb)', statementOf: 'Attendance statement', deductNext: 'Deducted from the next wage payment',
+  },
+  hinglish: {
+    attendanceTitle: 'Haziri Statement', allTime: 'Saari haziri', worker: 'Karigar', dailyWage: 'Dehadi', thekedar: 'Thekedar',
+    daysWorked: 'Kaam ke din', manDays: 'Man-days', earned: 'Kamai', unpaid: 'Baaki', paid: 'Paid', date: 'Tareekh', project: 'Project',
+    shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'Is mahine koi haziri nahi.', totalEarned: 'Kul kamai',
+    legend: 'Shift code: P = pura din (1x) · HALF = aadha din (0.5x) · P1/5 = raat 9 baje tak (1.5x) · PP = raat 12 baje tak (2x) · ABSENT = koi dehadi nahi',
+    wageReceipt: 'Dehadi Bhugtan Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Bhugtan Receipt', paidBy: 'Dene wale', paidTo: 'Lene wale',
+    payment: 'Bhugtan', description: 'Vivaran', amount: 'Rakam', wagesEarned: 'Kamai (haziri se)', bonus: 'Bonus / bhatta',
+    advanceCut: 'Advance kata', food: 'Khana / mess', room: 'Kamra kiraya', advanceGiven: 'Advance diya', netPaid: 'Kul diya',
+    advanceAfter: 'Is bhugtan ke baad advance', advanceNow: 'Abhi ka advance', notes: 'Notes', authorised: 'Thekedar ke hastakshar',
+    received: 'Karigar ke hastakshar / angutha', statementOf: 'Haziri statement', deductNext: 'Agli dehadi se kata jayega',
+  },
+  hi: {
+    attendanceTitle: 'Haziri Vivaran', allTime: 'Sampurn haziri', worker: 'Karigar', dailyWage: 'Dainik mazdoori', thekedar: 'Thekedar',
+    daysWorked: 'Kaarya divas', manDays: 'Man-days', earned: 'Arjit', unpaid: 'Shesh', paid: 'Bhugtan', date: 'Dinank', project: 'Pariyojana',
+    shift: 'Shift', rate: 'Dar', status: 'Sthiti', noAttendance: 'Is avadhi mein koi haziri nahin.', totalEarned: 'Kul arjit',
+    legend: 'Shift code: P = poora din (1x) · HALF = aadha din (0.5x) · P1/5 = raat 9 baje tak (1.5x) · PP = madhyaraatri tak (2x) · ABSENT = mazdoori nahin',
+    wageReceipt: 'Mazdoori Bhugtan Raseed', advanceReceipt: 'Agrim Raseed', paymentReceipt: 'Bhugtan Raseed', paidBy: 'Bhugtankarta', paidTo: 'Prapatkarta',
+    payment: 'Bhugtan', description: 'Vivaran', amount: 'Raashi', wagesEarned: 'Arjit mazdoori', bonus: 'Bonus / bhatta',
+    advanceCut: 'Agrim vasooli', food: 'Bhojan / mess', room: 'Kamra kiraya', advanceGiven: 'Agrim diya', netPaid: 'Shuddh bhugtan',
+    advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', notes: 'Tippani', authorised: 'Thekedar hastakshar',
+    received: 'Karigar hastakshar / angutha', statementOf: 'Haziri vivaran', deductNext: 'Agli mazdoori se vasool hoga',
+  },
+};
+
+const formatDay = (ymd) => {
+  const d = new Date(`${ymd}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? ymd : d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+};
+
+const periodLabel = (period, L) => {
+  if (period?.year && period?.month) {
+    return new Date(Number(period.year), Number(period.month) - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  }
+  if (period?.startDate && period?.endDate) return `${formatDay(period.startDate)} – ${formatDay(period.endDate)}`;
+  return L.allTime;
+};
+
 /**
- * Generate Professional PDF Attendance Report with Contractor Details & Metrics
+ * Attendance statement PDF (one worker, or all of a Thekedar's workers), usually for one month.
+ * @param {object} filterQuery Mongo filter for Attendance (already role-scoped by the controller)
+ * @param {{ reqUser, lang, period: { year, month } | { startDate, endDate } }} options
  */
-export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 'en' } = {}) => {
-  const trans = PDF_TRANSLATIONS[lang] || PDF_TRANSLATIONS['en'];
+export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 'en', period } = {}) => {
+  const L = PDF_LABELS[lang] || PDF_LABELS.en;
   const records = await Attendance.find(filterQuery)
-    .populate('workerId', 'name email phone')
-    .populate('thekedarId', 'name email phone')
+    .populate('workerId', 'name phone')
     .populate('projectId', 'name projectCode')
-    .sort({ date: 1, createdAt: 1 });
+    .sort({ date: 1, createdAt: 1 })
+    .lean();
 
-  // Resolve contractor details
-  let thekedarName = 'All Contractors / Central Master View';
-  let thekedarPhone = '-';
-  let thekedarEmail = '-';
+  const thekedar =
+    reqUser?.role === ROLES.THEKEDAR
+      ? reqUser
+      : (filterQuery.thekedarId && (await User.findById(filterQuery.thekedarId).lean())) || null;
+  const worker = filterQuery.workerId ? await User.findById(filterQuery.workerId).lean() : null;
+  const profile = filterQuery.workerId ? await WorkerProfile.findOne({ userId: filterQuery.workerId }).lean() : null;
 
-  if (reqUser && reqUser.role === ROLES.THEKEDAR) {
-    thekedarName = reqUser.name || 'Contractor';
-    thekedarPhone = reqUser.phone || '-';
-    thekedarEmail = reqUser.email || '-';
-  } else if (filterQuery.thekedarId) {
-    const thekedar = await User.findById(filterQuery.thekedarId);
-    if (thekedar) {
-      thekedarName = thekedar.name || 'Contractor';
-      thekedarPhone = thekedar.phone || '-';
-      thekedarEmail = thekedar.email || '-';
-    }
-  } else if (records.length > 0 && records[0].thekedarId) {
-    const t = records[0].thekedarId;
-    thekedarName = t.name || 'Contractor';
-    thekedarPhone = t.phone || '-';
-    thekedarEmail = t.email || '-';
-  }
+  const worked = records.filter((r) => r.code !== 'ABSENT');
+  const manDays = records.reduce((s, r) => s + Number(r.wageMultiplier || 0), 0);
+  const earned = records.reduce((s, r) => s + Number(r.calculatedEarnings || 0), 0);
+  const unpaid = records.filter((r) => !r.isPayrollProcessed).reduce((s, r) => s + Number(r.calculatedEarnings || 0), 0);
+  const period_ = periodLabel(period, L);
 
-  // Resolve individual worker details if filtered by workerId
-  let targetWorker = null;
-  let targetWorkerProfile = null;
-  if (filterQuery.workerId) {
-    targetWorker = await User.findById(filterQuery.workerId);
-    targetWorkerProfile = await WorkerProfile.findOne({ userId: filterQuery.workerId });
-  }
-
-  // Summary Metrics
-  const totalRecords = records.length;
-  let totalMultiplier = 0;
-  let totalGrossEarned = 0;
-  let approvedCount = 0;
-  let overtimeCount = 0;
-
-  records.forEach((r) => {
-    totalMultiplier += Number(r.wageMultiplier || 0);
-    totalGrossEarned += Number(r.calculatedEarnings || 0);
-    if (r.approvalStatus === 'APPROVED') approvedCount++;
-    if (r.code === 'P1/5' || r.code === 'PP') overtimeCount++;
+  const { doc, done } = createPdf();
+  let y = drawHeader(doc, {
+    title: L.attendanceTitle,
+    subtitle: period_,
+    docNo: profile?.workerCode || (thekedar ? thekedar.name : ''),
   });
 
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({
-        size: 'A4',
-        layout: 'landscape',
-        margin: 36,
-        bufferPages: true,
-      });
+  y = drawInfoCards(doc, y, worker
+    ? [
+        { label: L.worker, value: worker.name, sub: [profile?.workerCode, profile?.skills?.[0], worker.phone].filter(Boolean).join(' · ') },
+        { label: L.dailyWage, value: inr(profile?.defaultDailyWage), sub: period_ },
+        { label: L.thekedar, value: thekedar?.name || '—', sub: thekedar?.phone || '' },
+      ]
+    : [
+        { label: L.thekedar, value: thekedar?.name || 'All Thekedars', sub: thekedar?.phone || '' },
+        { label: L.statementOf, value: period_, sub: `${records.length} entries` },
+      ]);
 
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
+  y = drawInfoCards(doc, y, [
+    { label: L.daysWorked, value: String(worked.length) },
+    { label: L.manDays, value: `${manDays.toFixed(1)}` },
+    { label: L.earned, value: inr(earned), fill: C.brandSoft, labelColor: C.brand },
+    { label: L.unpaid, value: inr(unpaid), fill: unpaid > 0 ? C.badSoft : C.goodSoft, labelColor: unpaid > 0 ? C.bad : C.good },
+  ], { height: 46 });
 
-      const colWidths = [25, 65, 110, 75, 125, 50, 35, 75, 65, 75, 70];
-      const colHeaders = trans.colHeaders;
-      const colAligns = ['center', 'left', 'left', 'left', 'left', 'center', 'center', 'center', 'right', 'right', 'center'];
-
-      const drawHeader = (isFirstPage) => {
-        if (isFirstPage) {
-          // Top Title Banner with Logo & Full Name
-          doc.rect(36, 36, 770, 52).fill('#0F172A');
-          if (fs.existsSync(LOGO_PATH)) {
-            doc.image(LOGO_PATH, 44, 40, { height: 44, fit: [58, 44] });
-          }
-          doc.fillColor('#FFFFFF').fontSize(15).text('FurniCraft ERP', 108, 42, { bold: true });
-          doc.fillColor('#F59E0B').fontSize(7.5).text(trans.tagline, 108, 58, { bold: true });
-          const bannerSub = targetWorker
-            ? 'OFFICIAL INDIVIDUAL CRAFTSMAN ATTENDANCE & SHIFT VERIFICATION STATEMENT'
-            : (reqUser && reqUser.role === ROLES.WORKER
-              ? trans.workerAttendanceBanner
-              : trans.thekedarAttendanceBanner);
-          doc.fillColor('#94A3B8').fontSize(7.5).text(bannerSub, 108, 69);
-
-          // System document tag on right
-          doc.rect(605, 42, 192, 40).fill('#1E293B');
-          doc.fillColor('#94A3B8').fontSize(7).text(trans.systemDoc, 615, 48);
-          doc.fillColor('#38BDF8').fontSize(9).text(trans.officialAttendanceReport, 615, 60, { bold: true });
-
-          // Contractor & Report Info Card
-          doc.rect(36, 94, 770, 44).fill('#F8FAFC');
-          doc.rect(36, 94, 770, 44).stroke('#E2E8F0');
-
-          if (targetWorker) {
-            // Individual Craftsman Info (Left)
-            const roleStr = targetWorkerProfile?.skills?.[0] || 'Mistry';
-            const wageStr = targetWorkerProfile?.defaultDailyWage ? `₹${targetWorkerProfile.defaultDailyWage}/day` : 'Standard Wage';
-            doc.fillColor('#64748B').fontSize(7.5).text('INDIVIDUAL CRAFTSMAN ATTENDANCE RECORD:', 48, 100);
-            doc.fillColor('#0F172A').fontSize(10).text(`${targetWorker.name} (${targetWorkerProfile?.workerCode || 'FC-WRK'})`, 48, 111, { bold: true });
-            doc.fillColor('#475569').fontSize(7.5).text(`Role: ${roleStr}  |  Wage: ${wageStr}  |  Phone: ${targetWorker.phone || '-'}  |  Contractor: ${thekedarName}`, 48, 124);
-          } else if (reqUser && reqUser.role === ROLES.WORKER) {
-            // Worker Info (Left)
-            doc.fillColor('#64748B').fontSize(7.5).text(trans.workerAttendanceRecord, 48, 100);
-            doc.fillColor('#0F172A').fontSize(10).text(reqUser.name || 'Worker', 48, 111, { bold: true });
-            doc.fillColor('#475569').fontSize(7.5).text(`Phone: ${reqUser.phone || '-'}  |  Supervisor: ${thekedarName}`, 48, 124);
-          } else {
-            // Contractor Info (Left)
-            doc.fillColor('#64748B').fontSize(7.5).text(trans.thekedarDetails, 48, 100);
-            doc.fillColor('#0F172A').fontSize(10).text(thekedarName, 48, 111, { bold: true });
-            doc.fillColor('#475569').fontSize(7.5).text(`Phone: ${thekedarPhone}  |  Email: ${thekedarEmail}`, 48, 124);
-          }
-
-          // Report Metadata (Right)
-          doc.fillColor('#64748B').fontSize(7.5).text(trans.reportSpecs, 540, 100);
-          doc.fillColor('#0F172A').fontSize(8).text(`${trans.generated}: ${new Date().toLocaleString('en-IN')}`, 540, 111);
-          const filterDesc = targetWorker
-            ? `Craftsman ID: ${targetWorkerProfile?.workerCode || 'FC-WRK'}  |  Total Shifts: ${totalRecords}`
-            : `${trans.filter}: ${filterQuery.approvalStatus || 'All Records'}  |  ${trans.loggedShifts}: ${totalRecords}`;
-          doc.fillColor('#475569').fontSize(7.5).text(filterDesc, 540, 124);
-
-          // KPI Metric Badges (4 boxes)
-          const kpiY = 144;
-          const kpiW = 188;
-          const kpiGap = 6;
-
-          // Box 1: Total Records
-          doc.rect(36, kpiY, kpiW, 36).fill('#F1F5F9');
-          doc.fillColor('#475569').fontSize(7).text(trans.totalShiftsBox, 44, kpiY + 6);
-          doc.fillColor('#0F172A').fontSize(12).text(String(totalRecords), 44, kpiY + 16, { bold: true });
-
-          // Box 2: Approved Shifts
-          doc.rect(36 + kpiW + kpiGap, kpiY, kpiW, 36).fill('#ECFDF5');
-          doc.fillColor('#047857').fontSize(7).text(trans.approvedShiftsBox, 36 + kpiW + kpiGap + 8, kpiY + 6);
-          doc.fillColor('#065F46').fontSize(12).text(`${approvedCount} / ${totalRecords}`, 36 + kpiW + kpiGap + 8, kpiY + 16, { bold: true });
-
-          // Box 3: Man-Days
-          doc.rect(36 + (kpiW + kpiGap) * 2, kpiY, kpiW, 36).fill('#EFF6FF');
-          doc.fillColor('#1D4ED8').fontSize(7).text(trans.manDaysBox, 36 + (kpiW + kpiGap) * 2 + 8, kpiY + 6);
-          doc.fillColor('#1E40AF').fontSize(12).text(`${totalMultiplier.toFixed(1)}x`, 36 + (kpiW + kpiGap) * 2 + 8, kpiY + 16, { bold: true });
-
-          // Box 4: Total Wages
-          doc.rect(36 + (kpiW + kpiGap) * 3, kpiY, kpiW, 36).fill('#FEF3C7');
-          doc.fillColor('#B45309').fontSize(7).text(trans.grossWagesBox, 36 + (kpiW + kpiGap) * 3 + 8, kpiY + 6);
-          doc.fillColor('#78350F').fontSize(12).text(`₹${totalGrossEarned.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 36 + (kpiW + kpiGap) * 3 + 8, kpiY + 16, { bold: true });
-
-          return 186;
-        } else {
-          // Running header on continuation pages
-          doc.rect(36, 36, 770, 24).fill('#0F172A');
-          if (fs.existsSync(LOGO_PATH)) {
-            doc.image(LOGO_PATH, 42, 38, { height: 20, fit: [28, 20] });
-          }
-          const contText = targetWorker
-            ? `FurniCraft ERP — Attendance Statement (Continued) | Craftsman: ${targetWorker.name} (${targetWorkerProfile?.workerCode || 'FC-WRK'})`
-            : (reqUser && reqUser.role === ROLES.WORKER
-              ? `${trans.continuedWorker}${reqUser.name || 'Worker'}`
-              : `${trans.continuedThekedar}${thekedarName}`);
-          doc.fillColor('#FFFFFF').fontSize(8.5).text(contText, 76, 44);
-          return 66;
-        }
-      };
-
-      const drawTableHeader = (startY) => {
-        doc.rect(36, startY, 770, 20).fill('#1E293B');
-        let currentX = 36;
-        for (let i = 0; i < colHeaders.length; i++) {
-          doc.fillColor('#FFFFFF').fontSize(7.5).text(colHeaders[i], currentX + 3, startY + 6, {
-            width: colWidths[i] - 6,
-            align: colAligns[i],
-            bold: true,
-          });
-          currentX += colWidths[i];
-        }
-        return startY + 20;
-      };
-
-      let currentY = drawHeader(true);
-      currentY = drawTableHeader(currentY);
-
-      const rowHeight = 18;
-
-      if (records.length === 0) {
-        doc.fillColor('#64748B').fontSize(10).text(trans.noRecords, 36, currentY + 30, {
-          align: 'center',
-          width: 770,
-        });
-      } else {
-        records.forEach((r, idx) => {
-          if (currentY + rowHeight > 540) {
-            doc.addPage();
-            currentY = drawHeader(false);
-            currentY = drawTableHeader(currentY);
-          }
-
-          const rowBg = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
-          doc.rect(36, currentY, 770, rowHeight).fill(rowBg);
-          doc.rect(36, currentY + rowHeight - 0.5, 770, 0.5).fill('#E2E8F0');
-
-          const workerName = r.workerId?.name || 'N/A';
-          const workerPhone = r.workerId?.phone || '-';
-          const projectName = r.projectId ? `${r.projectId.projectCode || ''} ${r.projectId.name || ''}`.trim() : 'General / Workshop';
-          const timingStr = `${r.checkInTime || '-'} - ${r.checkOutTime || '-'}`;
-          const wageStr = `₹${r.applicableDailyWage || 0}`;
-          const earnedStr = `₹${Number(r.calculatedEarnings || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-          const status = r.approvalStatus || 'SUBMITTED';
-
-          let statusColor = '#B45309';
-          if (status === 'APPROVED') statusColor = '#15803D';
-          else if (status === 'REJECTED') statusColor = '#B91C1C';
-          else if (status === 'CORRECTION_REQUESTED') statusColor = '#4338CA';
-
-          const rowData = [
-            String(idx + 1),
-            r.date || '-',
-            workerName,
-            workerPhone,
-            projectName,
-            r.code || 'P',
-            `${r.wageMultiplier || 1}x`,
-            timingStr,
-            wageStr,
-            earnedStr,
-            status,
-          ];
-
-          let cellX = 36;
-          for (let c = 0; c < rowData.length; c++) {
-            const isStatusCol = c === rowData.length - 1;
-            doc.fillColor(isStatusCol ? statusColor : '#1E293B').fontSize(7).text(rowData[c], cellX + 3, currentY + 5, {
-              width: colWidths[c] - 6,
-              align: colAligns[c],
-              ellipsis: true,
-            });
-            cellX += colWidths[c];
-          }
-
-          currentY += rowHeight;
-        });
-
-        if (currentY + 22 > 540) {
-          doc.addPage();
-          currentY = drawHeader(false);
-          currentY = drawTableHeader(currentY);
-        }
-
-        doc.rect(36, currentY, 770, 22).fill('#F1F5F9');
-        doc.rect(36, currentY, 770, 22).stroke('#CBD5E1');
-        doc.fillColor('#0F172A').fontSize(8).text(
-          `${trans.totalSummary}:   ${totalRecords} ${trans.shiftsLogged}   |   ${approvedCount} ${trans.approved}   |   ${totalMultiplier.toFixed(1)} ${trans.manDays}   |   ${trans.totalGrossEarned}: ₹${totalGrossEarned.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          48,
-          currentY + 7,
-          { bold: true }
-        );
-      }
-
-      // Add page numbering & confidentiality notices across all pages
-      const pageRange = doc.bufferedPageRange();
-      for (let p = 0; p < pageRange.count; p++) {
-        doc.switchToPage(p);
-        doc.fillColor('#94A3B8').fontSize(7.5).text(
-          `Page ${p + 1} of ${pageRange.count}   •   ${trans.computerGenerated}   •   Contractor: ${thekedarName}`,
-          36,
-          562,
-          { align: 'center', width: 770 }
-        );
-      }
-
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
+  const paidColor = (row) => (row[row.length - 1] === L.paid ? C.good : C.bad);
+  const columns = worker
+    ? [
+        { header: '#', width: 26, align: 'center' },
+        { header: L.date, width: 92 },
+        { header: L.project, width: 180 },
+        { header: L.shift, width: 52, align: 'center', bold: true },
+        { header: L.rate, width: 58, align: 'right' },
+        { header: L.earned, width: 62, align: 'right', bold: true },
+        { header: L.status, width: CONTENT_W - 470, align: 'center', color: paidColor },
+      ]
+    : [
+        { header: '#', width: 24, align: 'center' },
+        { header: L.date, width: 82 },
+        { header: L.worker, width: 110 },
+        { header: L.project, width: 140 },
+        { header: L.shift, width: 46, align: 'center', bold: true },
+        { header: L.earned, width: 62, align: 'right', bold: true },
+        { header: L.status, width: CONTENT_W - 464, align: 'center', color: paidColor },
+      ];
+  const rows = records.map((r, i) => {
+    const project = r.projectId ? `${r.projectId.name}` : '—';
+    const status = r.isPayrollProcessed ? L.paid : L.unpaid;
+    return worker
+      ? [String(i + 1), formatDay(r.date), project, r.code, inr(r.applicableDailyWage), inr(r.calculatedEarnings), status]
+      : [String(i + 1), formatDay(r.date), r.workerId?.name || '—', project, r.code, inr(r.calculatedEarnings), status];
   });
+
+  const running = `${L.attendanceTitle} · ${worker ? worker.name : thekedar?.name || ''} · ${period_}`;
+  if (rows.length === 0) {
+    doc.roundedRect(PAGE.margin, y, CONTENT_W, 60, 8).fill(C.soft);
+    text(doc, L.noAttendance, PAGE.margin, y + 24, { size: 10, color: C.muted, width: CONTENT_W, align: 'center' });
+    y += 76;
+  } else {
+    y = drawTable(doc, y, { columns, rows, onNewPage: () => drawRunningHeader(doc, running) });
+    y += 12;
+    if (y + 60 > BOTTOM_LIMIT) {
+      doc.addPage();
+      y = drawRunningHeader(doc, running);
+    }
+    y = drawTotal(doc, y, { label: `${L.totalEarned} · ${period_}`, value: inr(earned), note: `${L.daysWorked}: ${worked.length} · ${L.manDays}: ${manDays.toFixed(1)}`, fill: C.brandSoft, color: C.brand });
+  }
+  if (y + 20 > BOTTOM_LIMIT) {
+    doc.addPage();
+    y = drawRunningHeader(doc, running);
+  }
+  text(doc, L.legend, PAGE.margin, y, { size: 7, color: C.muted, width: CONTENT_W, lineBreak: true });
+
+  drawFooters(doc, `FurniCraft · ${running}`);
+  doc.end();
+  return done;
 };
 
 /**
@@ -684,27 +560,18 @@ export const generateSalaryStatementPDF = async (payrollId, { reqUser, lang = 'e
 };
 
 /**
- * Generate Official PDF Payment Receipt & Wage Settlement Bill
+ * Payment / advance receipt PDF for one FinancialTransaction (wage payment, advance given, or other).
  */
 export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lang = 'en' } = {}) => {
-  const trans = PDF_TRANSLATIONS[lang] || PDF_TRANSLATIONS['en'];
+  const L = PDF_LABELS[lang] || PDF_LABELS.en;
+  const populate = (q) => q.populate('workerId', 'name phone').populate('thekedarId', 'name phone').lean();
   let txn = null;
   if (mongoose.Types.ObjectId.isValid(transactionIdOrCode)) {
-    txn = await FinancialTransaction.findById(transactionIdOrCode)
-      .populate('workerId', 'name email phone')
-      .populate('thekedarId', 'name email phone')
-      .populate('recordedBy', 'name email role');
+    txn = await populate(FinancialTransaction.findById(transactionIdOrCode));
   }
-  if (!txn) {
-    txn = await FinancialTransaction.findOne({ transactionId: transactionIdOrCode })
-      .populate('workerId', 'name email phone')
-      .populate('thekedarId', 'name email phone')
-      .populate('recordedBy', 'name email role');
-  }
-
+  if (!txn) txn = await populate(FinancialTransaction.findOne({ transactionId: transactionIdOrCode }));
   if (!txn) throw new NotFoundError('Payment transaction not found');
 
-  // Authorization check
   if (reqUser) {
     if (reqUser.role === ROLES.WORKER && txn.workerId?._id.toString() !== reqUser._id.toString()) {
       throw new ForbiddenError('You can only view your own payment bills');
@@ -714,216 +581,74 @@ export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lan
     }
   }
 
-  // Fetch worker profile
-  const workerProfile = txn.workerId
-    ? await WorkerProfile.findOne({ userId: txn.workerId._id })
-    : null;
-
+  const profile = txn.workerId ? await WorkerProfile.findOne({ userId: txn.workerId._id }).lean() : null;
   const thekedar = txn.thekedarId || {};
   const worker = txn.workerId || {};
+  const isWage = txn.category === 'SALARY_PAYMENT';
+  const isAdvance = txn.category === 'ADVANCE_DISBURSEMENT';
+  const title = isWage ? L.wageReceipt : isAdvance ? L.advanceReceipt : L.paymentReceipt;
+  const when = new Date(txn.transactionDate);
 
-  const bd = txn.breakdown || {
-    baseEarned: txn.amount,
-    advanceDeduction: 0,
-    additionalWages: 0,
-    netPaid: txn.amount,
-    remainingAdvance: workerProfile?.outstandingAdvanceBalance || 0,
-  };
-
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({
-        size: 'A4',
-        layout: 'portrait',
-        margin: 36,
-        bufferPages: true,
-      });
-
-      const buffers = [];
-      doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-
-      // Colors
-      const primaryDark = '#0F172A';
-      const slateGray = '#475569';
-      const lightBorder = '#CBD5E1';
-
-      // 1. Top Header Banner with Logo & Full Name
-      doc.rect(36, 36, 523, 60).fill(primaryDark);
-      if (fs.existsSync(LOGO_PATH)) {
-        doc.image(LOGO_PATH, 44, 41, { height: 50, fit: [62, 50] });
-      }
-      doc.fillColor('#FFFFFF').fontSize(16).text('FurniCraft ERP', 112, 43, { bold: true });
-      doc.fillColor('#F59E0B').fontSize(8.5).text(trans.billBanner, 112, 62, { bold: true });
-      doc.fillColor('#94A3B8').fontSize(7.5).text(trans.billSub, 112, 75);
-
-      // Voucher Tag (Top Right)
-      doc.rect(385, 45, 164, 42).fill('#1E293B');
-      doc.fillColor('#94A3B8').fontSize(7).text(trans.billNoTag, 395, 51);
-      doc.fillColor('#38BDF8').fontSize(9.5).text(txn.transactionId, 395, 63, { bold: true });
-
-      // 2. Contractor & Worker Two-Column Card
-      const cardY = 100;
-      const cardH = 92;
-      const colW = 256;
-
-      // Left Box: Contractor Details
-      doc.rect(36, cardY, colW, cardH).fill('#F8FAFC');
-      doc.rect(36, cardY, colW, cardH).stroke(lightBorder);
-      doc.rect(36, cardY, colW, 18).fill('#E2E8F0');
-      doc.fillColor('#334155').fontSize(7.5).text(trans.payerBoxTag, 44, cardY + 5, { bold: true });
-      doc.fillColor('#0F172A').fontSize(11).text(thekedar.name || 'Authorized Contractor', 44, cardY + 25, { bold: true });
-      doc.fillColor(slateGray).fontSize(8).text(`Phone: ${thekedar.phone || 'N/A'}`, 44, cardY + 42);
-      doc.fillColor(slateGray).fontSize(8).text(`Email: ${thekedar.email || 'N/A'}`, 44, cardY + 54);
-      doc.fillColor(slateGray).fontSize(7.5).text('Role: Prime Furniture Contractor / Thekedar', 44, cardY + 68);
-
-      // Right Box: Worker Details
-      doc.rect(303, cardY, colW, cardH).fill('#F8FAFC');
-      doc.rect(303, cardY, colW, cardH).stroke(lightBorder);
-      doc.rect(303, cardY, colW, 18).fill('#E2E8F0');
-      doc.fillColor('#334155').fontSize(7.5).text(trans.payeeBoxTag, 311, cardY + 5, { bold: true });
-      doc.fillColor('#0F172A').fontSize(11).text(worker.name || 'Worker', 311, cardY + 25, { bold: true });
-      doc.fillColor(slateGray).fontSize(8).text(`Worker Code: ${workerProfile?.workerCode || 'N/A'}`, 311, cardY + 42);
-      doc.fillColor(slateGray).fontSize(8).text(`Phone: ${worker.phone || 'N/A'}`, 311, cardY + 54);
-      doc.fillColor(slateGray).fontSize(7.5).text(`Trade Skill: ${workerProfile?.skillCategory || 'General Furniture Craftsman'}`, 311, cardY + 68);
-
-      // 3. Payment Metadata Bar
-      const metaY = 200;
-      doc.rect(36, metaY, 523, 30).fill('#F1F5F9');
-      doc.rect(36, metaY, 523, 30).stroke(lightBorder);
-      doc.fillColor('#64748B').fontSize(7.5).text(trans.paymentDateTime, 44, metaY + 6);
-      doc.fillColor('#0F172A').fontSize(8.5).text(new Date(txn.transactionDate).toLocaleString('en-IN'), 44, metaY + 16, { bold: true });
-
-      doc.fillColor('#64748B').fontSize(7.5).text(trans.paymentMethod, 210, metaY + 6);
-      doc.fillColor('#0F172A').fontSize(8.5).text(txn.paymentMethod || 'CASH', 210, metaY + 16, { bold: true });
-
-      doc.fillColor('#64748B').fontSize(7.5).text(trans.receiptRef, 360, metaY + 6);
-      doc.fillColor('#0F172A').fontSize(8.5).text(txn.receiptReference || 'Direct Cash Handover', 360, metaY + 16, { bold: true });
-
-      // 4. Itemized Wage & Advance Breakdown Table
-      const tableY = 238;
-      doc.rect(36, tableY, 523, 20).fill('#1E293B');
-      doc.fillColor('#FFFFFF').fontSize(8).text('#', 44, tableY + 6, { bold: true });
-      doc.fillColor('#FFFFFF').fontSize(8).text(trans.particularsBillHeader, 70, tableY + 6, { bold: true });
-      doc.fillColor('#FFFFFF').fontSize(8).text(trans.typeBillHeader, 340, tableY + 6, { bold: true });
-      doc.fillColor('#FFFFFF').fontSize(8).text(trans.amountHeader, 470, tableY + 6, { bold: true, align: 'right', width: 80 });
-
-      const items = [
-        {
-          num: '1',
-          name: trans.baseEarnedItem,
-          desc: 'Wages accumulated from approved shift attendance & tasks',
-          type: 'Earned Wage Credit (+)',
-          amt: `₹${(bd.baseEarned || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-          color: '#0F172A',
-        },
-        {
-          num: '2',
-          name: trans.advanceDeductionItem,
-          desc: 'Pre-existing cash / UPI advance deducted against earned wages',
-          type: 'Advance Deduction (-)',
-          amt: `- ₹${(bd.advanceDeduction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-          color: '#DC2626',
-        },
-        {
-          num: '3',
-          name: trans.foodDeductionItem,
-          desc: 'Contractor food & daily mess expense recovery',
-          type: 'Food Deduction (-)',
-          amt: `- ₹${(bd.foodDeduction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-          color: '#EA580C',
-        },
-        {
-          num: '4',
-          name: 'Room Rent Deduction (Optional)',
-          desc: 'Site room / worker accommodation stay rental charge',
-          type: 'Rent Deduction (-)',
-          amt: `- ₹${(bd.roomRentDeduction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-          color: '#9333EA',
-        },
-        {
-          num: '5',
-          name: 'Additional Wages / Site Bonus',
-          desc: 'Overtime incentive, travel allowance, or festive support',
-          type: 'Direct Allowance (+)',
-          amt: `+ ₹${(bd.additionalWages || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-          color: '#0D9488',
-        },
-      ];
-
-      let rowY = tableY + 20;
-      items.forEach((item, idx) => {
-        const bg = idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
-        doc.rect(36, rowY, 523, 28).fill(bg);
-        doc.rect(36, rowY, 523, 28).stroke(lightBorder);
-
-        doc.fillColor('#64748B').fontSize(7.5).text(item.num, 44, rowY + 9);
-        doc.fillColor('#0F172A').fontSize(8).text(item.name, 70, rowY + 4, { bold: true });
-        doc.fillColor('#64748B').fontSize(6.5).text(item.desc, 70, rowY + 14);
-        doc.fillColor('#475569').fontSize(7).text(item.type, 340, rowY + 9);
-        doc.fillColor(item.color).fontSize(8.5).text(item.amt, 470, rowY + 8, { bold: true, align: 'right', width: 80 });
-
-        rowY += 28;
-      });
-
-      // 5. Grand Net Amount Paid Highlight Box
-      const netY = rowY + 8;
-      doc.rect(36, netY, 523, 46).fill('#ECFDF5');
-      doc.rect(36, netY, 523, 46).stroke('#10B981');
-      doc.fillColor('#065F46').fontSize(8).text(trans.netDisbursedItem, 48, netY + 9, { bold: true });
-      doc.fillColor('#047857').fontSize(7).text('Official Disbursed Payment Inflow after advance deductions & adjustments', 48, netY + 23);
-
-      doc.fillColor('#065F46').fontSize(17).text(
-        `₹${(txn.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
-        350,
-        netY + 12,
-        { bold: true, align: 'right', width: 200 }
-      );
-
-      // 6. Post-Payment Worker Account Ledger Balance Box
-      const balY = netY + 54;
-      doc.rect(36, balY, 523, 36).fill('#FFFBEB');
-      doc.rect(36, balY, 523, 36).stroke('#FCD34D');
-      doc.fillColor('#92400E').fontSize(7.5).text('POST-PAYMENT ACCOUNT STATUS:', 48, balY + 6, { bold: true });
-
-      doc.fillColor('#78350F').fontSize(8).text(
-        `Remaining Advance Balance: ₹${(bd.remainingAdvance || 0).toLocaleString('en-IN')}  |  Unpaid Salary Balance: ₹0.00 (Fully Settled)`,
-        48,
-        balY + 18
-      );
-
-      // Notes section
-      const notesY = balY + 44;
-      doc.rect(36, notesY, 523, 28).fill('#F8FAFC');
-      doc.rect(36, notesY, 523, 28).stroke(lightBorder);
-      doc.fillColor('#64748B').fontSize(7).text('TRANSACTION REMARKS / NOTES:', 44, notesY + 5);
-      doc.fillColor('#1E293B').fontSize(8).text(txn.notes || 'Direct net wage settlement payment.', 44, notesY + 14);
-
-      // 7. Signature & Authorization Block
-      const sigY = notesY + 36;
-      // Payer Sign Box
-      doc.rect(36, sigY, 256, 68).stroke(lightBorder);
-      doc.fillColor('#64748B').fontSize(7).text('AUTHORIZED BY (CONTRACTOR / THEKEDAR):', 44, sigY + 7);
-      doc.fillColor('#0F172A').fontSize(9).text(thekedar.name || 'Contractor', 44, sigY + 42, { bold: true });
-      doc.fillColor('#94A3B8').fontSize(7).text('Signature & Verification Stamp', 44, sigY + 53);
-
-      // Payee Sign Box
-      doc.rect(303, sigY, 256, 68).stroke(lightBorder);
-      doc.fillColor('#64748B').fontSize(7).text('RECEIVED & ACKNOWLEDGED BY (CRAFTSMAN):', 311, sigY + 7);
-      doc.fillColor('#0F172A').fontSize(9).text(worker.name || 'Worker', 311, sigY + 42, { bold: true });
-      doc.fillColor('#94A3B8').fontSize(7).text('Craftsman Signature / Thumb Impression', 311, sigY + 53);
-
-      // Footer
-      doc.fillColor('#94A3B8').fontSize(6.8).text(
-        `This official wage payment voucher is electronically generated on FurniCraft ERP Platform on ${new Date().toLocaleString('en-IN')}. Reference ID: ${txn.transactionId}.`,
-        36,
-        sigY + 74,
-        { align: 'center', width: 523 }
-      );
-
-      doc.end();
-    } catch (err) {
-      reject(err);
-    }
+  const { doc, done } = createPdf();
+  let y = drawHeader(doc, {
+    title,
+    subtitle: when.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+    docNo: txn.transactionId,
   });
+
+  y = drawInfoCards(doc, y, [
+    { label: L.paidBy, value: thekedar.name || '—', sub: thekedar.phone ? `${L.thekedar} · ${thekedar.phone}` : L.thekedar },
+    { label: L.paidTo, value: worker.name || '—', sub: [profile?.workerCode, worker.phone].filter(Boolean).join(' · ') },
+    {
+      label: L.payment,
+      value: (txn.paymentMethod || 'CASH').replace('_', ' '),
+      sub: `${when.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}${txn.receiptReference ? ` · Ref ${txn.receiptReference}` : ''}`,
+    },
+  ], { height: 58 });
+
+  // Only the lines that actually apply, so a receipt never shows rows of ₹0.
+  const bd = txn.breakdown || {};
+  const lines = isWage
+    ? [
+        [L.wagesEarned, inr(bd.baseEarned ?? txn.amount), 'plus'],
+        ...(bd.additionalWages > 0 ? [[L.bonus, `+ ${inr(bd.additionalWages)}`, 'plus']] : []),
+        ...(bd.advanceDeduction > 0 ? [[L.advanceCut, `− ${inr(bd.advanceDeduction)}`, 'minus']] : []),
+        ...(bd.foodDeduction > 0 ? [[L.food, `− ${inr(bd.foodDeduction)}`, 'minus']] : []),
+        ...(bd.roomRentDeduction > 0 ? [[L.room, `− ${inr(bd.roomRentDeduction)}`, 'minus']] : []),
+      ]
+    : [[isAdvance ? L.advanceGiven : txn.category.replace(/_/g, ' '), inr(txn.amount), 'plus']];
+
+  if (!isAdvance) y = drawTable(doc, y, {
+    columns: [
+      { header: L.description, width: CONTENT_W - 140 },
+      { header: L.amount, width: 140, align: 'right', bold: true, color: (row, meta) => (meta.kind === 'minus' ? C.bad : C.ink) },
+    ],
+    rows: lines.map(([d, a]) => [d, a]),
+    rowMeta: lines.map(([, , kind]) => ({ kind })),
+    rowHeight: 26,
+  });
+  y += 14;
+
+  y = drawTotal(doc, y, isAdvance
+    ? { label: L.advanceGiven, value: inr(txn.amount), note: L.deductNext, fill: C.badSoft, color: C.bad }
+    : { label: L.netPaid, value: inr(txn.amount), fill: C.goodSoft, color: C.good });
+
+  const advanceBalance = isWage ? bd.remainingAdvance : profile?.outstandingAdvanceBalance;
+  if (advanceBalance !== undefined) {
+    doc.roundedRect(PAGE.margin, y, CONTENT_W, 30, 6).fill(C.soft);
+    text(doc, isWage ? L.advanceAfter : L.advanceNow, PAGE.margin + 12, y + 10, { size: 8.5, color: C.body });
+    text(doc, inr(advanceBalance), PAGE.margin + CONTENT_W - 152, y + 9, { size: 10, font: 'Bold', color: advanceBalance > 0 ? C.bad : C.good, width: 140, align: 'right' });
+    y += 42;
+  }
+
+  if (txn.notes) {
+    text(doc, L.notes.toUpperCase(), PAGE.margin, y, { size: 7, font: 'Bold', color: C.muted });
+    text(doc, txn.notes, PAGE.margin, y + 12, { size: 8.5, color: C.body, width: CONTENT_W, lineBreak: true });
+    y = doc.y + 16;
+  }
+
+  drawSignatures(doc, Math.max(y, 600), { label: L.authorised, name: thekedar.name || '' }, { label: L.received, name: worker.name || '' });
+  drawFooters(doc, `FurniCraft · ${title} ${txn.transactionId}`);
+  doc.end();
+  return done;
 };

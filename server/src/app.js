@@ -17,11 +17,8 @@ import projectRoutes from './routes/projectRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import payrollRoutes from './routes/payrollRoutes.js';
 import financeRoutes from './routes/financeRoutes.js';
-import toolRoutes from './routes/toolRoutes.js';
-import furnitureTaskRoutes from './routes/furnitureTaskRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
-import disputeRoutes from './routes/disputeRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import systemRoutes from './routes/systemRoutes.js';
 
@@ -94,11 +91,8 @@ export const createApp = () => {
   apiRouter.use('/attendance', attendanceRoutes);
   apiRouter.use('/payroll', payrollRoutes);
   apiRouter.use('/finance', financeRoutes);
-  apiRouter.use('/tools', toolRoutes);
-  apiRouter.use('/furniture-tasks', furnitureTaskRoutes);
   apiRouter.use('/expenses', expenseRoutes);
   apiRouter.use('/reports', reportRoutes);
-  apiRouter.use('/disputes', disputeRoutes);
   apiRouter.use('/audit', auditRoutes);
   apiRouter.use('/system', systemRoutes);
 

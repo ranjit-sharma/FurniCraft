@@ -46,6 +46,28 @@ export const reviewAdvanceRequest = async (req, res, next) => {
   }
 };
 
+export const giveAdvance = async (req, res, next) => {
+  try {
+    const result = await financeService.giveAdvance({
+      workerId: req.params.workerId,
+      amount: req.body.amount,
+      reason: req.body.reason,
+      paymentMethod: req.body.paymentMethod,
+      receiptReference: req.body.receiptReference,
+      user: req.user,
+      req,
+    });
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Advance given and recorded',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const disburseAdvance = async (req, res, next) => {
   try {
     const transaction = await financeService.disburseAdvance({

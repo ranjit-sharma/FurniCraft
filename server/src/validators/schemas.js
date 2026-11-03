@@ -8,9 +8,6 @@ import {
   PROJECT_PRIORITY,
   FINANCIAL_CATEGORIES,
   PAYMENT_METHODS,
-  TOOL_CATEGORIES,
-  TOOL_CONDITION,
-  FURNITURE_TASK_TYPES,
   EXPENSE_CATEGORIES,
 } from '../config/constants.js';
 
@@ -116,23 +113,6 @@ export const recordProjectMoneyReceivedSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Project Assignment Schema
-export const createAssignmentSchema = z.object({
-  workerId: z.string().min(1, 'Worker ID is required'),
-  projectId: z.string().min(1, 'Project ID is required'),
-  wageOverride: z.number().min(0).optional().nullable(),
-  roleInProject: z.string().optional(),
-  scheduleNotes: z.string().optional(),
-  startDate: z.string().optional(),
-});
-
-export const shiftAssignmentSchema = z.object({
-  toProjectId: z.string().min(1, 'Destination project ID is required'),
-  roleInProject: z.string().optional(),
-  wageOverride: z.number().min(0).optional().nullable(),
-  notes: z.string().optional(),
-});
-
 // Attendance Schemas
 export const submitAttendanceSchema = z.object({
   workerId: z.string().optional(), // If worker submits for themselves, inferred from token
@@ -188,6 +168,14 @@ export const createAdvanceRequestSchema = z.object({
   reason: z.string().min(3, 'Reason is required'),
 });
 
+export const giveAdvanceSchema = z.object({
+  workerId: z.string().optional(), // from the URL
+  amount: z.number().min(1, 'Amount must be greater than 0').max(10000, 'Worker cannot take more than ₹10,000 advance'),
+  reason: z.string().trim().min(3, 'Please enter a reason (at least 3 letters)'),
+  paymentMethod: z.enum(Object.values(PAYMENT_METHODS)).optional(),
+  receiptReference: z.string().optional(),
+});
+
 export const reviewAdvanceRequestSchema = z.object({
   status: z.enum(['APPROVED', 'REJECTED']),
   reviewNotes: z.string().optional(),
@@ -241,116 +229,6 @@ export const addPayrollAdjustmentSchema = z.object({
   reason: z.string().min(3, 'Adjustment reason is required'),
 });
 
-// Tool Schemas
-export const createToolSchema = z.object({
-  toolCode: z.string().optional(),
-  name: z.string().min(2, 'Tool name is required'),
-  category: z.string().min(1, 'Category is required'),
-  thekedarId: z.string().optional(),
-  description: z.string().optional(),
-  brand: z.string().optional(),
-  modelNumber: z.string().optional(),
-  serialNumber: z.string().optional(),
-  quantity: z.number().min(1).optional(),
-  initialCondition: z.string().optional(),
-  condition: z.string().optional(),
-  registrationDate: z.string().optional(),
-  purchaseDate: z.string().optional(),
-  purchaseCost: z.number().min(0).optional(),
-  notes: z.string().optional(),
-});
-
-export const updateToolSchema = z.object({
-  name: z.string().min(2).optional(),
-  category: z.string().optional(),
-  description: z.string().optional(),
-  brand: z.string().optional(),
-  modelNumber: z.string().optional(),
-  serialNumber: z.string().optional(),
-  condition: z.string().optional(),
-  isActive: z.boolean().optional(),
-  notes: z.string().optional(),
-});
-
-export const issueToolSchema = z.object({
-  toolId: z.string().min(1, 'Tool ID is required'),
-  projectId: z.string().min(1, 'Project ID is required'),
-  workerId: z.string().min(1, 'Worker ID is required'),
-  issueDate: z.string().optional(),
-  expectedReturnDate: z.string().optional(),
-  quantity: z.number().min(1).optional(),
-  conditionAtIssue: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const returnToolSchema = z.object({
-  toolId: z.string().optional(),
-  returnDate: z.string().optional(),
-  quantity: z.number().min(1).optional(),
-  conditionAtReturn: z.string().optional(),
-  damageNotes: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const transferToolSchema = z.object({
-  toolId: z.string().optional(),
-  toolIssueId: z.string().optional(),
-  toProjectId: z.string().min(1, 'Destination project required'),
-  toWorkerId: z.string().optional(),
-  transferDate: z.string().optional(),
-  reason: z.string().min(2, 'Transfer reason required'),
-  notes: z.string().optional(),
-});
-
-export const reportToolDamageSchema = z.object({
-  toolId: z.string().optional(),
-  damageType: z.string().optional(),
-  description: z.string().min(2, 'Damage description required').optional(),
-  damageNotes: z.string().optional(),
-  damageDate: z.string().optional(),
-  workerId: z.string().optional(),
-  projectId: z.string().optional(),
-  isMissing: z.boolean().optional(),
-});
-
-export const reportMissingToolSchema = z.object({
-  reason: z.string().min(3, 'Reason / circumstances for missing tool is mandatory'),
-  missingDate: z.string().optional(),
-  conditionLastSeen: z.string().optional(),
-  workerId: z.string().optional(),
-  projectId: z.string().optional(),
-});
-
-export const resolveMissingToolSchema = z.object({
-  resolutionStatus: z.enum(['FOUND', 'CLOSED']),
-  verifiedCondition: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const resolveDamageToolSchema = z.object({
-  resolutionStatus: z.enum(['USABLE_AGAIN', 'RETIRED']),
-  notes: z.string().optional(),
-});
-
-// Furniture Task Schemas
-export const createFurnitureTaskSchema = z.object({
-  projectId: z.string().min(1),
-  furnitureItemName: z.string().min(2),
-  taskType: z.enum(Object.values(FURNITURE_TASK_TYPES)),
-  assignedWorkerId: z.string().optional().nullable(),
-  plannedUnits: z.number().min(1).default(1),
-  unitMetric: z.string().optional(),
-  startDate: z.string().optional(),
-  targetDate: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const updateFurnitureTaskSchema = z.object({
-  completedUnits: z.number().min(0).optional(),
-  status: z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'VERIFIED', 'REWORK_NEEDED']).optional(),
-  defectNotes: z.string().optional(),
-});
-
 // Project Expense Schema
 export const createExpenseSchema = z.object({
   projectId: z.string().min(1),
@@ -364,15 +242,3 @@ export const createExpenseSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Dispute Schema
-export const createDisputeSchema = z.object({
-  category: z.enum(['ATTENDANCE', 'PAYROLL', 'ADVANCE', 'TOOL', 'WAGE', 'OTHER']),
-  subject: z.string().min(3),
-  description: z.string().min(5),
-  thekedarId: z.string().optional(),
-});
-
-export const resolveDisputeSchema = z.object({
-  status: z.enum(['RESOLVED', 'REJECTED', 'UNDER_REVIEW']),
-  resolutionNotes: z.string().min(3),
-});

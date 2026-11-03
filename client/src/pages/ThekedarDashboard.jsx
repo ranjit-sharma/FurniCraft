@@ -1,118 +1,117 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/common/Card';
-import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
-import { Link } from 'react-router-dom';
+import { localToday } from '../utils/date';
 import {
-  Users,
-  FolderKanban,
-  CheckCircle,
-  XCircle,
-  IndianRupee,
-  Wrench,
-  AlertCircle,
-  AlertTriangle,
-  ArrowRight,
-  TrendingUp,
-  Download,
-  FileText,
-  Clock,
-  Plus,
   UserPlus,
-  Edit,
-  Calendar,
-  Search,
-  Briefcase,
-  Phone,
-  Shield,
+  IndianRupee,
+  FolderKanban,
+  FileText,
+  ChevronRight,
+  ArrowUpRight,
+  Lock,
   CheckCircle2,
-  Filter,
 } from 'lucide-react';
+
+const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
+
+// Short labels so five codes fit on one row of a phone screen.
+const QUICK_CODES = [
+  { code: 'P', label: 'P', title: 'Full day (1.0x)' },
+  { code: 'HALF', label: 'Half', title: 'Half day (0.5x)' },
+  { code: 'P1/5', label: '1.5x', title: 'Till 9 PM (1.5x)' },
+  { code: 'PP', label: '2x', title: 'Till midnight (2.0x)' },
+  { code: 'ABSENT', label: 'Absent', title: 'Absent (no wage)' },
+];
+
+const TXN_LABELS = { SALARY_PAYMENT: 'Wage payment', ADVANCE_DISBURSEMENT: 'Advance given' };
+const PROJECT_KEY = 'furnicraft_attendance_project';
 
 export const ThekedarDashboard = () => {
   const { t, language } = useLanguage();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const [message, setMessage] = useState(null);
+  const [today] = useState(localToday);
+  const [projectId, setProjectId] = useState(() => {
+    try {
+      return localStorage.getItem(PROJECT_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+  const [savingWorkerId, setSavingWorkerId] = useState(null);
 
-  // Disburse Modal State
-  const [disburseModalOpen, setDisburseModalOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('UPI');
-  const [receiptReference, setReceiptReference] = useState('');
-
-  // Dedicated Workforce Management State
-  const [workersList, setWorkersList] = useState([]);
-  const [projectsList, setProjectsList] = useState([]);
-  const [workerSearch, setWorkerSearch] = useState('');
-  const [workerStatusFilter, setWorkerStatusFilter] = useState('ALL');
-
-  // Add Worker Modal State
+  // Add New Craftsman Modal State
   const [addWorkerModalOpen, setAddWorkerModalOpen] = useState(false);
   const [newWorkerName, setNewWorkerName] = useState('');
   const [newWorkerPhone, setNewWorkerPhone] = useState('');
   const [newWorkerTrade, setNewWorkerTrade] = useState('Mistry');
   const [newWorkerWage, setNewWorkerWage] = useState('750');
-  const [newWorkerProjectId, setNewWorkerProjectId] = useState('');
   const [addWorkerSubmitting, setAddWorkerSubmitting] = useState(false);
-
-  // Edit Worker Modal State
-  const [editWorkerModalOpen, setEditWorkerModalOpen] = useState(false);
-  const [editingWorkerId, setEditingWorkerId] = useState(null);
-  const [editWorkerName, setEditWorkerName] = useState('');
-  const [editWorkerPhone, setEditWorkerPhone] = useState('');
-  const [editWorkerTrade, setEditWorkerTrade] = useState('Mistry');
-  const [editWorkerWage, setEditWorkerWage] = useState('');
-  const [editWorkerSubmitting, setEditWorkerSubmitting] = useState(false);
-
-  // Mark Daily Attendance Modal State (Triggered strictly from Worker Cards)
-  const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
-  const [selectedAttendanceWorker, setSelectedAttendanceWorker] = useState(null);
-  const [attendanceWorkerId, setAttendanceWorkerId] = useState('');
-  const [attendanceProjectId, setAttendanceProjectId] = useState('');
-  const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [attendanceShift, setAttendanceShift] = useState('GENERAL');
-  const [attendanceCode, setAttendanceCode] = useState('P');
-  const [attendanceNotes, setAttendanceNotes] = useState('');
-  const [markAttendanceSubmitting, setMarkAttendanceSubmitting] = useState(false);
-
-  const fetchWorkforceData = async () => {
-    try {
-      const [wRes, pRes] = await Promise.all([
-        api.get('/users/workers'),
-        api.get('/projects'),
-      ]);
-      const wList = wRes.data?.workers || [];
-      const pList = pRes.data?.projects || [];
-      setWorkersList(wList);
-      setProjectsList(pList);
-      if (wList.length > 0) {
-        setAttendanceWorkerId((prev) => prev || wList[0].userId?._id || wList[0]._id);
-      }
-      if (pList.length > 0) {
-        setAttendanceProjectId((prev) => prev || pList[0]._id);
-      }
-    } catch (err) {
-      console.error('Workforce fetch error:', err);
-    }
-  };
 
   const fetchDashboard = async () => {
     try {
-      const res = await api.get('/reports/dashboard');
+      setLoadError(null);
+      const res = await api.get(`/reports/dashboard?date=${today}`);
       setData(res.data);
     } catch (err) {
-      console.error(err);
+      setLoadError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchDashboard(), fetchWorkforceData()]).finally(() => setLoading(false));
+    fetchDashboard();
   }, []);
+
+  const projects = data?.activeProjects || [];
+  // Remembered project if it is still active, otherwise the first active one.
+  const selectedProjectId = projects.some((p) => p._id === projectId) ? projectId : projects[0]?._id || '';
+
+  const handleSelectProject = (id) => {
+    setProjectId(id);
+    try {
+      localStorage.setItem(PROJECT_KEY, id);
+    } catch {
+      // storage blocked: the choice still applies for this visit
+    }
+  };
+
+  // One tap marks today's shift; tapping again with another code edits it (server updates the same entry).
+  const handleMark = async (worker, code) => {
+    if (!selectedProjectId) {
+      setMessage({ type: 'error', text: 'Create a project first, then mark attendance.' });
+      return;
+    }
+    if (worker.today?.code === code) return;
+    setSavingWorkerId(worker.userId);
+    setMessage(null);
+    try {
+      const res = await api.post('/attendance/submit', {
+        workerId: worker.userId,
+        projectId: worker.today?.projectId || selectedProjectId,
+        date: today,
+        shift: 'GENERAL',
+        code,
+      });
+      setMessage({ type: 'success', text: `${worker.name}: ${res.data?.updated ? 'changed to' : 'marked'} ${code}` });
+      await fetchDashboard();
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setSavingWorkerId(null);
+    }
+  };
 
   const handleAddWorker = async (e) => {
     e.preventDefault();
@@ -127,7 +126,6 @@ export const ThekedarDashboard = () => {
         phone: newWorkerPhone.trim(),
         trade: newWorkerTrade || 'Mistry',
         defaultDailyWage: parseFloat(newWorkerWage) || 750,
-        projectId: newWorkerProjectId || undefined,
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
       setMessage({ type: 'success', text: `Craftsman ${newWorkerName} added with ID ${generatedCode}!` });
@@ -135,133 +133,12 @@ export const ThekedarDashboard = () => {
       setNewWorkerName('');
       setNewWorkerPhone('');
       setNewWorkerTrade('Mistry');
-      fetchWorkforceData();
       fetchDashboard();
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to create worker' });
     } finally {
       setAddWorkerSubmitting(false);
     }
-  };
-
-  const handleOpenEditWorker = (worker) => {
-    const userId = worker.userId?._id || worker._id;
-    setEditingWorkerId(userId);
-    setEditWorkerName(worker.userId?.name || worker.name || '');
-    setEditWorkerPhone(worker.userId?.phone || worker.phone || '');
-    setEditWorkerTrade(worker.skills?.[0] || 'Mistry');
-    setEditWorkerWage(worker.defaultDailyWage || '750');
-    setEditWorkerModalOpen(true);
-  };
-
-  const handleUpdateWorker = async (e) => {
-    e.preventDefault();
-    if (!editingWorkerId) return;
-    try {
-      setEditWorkerSubmitting(true);
-      await api.put(`/users/workers/${editingWorkerId}`, {
-        name: editWorkerName.trim(),
-        phone: editWorkerPhone.trim(),
-        trade: editWorkerTrade,
-        defaultDailyWage: parseFloat(editWorkerWage) || undefined,
-      });
-      setMessage({ type: 'success', text: `Worker details for ${editWorkerName} updated successfully!` });
-      setEditWorkerModalOpen(false);
-      fetchWorkforceData();
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to update worker' });
-    } finally {
-      setEditWorkerSubmitting(false);
-    }
-  };
-
-  const handleToggleWorkerStatus = async (worker) => {
-    const userId = worker.userId?._id || worker._id;
-    const currentStatus = worker.userId?.status || worker.status;
-    const nextStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-    try {
-      await api.patch(`/users/workers/${userId}/status`, { status: nextStatus });
-      setMessage({ type: 'success', text: `Worker ${nextStatus === 'ACTIVE' ? 'activated' : 'deactivated'} successfully!` });
-      fetchWorkforceData();
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to update worker status' });
-    }
-  };
-
-  const handleOpenMarkAttendance = (worker) => {
-    if (!worker) return;
-    setSelectedAttendanceWorker(worker);
-    const userId = worker.userId?._id || worker._id;
-    setAttendanceWorkerId(userId);
-    if (projectsList.length > 0 && !attendanceProjectId) {
-      setAttendanceProjectId(projectsList[0]._id);
-    }
-    setAttendanceDate(new Date().toISOString().split('T')[0]);
-    setAttendanceShift('GENERAL');
-    setAttendanceCode('P');
-    setAttendanceNotes('');
-    setMarkAttendanceModalOpen(true);
-  };
-
-  const handleMarkAttendance = async (e) => {
-    e.preventDefault();
-    if (!attendanceWorkerId || !attendanceProjectId) {
-      setMessage({ type: 'error', text: 'Please select both worker and project.' });
-      return;
-    }
-    try {
-      setMarkAttendanceSubmitting(true);
-      await api.post('/attendance', {
-        workerId: attendanceWorkerId,
-        projectId: attendanceProjectId,
-        date: attendanceDate,
-        shift: attendanceShift,
-        code: attendanceCode,
-        notes: attendanceNotes,
-      });
-      setMessage({ type: 'success', text: `Attendance saved & authorized for ${attendanceDate} (${attendanceCode})!` });
-      setMarkAttendanceModalOpen(false);
-      setAttendanceNotes('');
-      fetchWorkforceData();
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to mark attendance' });
-    } finally {
-      setMarkAttendanceSubmitting(false);
-    }
-  };
-
-  const handleReviewAdvance = async (requestId, status) => {
-    try {
-      await api.patch(`/finance/advance-requests/${requestId}/review`, { status });
-      setMessage({ type: 'success', text: `Advance request marked as ${status}!` });
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
-    }
-  };
-
-  const handleDisburseAdvance = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post(`/finance/advance-requests/${selectedRequest._id}/disburse`, {
-        paymentMethod,
-        receiptReference,
-      });
-      setMessage({ type: 'success', text: 'Advance disbursed and transaction recorded!' });
-      setDisburseModalOpen(false);
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
-    }
-  };
-
-  const handleExportWorkerAttendancePDF = (worker) => {
-    const workerUserId = worker.userId?._id || worker._id;
-    if (!workerUserId) return;
-    window.open(`/api/v1/reports/export/attendance?workerId=${workerUserId}&lang=${language}`, '_blank');
   };
 
   if (loading) {
@@ -272,18 +149,18 @@ export const ThekedarDashboard = () => {
     );
   }
 
-  const metrics = data?.metrics || {};
-  const activeProjects = data?.activeProjects || [];
-  const pendingAdvances = data?.pendingAdvanceRequests || [];
-  const issuedTools = data?.issuedTools || [];
-  const recentDisputes = data?.recentDisputes || [];
+  const m = data?.metrics || {};
+  const workers = (data?.workers || []).filter((w) => w.status === 'ACTIVE');
+  const transactions = data?.recentTransactions || [];
+  const firstName = (user?.name || '').split(' ')[0];
 
   return (
-    <div className="space-y-6">
-      {/* Alert Banner */}
+    <div className="space-y-5">
+      <LoadError message={loadError} onRetry={fetchDashboard} />
       {message && (
         <div
-          className={`flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
+          role="status"
+          className={`flex items-center justify-between gap-3 rounded-xl p-3 text-sm font-medium animate-fade-in ${
             message.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
               : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
@@ -291,436 +168,213 @@ export const ThekedarDashboard = () => {
         >
           <span>{message.text}</span>
           <button onClick={() => setMessage(null)} className="text-xs font-bold underline">
-            Dismiss
+            {t('common.dismiss', 'OK')}
           </button>
         </div>
       )}
 
-      {/* Thekedar Management Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-900/30 bg-gradient-to-r from-stone-900 via-amber-950 to-stone-900 p-4 sm:p-6 text-white shadow-lg">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xl shadow-inner">
-            <i className="fa-solid fa-user"></i>
-          </div>
+      {/* Greeting + money owed */}
+      <div className="rounded-2xl bg-gradient-to-br from-amber-700 via-amber-800 to-slate-900 p-4 sm:p-5 text-white shadow-lg">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="inline-block rounded-md bg-amber-500/20 px-2.5 py-0.5 text-xs font-bold text-amber-300 border border-amber-400/30">
-              {t('profile.thekedarDesc') || 'Contractor Command Center'}
-            </span>
-            <h2 className="text-xl sm:text-2xl font-black mt-1.5">{t('nav.dashboard') || 'Thekedar Dashboard'}</h2>
-            <p className="text-xs text-amber-200/90 mt-0.5">{t('common.tagline') || 'Manage modern furniture projects, workforce assignments, and net settlements.'}</p>
+            <h2 className="text-xl sm:text-2xl font-black">{t('thekedarDash.greeting', 'Namaste')}, {firstName}</h2>
+            <p className="text-xs text-amber-100/80">
+              {new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <Button
-            variant="outline-amber"
-            size="sm"
-            onClick={() => setAddWorkerModalOpen(true)}
-            icon={UserPlus}
-            className="w-full sm:w-auto justify-center bg-amber-500/10 border-amber-400/40 text-amber-300 hover:bg-amber-500/20"
-          >
-            Add Craftsman
+          <Button variant="outline-white" size="sm" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
+            {t('thekedarDash.addWorker', 'Add Worker')}
           </Button>
-          <Link to="/workers" className="w-full sm:w-auto">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={IndianRupee}
-              className="w-full sm:w-auto justify-center bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-md hover:shadow-lg transition-all"
-            >
-              {t('thekedar.managedWorkers') || 'Workers'} & {t('dashboard.settleNet') || 'Net Pay'}
-            </Button>
-          </Link>
         </div>
-      </div>
 
-      {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Card className="border-slate-200 dark:border-slate-800">
+        <Link to="/workers" className="mt-4 block rounded-2xl bg-white/10 p-4 active:scale-[0.99] transition">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('dashboard.activeProjects') || 'Active Projects'}</span>
-            <FolderKanban className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-100">{t('thekedarDash.netPayable', 'Net payable to workers')}</span>
+            <ChevronRight className="h-4 w-4 text-amber-100/70" />
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{metrics.activeProjectsCount || 0}</div>
-          <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('projects.furnitureScope') || 'Kitchens, wardrobes & panels'}</span>
-        </Card>
-
-        <Card className="border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedar.managedWorkers') || 'Managed Workers'}</span>
-            <Users className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-          </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{metrics.managedWorkersCount || 0}</div>
-          <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('dashboard.totalWorkforce') || 'Carpenters, fitters, polishers'}</span>
-        </Card>
-
-        <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/30">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('nav.toolTracking') || 'Tools In Custody'}</span>
-            <Wrench className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-          </div>
-          <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-2">
-            {issuedTools.length}
-          </div>
-          <span className="text-[11px] text-amber-800 dark:text-amber-400">
-            {issuedTools.length} {t('tools.currentlyIssued') || 'Tools currently issued to workers'}
-          </span>
-        </Card>
-
-        <Card className="border-blue-200 dark:border-blue-800/60 bg-blue-50/30 dark:bg-blue-950/30">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">{t('dashboard.netBalance') || 'Total Unpaid Salary'}</span>
-            <IndianRupee className="h-4 w-4 text-blue-700 dark:text-blue-400" />
-          </div>
-          <div className="text-2xl font-black text-blue-950 dark:text-blue-200 mt-2">₹{metrics.totalOutstandingSalary?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-blue-800 dark:text-blue-400">{t('dashboard.outstandingAdvance') || 'Advances'}: ₹{metrics.totalOutstandingAdvances?.toLocaleString('en-IN') || 0}</span>
-        </Card>
-      </div>
-
-      {/* Dedicated Thekedar-Managed Workforce Hub */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm space-y-4 transition-colors">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300">
-                <Users className="h-4 w-4" />
-              </div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                Workforce & Craftsmen Management
-              </h3>
-              <span className="rounded-full bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-200">
-                {workersList.length} Managed
-              </span>
+          <div className="text-3xl font-black">{inr(m.netPayable)}</div>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <div className="text-[11px] text-amber-100/80">{t('thekedarDash.unpaidWages', 'Unpaid wages')}</div>
+              <div className="font-bold">{inr(m.unpaidWages)}</div>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Workers are managed data records under your contract. Add workers, assign projects, configure wages, and log daily shifts.
-            </p>
+            <div>
+              <div className="text-[11px] text-amber-100/80">{t('thekedarDash.advances', 'Advances to recover')}</div>
+              <div className="font-bold text-rose-100">− {inr(m.outstandingAdvances)}</div>
+            </div>
           </div>
+          <div className="mt-3 border-t border-white/10 pt-3 text-[11px] text-amber-100/90">
+            {t('thekedarDash.thisMonth', 'This month')}: {inr(m.paidThisMonth)} {t('thekedarDash.paid', 'paid')} · {inr(m.advancesThisMonth)} {t('thekedarDash.advanced', 'given as advance')}
+          </div>
+        </Link>
+      </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="primary"
-              icon={UserPlus}
-              onClick={() => setAddWorkerModalOpen(true)}
-              className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-xs"
+      {/* Today's attendance: one tap per worker */}
+      <Card
+        title={t('thekedarDash.todayAttendance', "Today's attendance")}
+        subtitle={`${m.markedToday || 0} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}`}
+      >
+        {projects.length > 0 && (
+          <label className="mb-3 block">
+            <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedarDash.site', 'Site for new entries')}</span>
+            <select
+              value={selectedProjectId}
+              onChange={(e) => handleSelectProject(e.target.value)}
+              className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none"
             >
-              Add New Worker
-            </Button>
-            <Link to="/workers">
-              <Button size="sm" variant="secondary" className="text-xs">
-                Full Workforce Page &rarr;
-              </Button>
-            </Link>
-          </div>
-        </div>
+              {projects.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name} ({p.projectCode})
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
 
-        {/* Search & Filter Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-            <input
-              type="text"
-              value={workerSearch}
-              onChange={(e) => setWorkerSearch(e.target.value)}
-              placeholder="Search by name, ID, phone, skill..."
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {['ALL', 'ACTIVE', 'SUSPENDED'].map((st) => (
-              <button
-                key={st}
-                onClick={() => setWorkerStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  workerStatusFilter === st
-                    ? 'bg-amber-500 text-slate-950 shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {st === 'ALL' ? 'All Workers' : (st === 'ACTIVE' ? 'Active Only' : 'Inactive')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Managed Workers Table */}
-        {workersList.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-3">
-            <Users className="mx-auto h-8 w-8 text-slate-400" />
-            <div className="text-sm font-bold text-slate-700 dark:text-slate-300">No Workers Added Yet</div>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Start building your workforce roster by adding your carpenters, polishers, and site craftsmen.
-            </p>
-            <Button size="sm" variant="primary" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
-              Add First Craftsman
+        {workers.length === 0 ? (
+          <div className="py-6 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('thekedarDash.noWorkers', 'No active workers yet.')}</p>
+            <Button className="mt-3" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
+              {t('thekedarDash.addWorker', 'Add Worker')}
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="p-3 font-bold">Worker ID</th>
-                  <th className="p-3 font-bold">Craftsman</th>
-                  <th className="p-3 font-bold">Trade / Skill</th>
-                  <th className="p-3 font-bold">Daily Wage</th>
-                  <th className="p-3 font-bold">Unpaid Earned</th>
-                  <th className="p-3 font-bold">Advance</th>
-                  <th className="p-3 font-bold">Status</th>
-                  <th className="p-3 font-bold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {workersList
-                  .filter((w) => {
-                    const status = w.userId?.status || w.status || 'ACTIVE';
-                    const matchesStatus = workerStatusFilter === 'ALL' || status === workerStatusFilter;
-                    const q = workerSearch.toLowerCase().trim();
-                    const matchesSearch =
-                      !q ||
-                      w.userId?.name?.toLowerCase().includes(q) ||
-                      w.name?.toLowerCase().includes(q) ||
-                      w.workerCode?.toLowerCase().includes(q) ||
-                      w.userId?.phone?.toLowerCase().includes(q) ||
-                      w.skills?.some((s) => s.toLowerCase().includes(q));
-                    return matchesStatus && matchesSearch;
-                  })
-                  .slice(0, 10)
-                  .map((w) => {
-                    const userId = w.userId?._id || w._id;
-                    const name = w.userId?.name || w.name || 'Unnamed';
-                    const phone = w.userId?.phone || w.phone || 'No phone';
-                    const status = w.userId?.status || w.status || 'ACTIVE';
-                    const code = w.workerCode || 'FC-WRK';
-                    const wage = w.defaultDailyWage || 750;
-                    const earned = w.unpaidEarnings || 0;
-                    const advance = w.outstandingAdvanceBalance || 0;
-                    const primarySkill = w.skills?.[0] || 'Mistry';
-
-                    return (
-                      <tr key={w._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                        <td className="p-3 font-mono font-bold text-amber-700 dark:text-amber-400">
-                          {code}
-                        </td>
-                        <td className="p-3 font-semibold text-slate-900 dark:text-white">
-                          <div>{name}</div>
-                          <div className="text-[10px] text-slate-400 font-normal">{phone}</div>
-                        </td>
-                        <td className="p-3">
-                          <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-[10px] border border-slate-200 dark:border-slate-700">
-                            {primarySkill}
-                          </span>
-                        </td>
-                        <td className="p-3 font-bold text-slate-800 dark:text-slate-200">
-                          ₹{wage}/day
-                        </td>
-                        <td className="p-3 font-bold text-emerald-700 dark:text-emerald-400">
-                          ₹{earned.toLocaleString('en-IN')}
-                        </td>
-                        <td className="p-3 font-bold text-rose-700 dark:text-rose-400">
-                          ₹{advance.toLocaleString('en-IN')}
-                        </td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => handleToggleWorkerStatus(w)}
-                            title="Click to toggle status"
-                            className="cursor-pointer"
-                          >
-                            <Badge variant={status === 'ACTIVE' ? 'success' : 'danger'}>
-                              {status === 'ACTIVE' ? 'Active' : 'Suspended'}
-                            </Badge>
-                          </button>
-                        </td>
-                        <td className="p-3 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => handleOpenMarkAttendance(w)}
-                              className="px-2 py-1 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold hover:bg-amber-100 transition-colors cursor-pointer text-[10px]"
-                              title="Mark Daily Attendance"
-                            >
-                              Attendance
-                            </button>
-                            <button
-                              onClick={() => handleExportWorkerAttendancePDF(w)}
-                              className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors cursor-pointer text-[10px]"
-                              title={`Download Attendance PDF for ${name}`}
-                            >
-                              PDF
-                            </button>
-                            <button
-                              onClick={() => handleOpenEditWorker(w)}
-                              className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors cursor-pointer text-[10px]"
-                              title="Edit Worker Details"
-                            >
-                              Edit
-                            </button>
-                            <Link
-                              to={`/workers`}
-                              className="px-2 py-1 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold hover:bg-blue-100 transition-colors text-[10px]"
-                              title="360° History & Pay Net"
-                            >
-                              Pay / View
-                            </Link>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Grid: Pending Advance Requests & Active Modern Furniture Projects */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Pending Advance Requests */}
-        <Card
-          title={`${t('dashboard.pendingAdvance') || 'Pending Advance Requests'} (${pendingAdvances.length})`}
-          subtitle={t('workerModals.advanceModalTitle') || 'Cash or UPI advance requests from site workers'}
-        >
-          {pendingAdvances.length === 0 ? (
-            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('dashboard.pendingAdvance')}: 0</p>
-          ) : (
-            <div className="space-y-3">
-              {pendingAdvances.map((adv) => (
-                <div key={adv._id} className={`flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border p-3.5 transition-all ${
-                  adv.exceedsLimit
-                    ? 'border-rose-300 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/40'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60'
-                }`}>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-slate-900 dark:text-white text-sm">{adv.workerId?.name}</span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                        <IndianRupee className="h-3 w-3 text-amber-700 dark:text-amber-400" />
-                        <span>{t('worker.reqAdvBadge') || 'Req Adv'}: ₹{adv.amount?.toLocaleString('en-IN')}</span>
-                      </span>
+          <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+            {workers.map((w) => {
+              const locked = w.today?.isPayrollProcessed;
+              const saving = savingWorkerId === w.userId;
+              return (
+                <li key={w.userId} className="px-1 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                        <span className="truncate">{w.name}</span>
+                        {w.today && !locked && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-label="Marked" />}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {w.workerCode} · {inr(w.defaultDailyWage)}/day
+                        {w.today && <> · {t('thekedarDash.earnedToday', 'today')} {inr(w.today.calculatedEarnings)}</>}
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">{t('common.reason') || 'Reason'}: {adv.reason}</p>
-                    <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('thekedarDashboard.tableProject') || 'Project'}: {adv.projectId?.name || 'General Workshop'}</span>
-
-                    {/* Flashing Alert if worker has reached/exceeded ₹10,000 advance limit */}
-                    {adv.exceedsLimit ? (
-                      <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-100/80 dark:bg-rose-950/60 px-2.5 py-1.5 text-xs font-bold text-rose-800 dark:text-rose-200 animate-pulse">
-                        <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5 animate-bounce" />
-                        <div>
-                          <span>{t('workerModals.advanceLimitReached') || '⚠️ Max Advance Limit Exceeded (₹10,000)!'}</span>
-                          <p className="text-[11px] font-medium text-rose-700 dark:text-rose-300 mt-0.5">
-                            {t('worker.maxAdvanceNote') || 'Worker cannot take more than ₹10,000 advance'}.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                        {t('workerModals.currentAdvance') || 'Current Advance'}: ₹{(adv.currentAdvanceBalance || 0).toLocaleString('en-IN')} ({t('worker.remainingLimit') || 'Under ₹10,000 limit'})
-                      </div>
+                    {locked && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                        <Lock className="h-3.5 w-3.5" /> {t('thekedarDash.paidLocked', 'Paid')}
+                      </span>
                     )}
                   </div>
-
-                  <div className="flex flex-col gap-1.5 shrink-0 sm:items-end">
-                    {adv.status === 'PENDING' ? (
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="success"
-                          disabled={adv.exceedsLimit}
-                          title={adv.exceedsLimit ? "Worker advance exceeds ₹10,000 limit - Cannot Approve" : "Approve advance request"}
-                          className={adv.exceedsLimit ? "opacity-40 cursor-not-allowed bg-slate-300 dark:bg-slate-700 text-slate-500 hover:bg-slate-300" : ""}
-                          onClick={() => !adv.exceedsLimit && handleReviewAdvance(adv._id, 'APPROVED')}
+                  <div className="mt-2 grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={`Attendance for ${w.name}`}>
+                    {QUICK_CODES.map(({ code, label, title }) => {
+                      const active = w.today?.code === code;
+                      return (
+                        <button
+                          key={code}
+                          type="button"
+                          role="radio"
+                          aria-checked={active}
+                          title={title}
+                          disabled={saving || locked}
+                          onClick={() => handleMark(w, code)}
+                          className={`min-h-10 rounded-xl border text-xs font-black transition disabled:opacity-60 ${
+                            active
+                              ? code === 'ABSENT'
+                                ? 'border-rose-500 bg-rose-500 text-white'
+                                : 'border-amber-600 bg-amber-600 text-white'
+                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                          }`}
                         >
-                          {t('common.approve') || 'Approve'}
-                        </Button>
-                        <Button size="sm" variant="danger" onClick={() => handleReviewAdvance(adv._id, 'REJECTED')}>
-                          {t('common.reject') || 'Reject'}
-                        </Button>
-                      </div>
-                    ) : adv.status === 'APPROVED' ? (
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        disabled={adv.exceedsLimit}
-                        className={adv.exceedsLimit ? "opacity-40 cursor-not-allowed" : ""}
-                        onClick={() => {
-                          if (!adv.exceedsLimit) {
-                            setSelectedRequest(adv);
-                            setDisburseModalOpen(true);
-                          }
-                        }}
-                      >
-                        {t('thekedar.disburse') || 'Record Disbursal'}
-                      </Button>
-                    ) : null}
+                          {saving && !active ? '·' : label}
+                        </button>
+                      );
+                    })}
                   </div>
-                </div>
-              ))}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* Active projects */}
+        <Card
+          title={t('thekedarDash.projects', 'Active projects')}
+          action={
+            <Link to="/projects" className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400">
+              {t('thekedarDash.all', 'All')} <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          }
+        >
+          {projects.length === 0 ? (
+            <div className="py-4 text-center">
+              <p className="text-sm text-slate-500">{t('thekedarDash.noProjects', 'No active projects.')}</p>
+              <Link to="/projects" className="mt-2 inline-block text-sm font-bold text-amber-700 dark:text-amber-400">
+                {t('thekedarDash.newProject', 'Create a project')}
+              </Link>
             </div>
+          ) : (
+            <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+              {projects.map((p) => (
+                <li key={p._id}>
+                  <Link to={`/projects/${p._id}`} className="flex items-center gap-3 px-1 py-3 active:bg-slate-50 dark:active:bg-slate-800/60">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
+                      <FolderKanban className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {p.projectCode} · {inr(p.totalMoneyReceived)} {t('thekedarDash.received', 'received')}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
         </Card>
 
-        {/* Active Furniture Projects */}
-        <Card title={t('projects.allProjects') || 'Active Furniture Projects'} subtitle={t('projects.furnitureScope') || 'Modular kitchens, wardrobes, and paneling sites'}>
-          <div className="space-y-3">
-            {activeProjects.map((p) => (
-              <div key={p._id} className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3 hover:border-amber-300 dark:hover:border-amber-600 transition-colors">
-                <div>
-                  <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400">{p.projectCode}</span>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">{p.name}</h4>
-                  <p className="text-xs text-slate-700 dark:text-slate-400">{p.projectType.replace('_', ' ')} • {p.clientName}</p>
-                </div>
-                <Link to={`/projects/${p._id}`}>
-                  <Button size="sm" variant="outline">
-                    {t('thekedar.viewDetails') || 'View Details'} <ArrowRight className="h-3 w-3 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
+        {/* Recent payments & advances */}
+        <Card
+          title={t('thekedarDash.recentMoney', 'Recent payments & advances')}
+          action={
+            <Link to="/transactions/search" className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 dark:text-amber-400">
+              {t('thekedarDash.all', 'All')} <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
+          }
+        >
+          {transactions.length === 0 ? (
+            <p className="py-4 text-center text-sm text-slate-500">{t('thekedarDash.noPayments', 'No payments yet. Pay workers from the Workers tab.')}</p>
+          ) : (
+            <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+              {transactions.map((tx) => {
+                const isAdvance = tx.category === 'ADVANCE_DISBURSEMENT';
+                return (
+                  <li key={tx._id} className="flex items-center gap-3 px-1 py-3">
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isAdvance ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'}`}>
+                      <IndianRupee className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{tx.workerId?.name || 'Worker'}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {TXN_LABELS[tx.category] || tx.category} · {new Date(tx.transactionDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </div>
+                    </div>
+                    <span className={`text-sm font-black ${isAdvance ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{inr(tx.amount)}</span>
+                    <button
+                      type="button"
+                      onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                      aria-label={`Download bill ${tx.transactionId}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <FileText className="h-4 w-4" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </Card>
       </div>
-
-      {/* Disburse Modal */}
-      <Modal isOpen={disburseModalOpen} onClose={() => setDisburseModalOpen(false)} title={t('thekedarDashboard.disburseModalTitle') || 'Record Advance Disbursement'}>
-        {selectedRequest && (
-          <form onSubmit={handleDisburseAdvance} className="space-y-4">
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 p-3 text-xs text-amber-900 dark:text-amber-300">
-              <div>{t('thekedarDashboard.tableWorker') || 'Worker'}: <span className="font-bold text-slate-900 dark:text-white">{selectedRequest.workerId?.name}</span></div>
-              <div>{t('common.amount') || 'Amount'}: <span className="font-bold text-base text-slate-900 dark:text-white">₹{selectedRequest.amount}</span></div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.paymentMethod') || 'Disbursement Payment Method'}</label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              >
-                <option value="UPI">UPI</option>
-                <option value="CASH">Cash</option>
-                <option value="BANK_TRANSFER">Bank Transfer (NEFT/IMPS)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.receiptRef') || 'UTR / Receipt Reference Number'}</label>
-              <input
-                type="text"
-                value={receiptReference}
-                onChange={(e) => setReceiptReference(e.target.value)}
-                placeholder="e.g. UPI-UTR-298382910"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-              <Button variant="secondary" onClick={() => setDisburseModalOpen(false)}>{t('common.cancel') || 'Cancel'}</Button>
-              <Button type="submit">{t('thekedarDashboard.confirmDisburse') || 'Confirm Disbursement'}</Button>
-            </div>
-          </form>
-        )}
-      </Modal>
 
       {/* Modal: Add New Craftsman / Worker (Managed Record) */}
       <Modal
@@ -793,23 +447,6 @@ export const ThekedarDashboard = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Assign to Project (Optional)
-              </label>
-              <select
-                value={newWorkerProjectId}
-                onChange={(e) => setNewWorkerProjectId(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-              >
-                <option value="">-- No initial project --</option>
-                {projectsList.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name} ({p.projectCode})
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
 
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
@@ -818,220 +455,6 @@ export const ThekedarDashboard = () => {
             </Button>
             <Button type="submit" variant="primary" disabled={addWorkerSubmitting}>
               {addWorkerSubmitting ? 'Registering...' : 'Add Worker to Roster'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal: Edit Worker Details */}
-      <Modal
-        isOpen={editWorkerModalOpen}
-        onClose={() => setEditWorkerModalOpen(false)}
-        title="Edit Craftsman Details"
-      >
-        <form onSubmit={handleUpdateWorker} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Full Name
-            </label>
-            <input
-              type="text"
-              required
-              value={editWorkerName}
-              onChange={(e) => setEditWorkerName(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Mobile Number
-              </label>
-              <input
-                type="tel"
-                required
-                value={editWorkerPhone}
-                onChange={(e) => setEditWorkerPhone(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Trade / Specialty
-              </label>
-              <select
-                value={editWorkerTrade}
-                onChange={(e) => setEditWorkerTrade(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-              >
-                <option value="Mistry">Mistry</option>
-                <option value="Helper">Helper</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Wage Rate (₹/day)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="50"
-              required
-              value={editWorkerWage}
-              onChange={(e) => setEditWorkerWage(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setEditWorkerModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={editWorkerSubmitting}>
-              {editWorkerSubmitting ? 'Saving...' : 'Update Worker'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal: Mark Daily Worker Attendance */}
-      <Modal
-        isOpen={markAttendanceModalOpen}
-        onClose={() => setMarkAttendanceModalOpen(false)}
-        title="Mark Worker Daily Attendance"
-      >
-        <form onSubmit={handleMarkAttendance} className="space-y-4">
-          {/* Selected Craftsman Fixed Identity Banner (Direct from Worker Card) */}
-          <div className="rounded-xl border border-amber-200 dark:border-amber-800/70 bg-gradient-to-r from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 p-3.5">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 font-black text-white shadow-xs text-base">
-                {(selectedAttendanceWorker?.userId?.name || selectedAttendanceWorker?.name || 'W').charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
-                    {selectedAttendanceWorker?.userId?.name || selectedAttendanceWorker?.name || 'Worker'}
-                  </h4>
-                  <span className="rounded-md bg-amber-200/80 dark:bg-amber-900/60 px-2 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-200 font-mono">
-                    {selectedAttendanceWorker?.workerCode || 'FC-WRK'}
-                  </span>
-                  <span className="rounded-md bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    {selectedAttendanceWorker?.skills?.[0] || 'Mistry'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  Daily Wage Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / day</strong>
-                  {selectedAttendanceWorker?.userId?.phone && (
-                    <span className="ml-2 text-slate-400 dark:text-slate-500">• {selectedAttendanceWorker?.userId?.phone}</span>
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 font-medium">
-              Logging attendance directly for this craftsman from their worker card.
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Furniture Project Site *
-            </label>
-            <select
-              required
-              value={attendanceProjectId}
-              onChange={(e) => setAttendanceProjectId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            >
-              {projectsList.map((p) => (
-                <option key={p._id} value={p._id}>
-                  {p.name} ({p.projectCode}) - {p.projectType || 'Custom'}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Attendance Date *
-              </label>
-              <input
-                type="date"
-                required
-                value={attendanceDate}
-                onChange={(e) => setAttendanceDate(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-xs focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Shift
-              </label>
-              <select
-                value={attendanceShift}
-                onChange={(e) => setAttendanceShift(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-xs focus:border-amber-500 focus:outline-none"
-              >
-                <option value="GENERAL">General Shift</option>
-                <option value="DAY">Day Shift</option>
-                <option value="NIGHT">Night Shift</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Attendance Code & Multiplier *
-            </label>
-            <div className="grid grid-cols-5 gap-2">
-              {[
-                { code: 'P', label: 'Full Day (1.0x)', desc: 'Standard Day' },
-                { code: 'HALF', label: 'Half Day (0.5x)', desc: 'Half Shift' },
-                { code: 'P1/5', label: 'Overtime (1.5x)', desc: 'Until 9 PM' },
-                { code: 'PP', label: 'Double OT (2.0x)', desc: 'Until Midnight' },
-                { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
-              ].map((opt) => (
-                <button
-                  type="button"
-                  key={opt.code}
-                  onClick={() => setAttendanceCode(opt.code)}
-                  className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
-                    attendanceCode === opt.code
-                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 ring-2 ring-amber-500/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
-                  }`}
-                >
-                  <div className="font-mono font-bold text-xs text-slate-900 dark:text-white">{opt.code}</div>
-                  <div className="text-[9px] text-slate-500 font-medium">{opt.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Shift Notes / Work Details
-            </label>
-            <input
-              type="text"
-              value={attendanceNotes}
-              onChange={(e) => setAttendanceNotes(e.target.value)}
-              placeholder="e.g. Completed kitchen base carcass assembly"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setMarkAttendanceModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={markAttendanceSubmitting}>
-              {markAttendanceSubmitting ? 'Recording...' : 'Authorize & Save Attendance'}
             </Button>
           </div>
         </form>

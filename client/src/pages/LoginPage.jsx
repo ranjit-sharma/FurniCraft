@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, SESSION_NOTICE_KEY } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -52,6 +52,19 @@ export const LoginPage = () => {
   const [modalNotice, setModalNotice] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  // Show (once) why the user was signed out, e.g. "Your session has expired".
+  useEffect(() => {
+    try {
+      const notice = sessionStorage.getItem(SESSION_NOTICE_KEY);
+      if (notice) {
+        sessionStorage.removeItem(SESSION_NOTICE_KEY);
+        setError(notice);
+      }
+    } catch {
+      // storage blocked: nothing to show
+    }
+  }, []);
+
   // Handle Resend Cooldown Countdown
   useEffect(() => {
     let timer;
@@ -70,13 +83,8 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const user = await login(email.trim(), password);
-      // Redirect according to role
-      if (user?.role === 'WORKER') {
-        navigate('/');
-      } else {
-        navigate('/');
-      }
+      await login(email.trim(), password);
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Login failed. Please check credentials.');
     } finally {
@@ -240,7 +248,6 @@ export const LoginPage = () => {
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-blue-700 dark:text-blue-300">
                     <Sparkles className="h-3 w-3 text-blue-600 dark:text-blue-400" /> {t('login.contractorBadge', 'Contractor & Site ERP')}
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400">{t('login.version', 'v2.4 Production')}</span>
                 </div>
               </div>
 
@@ -336,7 +343,7 @@ export const LoginPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex w-full min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-blue-600/25 transition-all hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+                    className="flex w-full min-h-[46px] sm:min-h-[48px] items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-3 text-sm font-bold text-white shadow-md shadow-amber-900/20 transition-all hover:bg-amber-700 active:scale-[0.99] disabled:opacity-60 cursor-pointer"
                   >
                     {loading ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

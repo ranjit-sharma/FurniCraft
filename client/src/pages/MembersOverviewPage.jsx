@@ -1,28 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { PageHeader } from '../components/common/PageHeader';
 import {
   Users,
-  UserCheck,
   UserCheck2,
   HardHat,
   Shield,
   Eye,
   Search,
   Filter,
-  Calendar,
-  Phone,
-  Mail,
-  Clock,
-  ArrowUpRight,
   Activity,
   CheckCircle2,
-  RefreshCw,
-  Building,
 } from 'lucide-react';
 
 export const MembersOverviewPage = () => {
@@ -34,8 +28,11 @@ export const MembersOverviewPage = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
+  const [loadError, setLoadError] = useState(null);
+
   const fetchOverview = async () => {
     try {
+      setLoadError(null);
       setLoading(true);
       const res = await api.get('/reports/members-overview');
       const overviewData = res?.data?.summary
@@ -47,7 +44,7 @@ export const MembersOverviewPage = () => {
         : res?.data;
       setData(overviewData);
     } catch (err) {
-      console.error('Failed to fetch members overview:', err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -136,36 +133,11 @@ export const MembersOverviewPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-purple-200 bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 p-4 sm:p-6 text-white shadow-xl">
-        <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-300 border border-purple-500/30">
-            <Users className="h-3.5 w-3.5" />
-            <span>{t('members.badge', 'Platform Workforce & Application Analytics')}</span>
-          </div>
-          <h1 className="text-xl sm:text-3xl font-black mt-2 tracking-tight">{t('members.title', 'Whole Application Members & Visits')}</h1>
-          <p className="text-xs sm:text-sm text-purple-200/80 mt-1 max-w-2xl">
-            {t('members.subtitle', 'Real-time audit of all registered application members, role breakdowns (Thekedars, Workers, Owners), and total system visit statistics.')}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <Button
-            variant="outline-purple"
-            size="sm"
-            onClick={fetchOverview}
-            icon={RefreshCw}
-            className="w-full sm:w-auto justify-center text-white hover:bg-purple-900/50"
-          >
-            {t('thekedars.refresh', 'Refresh Data')}
-          </Button>
-          <Link to="/" className="w-full sm:w-auto">
-            <Button variant="primary" size="sm" className="w-full sm:w-auto justify-center">
-              {t('projectDetail.backToProjects', 'Back to Dashboard')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <LoadError message={loadError} onRetry={fetchOverview} />
+      <PageHeader
+        title={t('members.pageTitle', 'Members')}
+        subtitle={t('members.pageSub', 'Everyone registered in the app, by role, with sign-in activity')}
+      />
 
       {/* KPI Cards Grid: Whole Members & Visits Breakdown */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
@@ -258,7 +230,8 @@ export const MembersOverviewPage = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+        {/* Workers cannot sign in, so only Thekedar and Owner sessions are counted */}
+        <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/30 p-3.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
@@ -274,26 +247,6 @@ export const MembersOverviewPage = () => {
                 className="bg-amber-600 h-full rounded-full"
                 style={{
                   width: `${summary.totalVisits ? Math.min(100, ((summary.visitsByRole?.THEKEDAR || 0) / summary.totalVisits) * 100) : 0}%`,
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/40 dark:bg-blue-950/30 p-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">{t('members.workersCount', 'Worker')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-blue-800 dark:text-blue-400">
-                {summary.totalVisits ? Math.round(((summary.visitsByRole?.WORKER || 0) / summary.totalVisits) * 100) : 0}%
-              </span>
-            </div>
-            <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1">
-              {(summary.visitsByRole?.WORKER || 0).toLocaleString('en-IN')}
-            </div>
-            <div className="w-full bg-blue-200 dark:bg-blue-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
-              <div
-                className="bg-blue-600 h-full rounded-full"
-                style={{
-                  width: `${summary.totalVisits ? Math.min(100, ((summary.visitsByRole?.WORKER || 0) / summary.totalVisits) * 100) : 0}%`,
                 }}
               />
             </div>
@@ -393,7 +346,7 @@ export const MembersOverviewPage = () => {
                 <tr>
                   <th className="px-4 py-3">{t('profile.accountDetails', 'Member Details')}</th>
                   <th className="px-4 py-3">{t('profile.role', 'Role')}</th>
-                  <th className="px-4 py-3">{t('disputes.thekedar', 'Assigned Thekedar')}</th>
+                  <th className="px-4 py-3">{t('members.thekedarCol', 'Thekedar')}</th>
                   <th className="px-4 py-3">{t('profile.phone', 'Contact')}</th>
                   <th className="px-4 py-3 text-center">{t('members.totalVisits', 'App Visits')}</th>
                   <th className="px-4 py-3">{t('members.lastVisit', 'Last Active')}</th>

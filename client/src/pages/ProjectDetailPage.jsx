@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
@@ -8,17 +9,11 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import {
-  FolderKanban,
-  Wrench,
   Receipt,
   Plus,
   ArrowLeft,
-  DollarSign,
-  AlertTriangle,
   IndianRupee,
   MapPin,
-  ExternalLink,
-  ShieldAlert,
 } from 'lucide-react';
 
 export const ProjectDetailPage = () => {
@@ -28,7 +23,6 @@ export const ProjectDetailPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [activeTab, setActiveTab] = useState('moneyReceived');
   const [message, setMessage] = useState(null);
 
   // Record Money Received Modal
@@ -41,12 +35,15 @@ export const ProjectDetailPage = () => {
   const [moneyNotes, setMoneyNotes] = useState('');
   const [moneySubmitting, setMoneySubmitting] = useState(false);
 
+  const [loadError, setLoadError] = useState(null);
+
   const fetchProjectDetails = async () => {
     try {
+      setLoadError(null);
       const res = await api.get(`/projects/${projectId}`);
       setData(res.data);
     } catch (err) {
-      console.error('Failed to load project details:', err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -110,14 +107,26 @@ export const ProjectDetailPage = () => {
     );
   }
 
+  // Load failed: show the reason and a way back instead of an empty project shell.
+  if (!data && loadError) {
+    return (
+      <div className="space-y-4">
+        <Link to="/projects" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-amber-800 dark:text-amber-400">
+          <ArrowLeft className="h-4 w-4" /> {t('projectDetail.backToProjects', 'Back to Projects')}
+        </Link>
+        <LoadError message={loadError} onRetry={fetchProjectDetails} />
+      </div>
+    );
+  }
+
   const project = data?.project;
   const moneyReceived = data?.moneyReceived || [];
-  const tools = data?.tools || [];
   const summary = data?.financialSummary || {};
   const totalInflow = moneyReceived.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
   return (
     <div className="space-y-6">
+      <LoadError message={loadError} onRetry={fetchProjectDetails} />
       <Link
         to="/projects"
         className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300"
@@ -229,7 +238,7 @@ export const ProjectDetailPage = () => {
         </div>
 
         {/* Project Metrics Summary Strip */}
-        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-2">
           <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3.5 border border-slate-100 dark:border-slate-800">
             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
               {t('projectDetail.projectMoneyReceived', 'Total Money Received')}
@@ -239,18 +248,6 @@ export const ProjectDetailPage = () => {
             </div>
             <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
               Client payments & milestone advances
-            </span>
-          </div>
-
-          <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3.5 border border-slate-100 dark:border-slate-800">
-            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-              {t('projectDetail.tools', 'Assigned Tools at Site')}
-            </span>
-            <div className="text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5">
-              {tools.length} <span className="text-xs font-normal text-slate-500">units</span>
-            </div>
-            <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
-              Deployed machinery & equipment
             </span>
           </div>
 
@@ -268,40 +265,7 @@ export const ProjectDetailPage = () => {
         </div>
       </div>
 
-      {/* Tabs Strip: Strictly Money Received & Assigned Tools */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar scrollbar-none pb-0.5">
-        {[
-          {
-            id: 'moneyReceived',
-            label: `${t('projectDetail.moneyReceived', 'Money Received')} (${moneyReceived.length})`,
-            icon: IndianRupee,
-          },
-          {
-            id: 'tools',
-            label: `${t('projectDetail.tools', 'Assigned Tools')} (${tools.length})`,
-            icon: Wrench,
-          },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 whitespace-nowrap px-4 py-2.5 text-xs font-bold transition-all border-b-2 shrink-0 cursor-pointer ${
-                activeTab === tab.id
-                  ? 'border-amber-600 text-amber-900 dark:text-amber-400'
-                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab 1: Money Received */}
-      {activeTab === 'moneyReceived' && (
+      {/* Money Received */}
         <Card>
           <div className="flex flex-wrap items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
             <div>
@@ -394,123 +358,6 @@ export const ProjectDetailPage = () => {
             </div>
           )}
         </Card>
-      )}
-
-      {/* Tab 2: Assigned Tools */}
-      {activeTab === 'tools' && (
-        <Card>
-          <div className="flex flex-wrap items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Site Tools & Machinery ({tools.length})
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                Equipment, power tools, and hardware currently deployed at this furniture project site.
-              </p>
-            </div>
-            <Link to="/tools">
-              <Button size="xs" variant="outline" icon={ExternalLink}>
-                Manage in Tool Tracking
-              </Button>
-            </Link>
-          </div>
-
-          {tools.length === 0 ? (
-            <div className="py-12 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
-                <Wrench className="h-6 w-6" />
-              </div>
-              <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">
-                {t('projectDetail.noToolsDeployed', 'No tools currently deployed at this project site.')}
-              </p>
-              <Link to="/tools" className="inline-block mt-3">
-                <Button size="sm" variant="outline" icon={Plus}>
-                  Issue Tools to this Site
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-600 dark:text-slate-400">
-                    <th className="p-3 font-bold">Tool ID</th>
-                    <th className="p-3 font-bold">Tool Name</th>
-                    <th className="p-3 font-bold">Category</th>
-                    <th className="p-3 font-bold">Assigned Craftsman</th>
-                    <th className="p-3 font-bold">Condition</th>
-                    <th className="p-3 font-bold">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {tools.map((toolItem) => {
-                    const assignedWorker =
-                      toolItem.currentAssignment?.workerId?.name ||
-                      toolItem.assignedWorkerName ||
-                      'Site General Custody';
-                    const assignedPhone =
-                      toolItem.currentAssignment?.workerId?.phone || '';
-
-                    return (
-                      <tr
-                        key={toolItem._id}
-                        className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
-                      >
-                        <td className="p-3 font-mono font-bold text-amber-800 dark:text-amber-400">
-                          {toolItem.toolCode || 'TOL'}
-                        </td>
-                        <td className="p-3">
-                          <div className="font-bold text-slate-900 dark:text-white">
-                            {toolItem.name}
-                          </div>
-                          {toolItem.description && (
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs">
-                              {toolItem.description}
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                            {toolItem.category}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">
-                            {assignedWorker}
-                          </div>
-                          {assignedPhone && (
-                            <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                              {assignedPhone}
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-3">
-                          <span
-                            className={`rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                              toolItem.condition === 'DAMAGED'
-                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
-                                : toolItem.condition === 'FAIR'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            }`}
-                          >
-                            {toolItem.condition || 'GOOD'}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <Badge variant={toolItem.status} size="sm">
-                            {toolItem.status}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
-      )}
 
       {/* Modal: Record Money Received (Exclusively preserved) */}
       <Modal

@@ -3,12 +3,22 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
+import { AppError } from '../utils/errors.js';
+
+class ServiceUnavailableError extends AppError {
+  constructor(message) {
+    super(message, 503);
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 
 let cachedTransporter = null;
+
+const SMTP_TIMEOUTS = { connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 20000 };
+const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
 
 /**
  * Obtain configured Nodemailer Transporter
@@ -34,6 +44,7 @@ export const getEmailTransporter = () => {
         user: smtpUser,
         pass: smtpPass,
       },
+      ...SMTP_TIMEOUTS,
     });
   } else if (smtpHost && smtpUser && smtpPass) {
     cachedTransporter = nodemailer.createTransport({
@@ -44,10 +55,31 @@ export const getEmailTransporter = () => {
         user: smtpUser,
         pass: smtpPass,
       },
+      ...SMTP_TIMEOUTS,
     });
   }
 
   return cachedTransporter;
+};
+
+/**
+ * Check the SMTP login once at startup and log the result (never the credentials),
+ * so a missing or rejected Gmail App Password is visible in the server log instead of failing silently.
+ */
+export const verifyEmailTransport = async () => {
+  const transporter = getEmailTransporter();
+  if (!transporter) {
+    console.warn('[EmailService] Email is NOT configured (set EMAIL_SERVICE=gmail, SMTP_USER and SMTP_PASS). OTP emails cannot be sent.');
+    return false;
+  }
+  try {
+    await transporter.verify();
+    console.log(`[EmailService] SMTP ready as ${process.env.SMTP_USER}`);
+    return true;
+  } catch (err) {
+    console.error(`[EmailService] SMTP login/connection FAILED (${err.code || err.responseCode || 'error'}): ${err.message}`);
+    return false;
+  }
 };
 
 /**
@@ -167,11 +199,6 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
         subject,
         text: textContent,
         html: htmlContent,
-        headers: {
-          'X-Priority': '1 (Highest)',
-          'X-MSMail-Priority': 'High',
-          Importance: 'High',
-        },
       };
       if (attachments.length > 0) {
         mailOptions.attachments = attachments;
@@ -187,12 +214,15 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
         devOtp: (!isProduction ? otp : undefined),
       };
     } catch (err) {
-      console.error(`[EmailService] SMTP delivery failed for ${to}:`, err.message);
-      // In development, fall through to simulation
+      console.error(`[EmailService] SMTP delivery failed for ${to} (${err.code || err.responseCode || 'error'}):`, err.message);
+      // In development, fall through to the logged simulation so testing is not blocked
       if (isProduction) {
-        throw new Error('Failed to send verification email. Please contact support.');
+        throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
       }
     }
+  } else if (isProduction) {
+    console.error('[EmailService] OTP requested but email is not configured (SMTP_USER / SMTP_PASS missing).');
+    throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
   }
 
   // Development / Test Simulated Dispatch (Never log OTP in production)

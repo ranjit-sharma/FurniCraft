@@ -8,18 +8,13 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import api from '../api/client';
 
 // Pages to verify
-import { ToolsPage } from '../pages/ToolsPage';
-import { AttendancePage } from '../pages/AttendancePage';
-import { PayrollPage } from '../pages/PayrollPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
 import { ProjectDetailPage } from '../pages/ProjectDetailPage';
 import { ThekedarsPage } from '../pages/ThekedarsPage';
 import { WorkersPage } from '../pages/WorkersPage';
 import { ExpensesPage } from '../pages/ExpensesPage';
-import { FinancePage } from '../pages/FinancePage';
 import { AuditLogsPage } from '../pages/AuditLogsPage';
 import { MembersOverviewPage } from '../pages/MembersOverviewPage';
-import { DisputesPage } from '../pages/DisputesPage';
 import { TransactionSearchPage } from '../pages/TransactionSearchPage';
 import { OwnerDashboard } from '../pages/OwnerDashboard';
 import { ThekedarDashboard } from '../pages/ThekedarDashboard';
@@ -48,27 +43,6 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
 
     // Default mock responses for all endpoints
     vi.spyOn(api, 'get').mockImplementation((url) => {
-      if (url.includes('/tools/issues')) {
-        return Promise.resolve({ data: { issues: [] } });
-      }
-      if (url.includes('/tools')) {
-        return Promise.resolve({
-          data: {
-            tools: [
-              {
-                _id: 'tool_1',
-                toolCode: 'TL-001',
-                name: 'Bosch Cordless Drill',
-                category: 'DRILL',
-                brand: 'Bosch',
-                condition: 'EXCELLENT',
-                status: 'AVAILABLE',
-                thekedarId: { _id: 'th_1', name: 'Rajesh Contractor' },
-              },
-            ],
-          },
-        });
-      }
       if (url.includes('/users/thekedars')) {
         return Promise.resolve({
           data: {
@@ -127,16 +101,6 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
                 stage: 'Advance Booking',
                 paymentMethod: 'BANK_TRANSFER',
                 receiptCode: 'RCP-001',
-              },
-            ],
-            tools: [
-              {
-                _id: 'tool_1',
-                toolCode: 'TOL-001',
-                name: 'Makita Plunge Saw',
-                category: 'Cutting Tools',
-                status: 'ISSUED',
-                condition: 'GOOD',
               },
             ],
           },
@@ -208,17 +172,16 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
             },
             activeProjects: [],
             pendingAdvanceRequests: [],
-            pendingTaskApprovals: [],
-            issuedTools: [],
-            recentDisputes: [],
-            allMembers: [],
+            workers: [
+              { userId: 'w_1', name: 'Mohan Lal', status: 'ACTIVE', workerCode: 'FC-WRK-0001', defaultDailyWage: 850, today: null },
+            ],
+            thekedars: [
+              { _id: 'th_1', name: 'Rajesh Thekedar', status: 'ACTIVE', workers: 5, activeProjects: 2, projects: 3, unpaidWages: 1600, outstandingAdvances: 500, netPayable: 1100 },
+            ],
             recentAudits: [],
             recentTransactions: [],
           },
         });
-      }
-      if (url.includes('/disputes')) {
-        return Promise.resolve({ data: { disputes: [] } });
       }
       if (url.includes('/attendance/calendar')) {
         return Promise.resolve({ data: { records: [], summary: {} } });
@@ -242,28 +205,12 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
     );
   };
 
-  it('renders ToolsPage without crashing or blank screen', async () => {
-    const { container } = renderWithProviders(ToolsPage);
-    expect(container).not.toBeEmptyDOMElement();
-    expect(await screen.findByText(/Modern Furniture Tool Tracking/i)).toBeInTheDocument();
-  });
-
-  it('renders AttendancePage without crashing or blank screen', async () => {
-    const { container } = renderWithProviders(AttendancePage);
-    expect(container).not.toBeEmptyDOMElement();
-  });
-
-  it('renders PayrollPage without crashing or blank screen', async () => {
-    const { container } = renderWithProviders(PayrollPage);
-    expect(container).not.toBeEmptyDOMElement();
-  });
-
   it('renders ProjectsPage without crashing or blank screen', async () => {
     const { container } = renderWithProviders(ProjectsPage);
     expect(container).not.toBeEmptyDOMElement();
   });
 
-  it('renders ProjectDetailPage tracking only money received and assigned tools', async () => {
+  it('renders ProjectDetailPage tracking money received', async () => {
     const { container } = renderWithProviders(ProjectDetailPage);
     expect(container).not.toBeEmptyDOMElement();
   });
@@ -283,11 +230,6 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
     expect(container).not.toBeEmptyDOMElement();
   });
 
-  it('renders FinancePage without crashing or blank screen', async () => {
-    const { container } = renderWithProviders(FinancePage);
-    expect(container).not.toBeEmptyDOMElement();
-  });
-
   it('renders AuditLogsPage without crashing or blank screen', async () => {
     const { container } = renderWithProviders(AuditLogsPage);
     expect(container).not.toBeEmptyDOMElement();
@@ -295,11 +237,6 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
 
   it('renders MembersOverviewPage without crashing or blank screen', async () => {
     const { container } = renderWithProviders(MembersOverviewPage);
-    expect(container).not.toBeEmptyDOMElement();
-  });
-
-  it('renders DisputesPage without crashing or blank screen', async () => {
-    const { container } = renderWithProviders(DisputesPage);
     expect(container).not.toBeEmptyDOMElement();
   });
 
@@ -311,12 +248,13 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
   it('renders OwnerDashboard without crashing or blank screen', async () => {
     const { container } = renderWithProviders(OwnerDashboard);
     expect(container).not.toBeEmptyDOMElement();
-    expect(await screen.findByText(/Database Infrastructure Health/i)).toBeInTheDocument();
+    expect(await screen.findByText('₹1,100')).toBeInTheDocument(); // Rajesh's net payable from the per-Thekedar list
   });
 
   it('renders ThekedarDashboard without crashing or blank screen', async () => {
     const { container } = renderWithProviders(ThekedarDashboard);
     expect(container).not.toBeEmptyDOMElement();
-    expect(await screen.findByText(/Workforce & Craftsmen Management/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Today's attendance/i)).toBeInTheDocument();
+    expect(await screen.findByRole('radiogroup', { name: 'Attendance for Mohan Lal' })).toBeInTheDocument();
   });
 });

@@ -8,10 +8,11 @@ export const submit = async (req, res, next) => {
       user: req.user,
       req,
     });
-    res.status(201).json({
+    const updated = Boolean(attendance.$locals?.wasUpdate);
+    res.status(updated ? 200 : 201).json({
       status: 'success',
-      message: 'Attendance submitted successfully',
-      data: { attendance },
+      message: updated ? 'Attendance updated' : 'Attendance submitted successfully',
+      data: { attendance, updated },
     });
   } catch (error) {
     next(error);

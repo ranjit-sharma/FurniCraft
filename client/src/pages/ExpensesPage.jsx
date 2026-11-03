@@ -6,7 +6,8 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
-import { IndianRupee, Plus, Calendar, User, FolderKanban, CheckCircle2, RefreshCw } from 'lucide-react';
+import { PageHeader } from '../components/common/PageHeader';
+import { IndianRupee, Plus } from 'lucide-react';
 
 export const ExpensesPage = () => {
   const { isThekedar } = useAuth();
@@ -84,26 +85,15 @@ export const ExpensesPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('expenses.title') || 'Project Money Received'}</h1>
-          <p className="text-xs text-slate-700 dark:text-slate-300">
-            {t('expenses.subtitle') || 'Client advances, progress milestone disbursements, and contract funds inflow across modern furniture sites.'}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" onClick={fetchData} className="w-full sm:w-auto justify-center">
-            <RefreshCw className="mr-1.5 h-4 w-4" /> {t('common.filter') ? 'Refresh' : 'Refresh'}
+      <PageHeader
+        title={t('expenses.pageTitle', 'Money Received')}
+        subtitle={t('expenses.pageSub', 'Payments from clients for your projects')}
+        actions={isThekedar && (
+          <Button variant="primary" onClick={() => setModalOpen(true)} icon={Plus}>
+            {t('expenses.recordMoneyReceived', 'Record Money Received')}
           </Button>
-          {isThekedar && (
-            <Button variant="primary" size="sm" onClick={() => setModalOpen(true)} icon={Plus} className="w-full sm:w-auto justify-center">
-              {t('expenses.recordMoneyReceived') || 'Record Money Received'}
-            </Button>
-          )}
-        </div>
-      </div>
+        )}
+      />
 
       {message && (
         <div
@@ -115,52 +105,19 @@ export const ExpensesPage = () => {
         </div>
       )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="p-4 border-emerald-200 dark:border-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/20">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300">
-              <IndianRupee className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">{t('expenses.totalMoneyReceived') || 'Total Money Received'}</p>
-              <p className="text-2xl font-black text-emerald-950 dark:text-emerald-200 mt-0.5">₹{totalMoneyReceived.toLocaleString('en-IN')}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/20">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
-              <CheckCircle2 className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-blue-800 dark:text-blue-400">{t('expenses.paymentReceiptsLogged') || 'Payment Receipts Logged'}</p>
-              <p className="text-2xl font-black text-blue-950 dark:text-blue-200 mt-0.5">{payments.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4 border-amber-200 dark:border-amber-800 bg-amber-50/20 dark:bg-amber-950/20">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
-              <FolderKanban className="h-6 w-6" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-400">{t('expenses.projectsFunded') || 'Projects Funded'}</p>
-              <p className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-0.5">{uniqueProjectsCount}</p>
-            </div>
-          </div>
-        </Card>
+      {/* Summary: total + counts in one compact card */}
+      <div className="rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 p-4 text-white shadow-sm">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">{t('expenses.totalMoneyReceived', 'Total money received')}</div>
+        <div className="text-3xl font-black">₹{totalMoneyReceived.toLocaleString('en-IN')}</div>
+        <div className="mt-2 text-xs text-emerald-100/90">
+          {payments.length} {t('expenses.receiptsLower', 'receipts')} · {uniqueProjectsCount} {t('expenses.projectsLower', 'projects')}
+        </div>
       </div>
 
       {/* Transactions Table */}
       <Card className="overflow-hidden">
-        <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/80 px-6 py-4">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('expenses.ledgerTitle') || 'Receipts & Inflows Ledger'}</h2>
-          <p className="text-xs text-slate-700 dark:text-slate-300">
-            {t('expenses.ledgerSubtitle') || 'Recorded receipts of funds received from clients for modern furniture manufacturing, assembly, and site installation.'}
-          </p>
+        <div className="border-b border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('expenses.ledgerTitle', 'Receipts')}</h3>
         </div>
 
         {loading ? (

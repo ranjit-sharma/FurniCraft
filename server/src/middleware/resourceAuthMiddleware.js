@@ -1,5 +1,5 @@
 import { ROLES } from '../config/constants.js';
-import { Project, ProjectAssignment, FinancialTransaction, Tool, ToolIssue } from '../models/index.js';
+import { Project, ProjectAssignment, FinancialTransaction } from '../models/index.js';
 import { ForbiddenError, NotFoundError } from '../utils/errors.js';
 
 /**
@@ -119,38 +119,6 @@ export const authorizeFinancialTransactionAccess = async (req, res, next) => {
     if (req.user.role === ROLES.WORKER) {
       if (!transaction.workerId || transaction.workerId.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Access denied: You cannot access other workers transactions');
-      }
-      return next();
-    }
-
-    throw new ForbiddenError('Access denied');
-  } catch (error) {
-    next(error);
-  }
-};
-
-/**
- * Ensures user has access to tool operations
- */
-export const authorizeToolAccess = async (req, res, next) => {
-  try {
-    const toolId = req.params.toolId || req.params.id;
-    if (!toolId) return next();
-
-    if (req.user.role === ROLES.OWNER || req.user.role === ROLES.THEKEDAR) {
-      return next();
-    }
-
-    if (req.user.role === ROLES.WORKER) {
-      // Workers can only view or report issues on tools assigned to them
-      const issue = await ToolIssue.findOne({
-        toolId,
-        workerId: req.user._id,
-        status: { $in: ['ISSUED', 'TRANSFERRED'] },
-      });
-
-      if (!issue) {
-        throw new ForbiddenError('Access denied: Tool is not assigned to you');
       }
       return next();
     }

@@ -149,7 +149,7 @@ export const ThekedarRegisterPage = () => {
               {t('thekedarRegister.title', 'Register as Thekedar')}
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
-              {t('thekedarRegister.subtitle', 'Create your contractor account to manage furniture sites, tools, attendance, and workforce ledgers.')}
+              {t('thekedarRegister.subtitle', 'Create your contractor account to manage furniture sites, attendance, and workforce ledgers.')}
             </p>
           </div>
 
@@ -223,7 +223,7 @@ export const ThekedarRegisterPage = () => {
                   className="block w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 py-2.5 sm:py-3 pl-10 pr-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-600 dark:focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </div>
-              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{t('thekedarRegister.mobileSub', 'Used for official SMS alerts and secure password recovery.')}</p>
+              <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{t('thekedarRegister.mobileSub', 'Used to sign in. Password recovery uses your email.')}</p>
             </div>
 
             {/* Email Address */}

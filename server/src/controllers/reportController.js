@@ -1,8 +1,8 @@
 import * as reportService from '../services/reportService.js';
 import * as exportService from '../services/exportService.js';
 import { ROLES } from '../config/constants.js';
-import { ForbiddenError } from '../utils/errors.js';
-import { Payroll, AuditLog, User } from '../models/index.js';
+import { ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { Payroll, AuditLog, User, WorkerProfile } from '../models/index.js';
 import { recordAuditLog } from '../services/auditService.js';
 
 export const getDashboardMetrics = async (req, res, next) => {
@@ -11,7 +11,7 @@ export const getDashboardMetrics = async (req, res, next) => {
     if (req.user.role === ROLES.WORKER) {
       data = await reportService.getWorkerDashboardData(req.user._id);
     } else if (req.user.role === ROLES.THEKEDAR) {
-      data = await reportService.getThekedarDashboardData(req.user._id);
+      data = await reportService.getThekedarDashboardData(req.user._id, req.query.date);
     } else if (req.user.role === ROLES.OWNER) {
       data = await reportService.getOwnerDashboardData();
     }
@@ -42,11 +42,18 @@ export const exportAttendance = async (req, res, next) => {
       targetWorkerDoc = await User.findById(resolvedWorkerUserId);
     }
 
-    if (startDate && endDate) {
+    // Dates come straight from the query string: only accept plain YYYY-MM-DD / numeric month values.
+    const isDay = (d) => /^\d{4}-\d{2}-\d{2}$/.test(d || '');
+    let period = null;
+    if (isDay(startDate) && isDay(endDate)) {
       filter.date = { $gte: startDate, $lte: endDate };
-    } else if (year && month) {
+      period = { startDate, endDate };
+    } else if (/^\d{4}$/.test(year || '') && /^(0?[1-9]|1[0-2])$/.test(month || '')) {
       const padM = String(month).padStart(2, '0');
-      filter.date = { $regex: `^${year}-${padM}` };
+      filter.date = { $regex: `^${year}-${padM}-` };
+      period = { year: Number(year), month: Number(month) };
+    } else if (startDate || endDate || year || month) {
+      throw new BadRequestError('Choose a valid month (year=YYYY&month=1-12) or date range (YYYY-MM-DD).');
     }
 
     // Role scoping
@@ -57,14 +64,11 @@ export const exportAttendance = async (req, res, next) => {
     }
 
     const selectedLang = req.query.lang || req.headers['x-custom-lang'] || req.user?.preferredLanguage || 'en';
-    const pdfBuffer = await exportService.generateAttendancePDF(filter, { reqUser: req.user, lang: selectedLang });
+    const pdfBuffer = await exportService.generateAttendancePDF(filter, { reqUser: req.user, lang: selectedLang, period });
 
     const safeWorkerName = targetWorkerDoc?.name ? targetWorkerDoc.name.replace(/\s+/g, '_') : '';
-    const filename = targetWorkerDoc
-      ? `attendance-${safeWorkerName}-${Date.now()}.pdf`
-      : (year && month
-        ? `attendance-${year}-${String(month).padStart(2, '0')}.pdf`
-        : `attendance-report-${Date.now()}.pdf`);
+    const periodPart = period?.year ? `${period.year}-${String(period.month).padStart(2, '0')}` : period ? `${period.startDate}_${period.endDate}` : 'all';
+    const filename = `attendance-${safeWorkerName || 'all-workers'}-${periodPart}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);

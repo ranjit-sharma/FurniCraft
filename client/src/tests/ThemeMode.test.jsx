@@ -113,7 +113,7 @@ describe('Dark Mode & Theme System Verification', () => {
     render(
       <LanguageProvider>
         <ThemeProvider>
-          <Navbar onMenuClick={vi.fn()} />
+          <Navbar />
         </ThemeProvider>
       </LanguageProvider>
     );

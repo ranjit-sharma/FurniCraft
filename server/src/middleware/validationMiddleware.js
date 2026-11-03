@@ -3,7 +3,7 @@ import { UnprocessableEntityError } from '../utils/errors.js';
 export const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     try {
-      // Merge req.params and req[source] so path parameters (e.g. :attendanceId, :toolId) are automatically available
+      // Merge req.params and req[source] so path parameters (e.g. :attendanceId, :projectId) are automatically available
       const dataToValidate =
         source === 'body'
           ? { ...(req.params || {}), ...(req.body || {}) }

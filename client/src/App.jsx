@@ -1,26 +1,25 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
-import { AppLayout } from './components/layout/AppLayout';
-import { LoginPage } from './pages/LoginPage';
-import { ThekedarRegisterPage } from './pages/ThekedarRegisterPage';
-import { ThekedarDashboard } from './pages/ThekedarDashboard';
-import { OwnerDashboard } from './pages/OwnerDashboard';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { ProjectDetailPage } from './pages/ProjectDetailPage';
-import { PayrollPage } from './pages/PayrollPage';
-import { ToolsPage } from './pages/ToolsPage';
-import { FinancePage } from './pages/FinancePage';
-import { WorkersPage } from './pages/WorkersPage';
-import { ThekedarsPage } from './pages/ThekedarsPage';
-import { ExpensesPage } from './pages/ExpensesPage';
-import { DisputesPage } from './pages/DisputesPage';
-import { AuditLogsPage } from './pages/AuditLogsPage';
-import { TransactionSearchPage } from './pages/TransactionSearchPage';
-import { MembersOverviewPage } from './pages/MembersOverviewPage';
+import { AppLayout, PageLoader } from './components/layout/AppLayout';
+
+// Pages load on demand so phones download only the screen they open.
+const page = (name) => lazy(() => import(`./pages/${name}.jsx`).then((m) => ({ default: m[name] })));
+const LoginPage = page('LoginPage');
+const ThekedarRegisterPage = page('ThekedarRegisterPage');
+const ThekedarDashboard = page('ThekedarDashboard');
+const OwnerDashboard = page('OwnerDashboard');
+const ProjectsPage = page('ProjectsPage');
+const ProjectDetailPage = page('ProjectDetailPage');
+const WorkersPage = page('WorkersPage');
+const ThekedarsPage = page('ThekedarsPage');
+const ExpensesPage = page('ExpensesPage');
+const AuditLogsPage = page('AuditLogsPage');
+const TransactionSearchPage = page('TransactionSearchPage');
+const MembersOverviewPage = page('MembersOverviewPage');
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -61,6 +60,7 @@ export const App = () => {
         <LanguageProvider>
           <ThemeProvider>
             <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register-thekedar" element={<ThekedarRegisterPage />} />
@@ -78,16 +78,6 @@ export const App = () => {
                 <Route path="projects" element={<ProjectsPage />} />
                 <Route path="projects/:projectId" element={<ProjectDetailPage />} />
                 <Route path="attendance" element={<Navigate to="/workers" replace />} />
-                <Route path="payroll" element={<PayrollPage />} />
-                <Route
-                  path="tools"
-                  element={
-                    <ProtectedRoute allowedRoles={['THEKEDAR', 'OWNER']}>
-                      <ToolsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="finance" element={<FinancePage />} />
                 <Route path="transactions/search" element={<TransactionSearchPage />} />
                 <Route
                   path="thekedars"
@@ -113,7 +103,6 @@ export const App = () => {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="disputes" element={<DisputesPage />} />
                 <Route
                   path="audit"
                   element={
@@ -134,6 +123,7 @@ export const App = () => {
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            </Suspense>
           </BrowserRouter>
           </ThemeProvider>
         </LanguageProvider>

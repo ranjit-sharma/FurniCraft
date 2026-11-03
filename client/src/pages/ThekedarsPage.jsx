@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { PageHeader } from '../components/common/PageHeader';
 import { Modal } from '../components/common/Modal';
 import {
   Users,
@@ -13,15 +14,11 @@ import {
   Phone,
   Mail,
   ShieldCheck,
-  ShieldAlert,
   Building2,
   FolderKanban,
   CheckCircle,
-  AlertTriangle,
   RefreshCw,
   Trash2,
-  Lock,
-  Unlock,
 } from 'lucide-react';
 
 export const ThekedarsPage = () => {
@@ -164,23 +161,15 @@ export const ThekedarsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('thekedars.title', 'Thekedar Account Management')}</h1>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
-            {t('thekedars.subtitle', 'Owner Command: Activate, suspend, onboard, and oversee contractor accounts and workforce scope.')}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" onClick={fetchThekedars} className="w-full sm:w-auto justify-center">
-            <RefreshCw className="mr-1.5 h-4 w-4" /> {t('thekedars.refresh', 'Refresh')}
+      <PageHeader
+        title={t('thekedars.pageTitle', 'Thekedars')}
+        subtitle={t('thekedars.pageSub', 'Contractor accounts, their projects and workers')}
+        actions={
+          <Button onClick={() => setRegisterModalOpen(true)} icon={UserPlus}>
+            {t('thekedars.onboardNew', 'Add Thekedar')}
           </Button>
-          <Button size="sm" onClick={() => setRegisterModalOpen(true)} className="w-full sm:w-auto justify-center">
-            <UserPlus className="mr-1.5 h-4 w-4" /> {t('thekedars.onboardNew', 'Onboard New Thekedar')}
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Alerts */}
       {message && (

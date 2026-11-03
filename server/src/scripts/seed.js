@@ -11,12 +11,8 @@ import {
   AdvanceRequest,
   FinancialTransaction,
   Payroll,
-  Tool,
-  ToolIssue,
-  FurnitureTask,
   ProjectExpense,
   AuditLog,
-  Dispute,
 } from '../models/index.js';
 import {
   ROLES,
@@ -29,11 +25,6 @@ import {
   FINANCIAL_CATEGORIES,
   PAYMENT_METHODS,
   PAYROLL_STATUS,
-  TOOL_CATEGORIES,
-  TOOL_CONDITION,
-  TOOL_STATUS,
-  FURNITURE_TASK_TYPES,
-  TASK_STATUS,
   EXPENSE_CATEGORIES,
 } from '../config/constants.js';
 
@@ -54,12 +45,8 @@ const seedDatabase = async () => {
       AdvanceRequest.deleteMany({}),
       FinancialTransaction.deleteMany({}),
       Payroll.deleteMany({}),
-      Tool.deleteMany({}),
-      ToolIssue.deleteMany({}),
-      FurnitureTask.deleteMany({}),
       ProjectExpense.deleteMany({}),
       AuditLog.deleteMany({}),
-      Dispute.deleteMany({}),
     ]);
 
     console.log('[Seed] Existing collections cleared.');
@@ -253,104 +240,6 @@ const seedDatabase = async () => {
       { workerId: worker3._id, projectId: project1._id, thekedarId: thekedar._id, assignedBy: thekedar._id, roleInProject: 'PU Finish Polisher', wageOverride: null },
     ]);
 
-    // 6. Tools Central Inventory & Issues
-    console.log('[Seed] Creating Central Tool Inventory...');
-    const tool1 = await Tool.create({
-      toolCode: 'TOOL-DRL-001',
-      name: 'Bosch GSB 18V-50 Brushless Impact Drill',
-      category: TOOL_CATEGORIES.DRILL,
-      brand: 'Bosch',
-      modelNumber: 'GSB 18V-50',
-      serialNumber: 'BSH-987621',
-      condition: TOOL_CONDITION.EXCELLENT,
-      status: TOOL_STATUS.ISSUED,
-      purchaseDate: new Date('2025-08-10'),
-      purchaseCost: 14500,
-    });
-
-    const tool2 = await Tool.create({
-      toolCode: 'TOOL-RTR-002',
-      name: 'Makita RP2301FC Plunge Wood Router (2100W)',
-      category: TOOL_CATEGORIES.ROUTER,
-      brand: 'Makita',
-      modelNumber: 'RP2301FC',
-      serialNumber: 'MKT-443210',
-      condition: TOOL_CONDITION.GOOD,
-      status: TOOL_STATUS.AVAILABLE,
-      purchaseDate: new Date('2025-11-20'),
-      purchaseCost: 22000,
-    });
-
-    const tool3 = await Tool.create({
-      toolCode: 'TOOL-SAW-003',
-      name: 'Festool TS 55 Plunge Cut Circular Saw with Guide Rail',
-      category: TOOL_CATEGORIES.CUTTER,
-      brand: 'Festool',
-      modelNumber: 'TS 55 FEBQ',
-      serialNumber: 'FST-887711',
-      condition: TOOL_CONDITION.EXCELLENT,
-      status: TOOL_STATUS.ISSUED,
-      purchaseDate: new Date('2026-02-14'),
-      purchaseCost: 58000,
-    });
-
-    const tool4 = await Tool.create({
-      toolCode: 'TOOL-EDG-004',
-      name: 'Virutex Portable Edge Bander PEB250TR',
-      category: TOOL_CATEGORIES.EDGE_BANDER_TOOL,
-      brand: 'Virutex',
-      modelNumber: 'PEB250TR',
-      serialNumber: 'VTX-112299',
-      condition: TOOL_CONDITION.EXCELLENT,
-      status: TOOL_STATUS.AVAILABLE,
-      purchaseDate: new Date('2026-03-01'),
-      purchaseCost: 65000,
-    });
-
-    // Issue tool 1 to Worker 1 on Project 1
-    const issue1 = await ToolIssue.create({
-      issueCode: 'ISSUE-2026-001',
-      toolId: tool1._id,
-      projectId: project1._id,
-      workerId: worker1._id,
-      issuedBy: thekedar._id,
-      issueDate: new Date('2026-10-01'),
-      expectedReturnDate: new Date('2026-10-25'),
-      conditionAtIssue: TOOL_CONDITION.EXCELLENT,
-      status: 'ISSUED',
-      acknowledgedByWorker: true,
-      acknowledgedAt: new Date('2026-10-01T10:30:00Z'),
-    });
-    tool1.currentAssignment = {
-      projectId: project1._id,
-      workerId: worker1._id,
-      issueDate: new Date('2026-10-01'),
-      toolIssueId: issue1._id,
-    };
-    await tool1.save();
-
-    // Issue tool 3 to Worker 2 on Project 2
-    const issue2 = await ToolIssue.create({
-      issueCode: 'ISSUE-2026-002',
-      toolId: tool3._id,
-      projectId: project2._id,
-      workerId: worker2._id,
-      issuedBy: thekedar._id,
-      issueDate: new Date('2026-10-05'),
-      expectedReturnDate: new Date('2026-10-28'),
-      conditionAtIssue: TOOL_CONDITION.EXCELLENT,
-      status: 'ISSUED',
-      acknowledgedByWorker: true,
-      acknowledgedAt: new Date('2026-10-05T09:15:00Z'),
-    });
-    tool3.currentAssignment = {
-      projectId: project2._id,
-      workerId: worker2._id,
-      issueDate: new Date('2026-10-05'),
-      toolIssueId: issue2._id,
-    };
-    await tool3.save();
-
     // 7. Attendance Records (Demonstrating all 4 multipliers: P=1x, HALF=0.5x, P1/5=1.5x, PP=2.0x)
     console.log('[Seed] Creating Attendance Records demonstrating all four multipliers...');
     const attendanceEntries = [
@@ -488,55 +377,6 @@ const seedDatabase = async () => {
 
     await Attendance.create(attendanceEntries);
 
-    // 8. Furniture Tasks
-    console.log('[Seed] Creating Furniture Tasks...');
-    await FurnitureTask.create([
-      {
-        projectId: project1._id,
-        thekedarId: thekedar._id,
-        furnitureItemName: 'Modular Kitchen Base Carcass Assembly',
-        taskType: FURNITURE_TASK_TYPES.ASSEMBLY,
-        assignedWorkerId: worker1._id,
-        status: TASK_STATUS.COMPLETED,
-        plannedUnits: 12,
-        completedUnits: 12,
-        unitMetric: 'Units',
-      },
-      {
-        projectId: project1._id,
-        thekedarId: thekedar._id,
-        furnitureItemName: 'High Gloss Acrylic 2mm Edge Banding',
-        taskType: FURNITURE_TASK_TYPES.EDGE_BANDING,
-        assignedWorkerId: worker2._id,
-        status: TASK_STATUS.IN_PROGRESS,
-        plannedUnits: 180,
-        completedUnits: 110,
-        unitMetric: 'Running Ft',
-      },
-      {
-        projectId: project2._id,
-        thekedarId: thekedar._id,
-        furnitureItemName: 'Sliding Door Top-Hang Hafele Track Fitting',
-        taskType: FURNITURE_TASK_TYPES.FITTING,
-        assignedWorkerId: worker2._id,
-        status: TASK_STATUS.PENDING,
-        plannedUnits: 4,
-        completedUnits: 0,
-        unitMetric: 'Sets',
-      },
-      {
-        projectId: project1._id,
-        thekedarId: thekedar._id,
-        furnitureItemName: 'Island Counter Natural Teak Veneer PU Polish',
-        taskType: FURNITURE_TASK_TYPES.POLISHING,
-        assignedWorkerId: worker3._id,
-        status: TASK_STATUS.IN_PROGRESS,
-        plannedUnits: 65,
-        completedUnits: 30,
-        unitMetric: 'Sq.Ft',
-      },
-    ]);
-
     // 9. Project Expenses (Materials, fittings, transport)
     console.log('[Seed] Creating Project Expenses...');
     await ProjectExpense.create([
@@ -653,18 +493,6 @@ const seedDatabase = async () => {
       payrollId: payrollSep._id,
       recordedBy: thekedar._id,
       notes: 'Bank transfer salary disbursement against PAY-2026-09-0001',
-    });
-
-    // 12. Worker Dispute
-    console.log('[Seed] Creating Sample Worker Dispute...');
-    await Dispute.create({
-      disputeCode: 'DISP-2026-001',
-      workerId: worker3._id,
-      thekedarId: thekedar._id,
-      category: 'ATTENDANCE',
-      subject: 'Correction of Oct 2nd shift from Half-day to Full-day',
-      description: 'Sir, I stayed till 6:30 PM completing the second coat of PU primer on the TV unit panel. Requesting review.',
-      status: 'OPEN',
     });
 
     // 13. System Audit Log Entries

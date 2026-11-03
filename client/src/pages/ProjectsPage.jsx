@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
+import { PageHeader } from '../components/common/PageHeader';
 import { Modal } from '../components/common/Modal';
 import { Link } from 'react-router-dom';
 import {
@@ -15,17 +17,12 @@ import {
   Phone,
   User,
   Calendar,
-  CheckCircle,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
   Search,
   Filter,
   Archive,
   Flame,
   Zap,
   RotateCcw,
-  Sparkles,
   ChevronDown,
   ChevronUp,
   X,
@@ -64,12 +61,15 @@ export const ProjectsPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
 
+  const [loadError, setLoadError] = useState(null);
+
   const fetchProjects = async () => {
     try {
+      setLoadError(null);
       const res = await api.get('/projects');
       setProjects(res.data.projects || []);
     } catch (err) {
-      console.error('Failed to load projects:', err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -282,231 +282,117 @@ export const ProjectsPage = () => {
 
   return (
     <div className="space-y-6">
+      <LoadError message={loadError} onRetry={fetchProjects} />
       {message && (
         <div className={`rounded-xl p-4 text-sm font-semibold ${message.type === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}>
           {message.text}
         </div>
       )}
 
-      {/* Header Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('projects.allProjects', 'Modern Furniture Projects')}</h2>
-          <p className="text-xs text-slate-700 dark:text-slate-300">{t('projects.furnitureScope', 'Scope of modern furniture works with priority & archive controls.')}</p>
-        </div>
-
-        {isThekedar && (
-          <Button variant="primary" onClick={() => setCreateModalOpen(true)} icon={Plus} className="w-full sm:w-auto justify-center">
-            {t('projects.createNew', 'New Furniture Project')}
+      <PageHeader
+        title={t('projects.pageTitle', 'Projects')}
+        subtitle={`${counts.active} ${t('projects.activeLower', 'active')} · ${counts.total} ${t('projects.totalLower', 'total')} · ${t('projects.sortedHint', 'sorted by importance')}`}
+        badge={isOwner && (
+          <span className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2.5 py-0.5 text-[11px] font-bold text-purple-800 dark:text-purple-300">
+            {t('projects.readOnly', 'View only')}
+          </span>
+        )}
+        actions={isThekedar && (
+          <Button variant="primary" onClick={() => setCreateModalOpen(true)} icon={Plus}>
+            {t('projects.createNew', 'New Project')}
           </Button>
         )}
-        {isOwner && (
-          <div className="flex items-center gap-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 border border-purple-200 dark:border-purple-800 text-xs font-semibold text-purple-900 dark:text-purple-300 w-full sm:w-auto">
-            <span>{t('projects.executiveView', 'Read-Only Executive Visibility')}</span>
-          </div>
-        )}
-      </div>
+      />
 
-      {/* Filtration & Search Bar */}
-      <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
-        {/* Row 1: Status Filtration Pills */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 mr-1">
-            <Filter className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> {t('projects.status', 'Status')}:
-          </span>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ALL_ACTIVE')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'ALL_ACTIVE'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>{t('projects.allActive', 'All Active')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ALL_ACTIVE' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.active}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('IN_PROGRESS')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'IN_PROGRESS'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span className="h-2 w-2 rounded-full bg-amber-400" />
-            <span>{t('projects.inProgress', 'In Progress')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'IN_PROGRESS' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.inProgress}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('PLANNED')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'PLANNED'
-                ? 'bg-indigo-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span className="h-2 w-2 rounded-full bg-indigo-400" />
-            <span>{t('projects.planned', 'Planned')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'PLANNED' ? 'bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.planned}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ON_HOLD')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'ON_HOLD'
-                ? 'bg-orange-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span className="h-2 w-2 rounded-full bg-orange-400" />
-            <span>{t('projects.onHold', 'On Hold')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ON_HOLD' ? 'bg-orange-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.onHold}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('COMPLETED')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'COMPLETED'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span>{t('projects.completed', 'Completed')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'COMPLETED' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.completed}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setStatusFilter('ARCHIVED');
-              setArchiveExpanded(true);
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'ARCHIVED'
-                ? 'bg-slate-800 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <Archive className="h-3 w-3" />
-            <span>{t('projects.archived', 'Archived')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ARCHIVED' ? 'bg-slate-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.archived}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setStatusFilter('ALL')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              statusFilter === 'ALL'
-                ? 'bg-slate-700 text-white shadow-xs'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          >
-            <span>{t('projects.allTotal', 'All Total')}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
-            }`}>
-              {counts.total}
-            </span>
-          </button>
+      {/* Filters: status chips swipe sideways on phones; search + dropdowns below */}
+      <div className="space-y-3">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:px-0" role="tablist" aria-label="Project status">
+          {[
+            { id: 'ALL_ACTIVE', label: t('projects.allActive', 'Active'), count: counts.active },
+            { id: 'IN_PROGRESS', label: t('projects.inProgress', 'In Progress'), count: counts.inProgress, dot: 'bg-amber-400' },
+            { id: 'PLANNED', label: t('projects.planned', 'Planned'), count: counts.planned, dot: 'bg-indigo-400' },
+            { id: 'ON_HOLD', label: t('projects.onHold', 'On Hold'), count: counts.onHold, dot: 'bg-orange-400' },
+            { id: 'COMPLETED', label: t('projects.completed', 'Completed'), count: counts.completed, dot: 'bg-emerald-400' },
+            { id: 'ARCHIVED', label: t('projects.archived', 'Archived'), count: counts.archived, icon: Archive },
+            { id: 'ALL', label: t('projects.allTotal', 'All'), count: counts.total },
+          ].map(({ id, label, count, dot, icon: Icon }) => {
+            const active = statusFilter === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  setStatusFilter(id);
+                  if (id === 'ARCHIVED') setArchiveExpanded(true);
+                }}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                  active
+                    ? 'border-amber-600 bg-amber-600 text-white'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                {dot && <span className={`h-2 w-2 rounded-full ${dot}`} />}
+                {Icon && <Icon className="h-3.5 w-3.5" />}
+                {label}
+                <span className={`rounded-full px-1.5 text-[11px] font-black ${active ? 'bg-white/25' : 'bg-slate-100 dark:bg-slate-800'}`}>{count}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Row 2: Search Query, Priority Filter & Furniture Type */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-          <div className="relative flex-1 min-w-[220px]">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
+          <div className="relative col-span-2 sm:col-span-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
-              type="text"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('projects.searchPlaceholder', 'Search title, client, site address, or code...')}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-9 pr-8 py-2 text-xs font-medium text-slate-900 dark:text-white shadow-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              placeholder={t('projects.searchPlaceholder', 'Search name, client, site or code')}
+              aria-label="Search projects"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-9 text-sm text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
             />
             {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-slate-600"
-              >
-                <X className="h-3.5 w-3.5" />
+              <button type="button" onClick={() => setSearchQuery('')} aria-label="Clear search" className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-slate-400">
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
-
-          {/* Priority / Importance Filter */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">{t('projects.importance', 'Importance')}:</span>
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-slate-800 dark:text-slate-200 shadow-xs focus:border-amber-500 cursor-pointer"
-            >
-              <option value="ALL">{t('projects.allPriorities', 'All Importance')}</option>
-              <option value="CRITICAL">🔥 {t('projects.critical', 'Critical')}</option>
-              <option value="HIGH">⚡ {t('projects.high', 'High')}</option>
-              <option value="MEDIUM">🔷 {t('projects.medium', 'Medium')}</option>
-              <option value="LOW">🟢 {t('projects.low', 'Low')}</option>
-            </select>
-          </div>
-
-          {/* Furniture Type Filter */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">{t('projects.type', 'Type')}:</span>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-slate-800 dark:text-slate-200 shadow-xs focus:border-amber-500 cursor-pointer"
-            >
-              <option value="ALL">{t('projects.allTypes', 'All Types')}</option>
-              <option value="MODULAR_KITCHEN">Modular Kitchen</option>
-              <option value="WARDROBE_SLIDING">Wardrobe & Sliding</option>
-              <option value="TV_UNIT_PANEL">TV Unit & Panel</option>
-              <option value="BED_HEADBOARD">Bed & Headboard</option>
-              <option value="OFFICE_WORKSTATION">Workstations</option>
-              <option value="CABINET_STORAGE">Cabinets & Storage</option>
-              <option value="CUSTOM_FURNITURE">Custom Furniture</option>
-            </select>
-          </div>
-
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            aria-label="Importance"
+            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-amber-500 focus:outline-none"
+          >
+            <option value="ALL">{t('projects.allPriorities', 'Any importance')}</option>
+            <option value="CRITICAL">🔥 {t('projects.critical', 'Critical')}</option>
+            <option value="HIGH">⚡ {t('projects.high', 'High')}</option>
+            <option value="MEDIUM">🔷 {t('projects.medium', 'Medium')}</option>
+            <option value="LOW">🟢 {t('projects.low', 'Low')}</option>
+          </select>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            aria-label="Furniture type"
+            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-amber-500 focus:outline-none"
+          >
+            <option value="ALL">{t('projects.allTypes', 'Any type')}</option>
+            <option value="MODULAR_KITCHEN">Modular Kitchen</option>
+            <option value="WARDROBE_SLIDING">Wardrobe & Sliding</option>
+            <option value="TV_UNIT_PANEL">TV Unit & Panel</option>
+            <option value="BED_HEADBOARD">Bed & Headboard</option>
+            <option value="OFFICE_WORKSTATION">Workstations</option>
+            <option value="CABINET_STORAGE">Cabinets & Storage</option>
+            <option value="CUSTOM_FURNITURE">Custom Furniture</option>
+          </select>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40"
+              className="col-span-2 inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 sm:col-span-1"
             >
-              <X className="h-3.5 w-3.5" /> {t('projects.resetFilters', 'Reset Filters')}
+              <X className="h-4 w-4" /> {t('projects.resetFilters', 'Clear')}
             </button>
           )}
         </div>
@@ -527,19 +413,15 @@ export const ProjectsPage = () => {
                 <div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                     <Layers className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    <span>{t('projects.prioritizedActive', 'Prioritized Active Projects')}</span>
+                    <span>{t('projects.activeHeading', 'Active projects')}</span>
                     <span className="text-xs font-black bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded-full">
                       {filteredActiveProjects.length}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    {t('projects.orderedStrictly', 'Ordered strictly by importance level: Critical (highest) → High → Medium → Low.')}
-                  </p>
+
                 </div>
 
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  {t('projects.importance', 'Priority')}: Active
-                </div>
+
               </div>
 
               {filteredActiveProjects.length === 0 ? (
@@ -554,139 +436,24 @@ export const ProjectsPage = () => {
                   )}
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredActiveProjects.map((p, idx) => (
-                    <Card
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredActiveProjects.map((p) => (
+                    <Link
                       key={p._id}
-                      className={`flex flex-col justify-between transition-all hover:border-amber-400 hover:shadow-md ${
-                        p.priority === 'CRITICAL'
-                          ? 'border-rose-300/80 dark:border-rose-800/80 bg-gradient-to-b from-rose-50/20 to-white dark:from-rose-950/20 dark:to-slate-900'
-                          : p.priority === 'HIGH'
-                          ? 'border-amber-300/80 dark:border-amber-800/80 bg-gradient-to-b from-amber-50/20 to-white dark:from-amber-950/20 dark:to-slate-900'
-                          : ''
-                      }`}
+                      to={`/projects/${p._id}`}
+                      className="block rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:border-amber-400 active:scale-[0.99]"
                     >
-                      <div>
-                        {/* Header: Code, Priority & Status */}
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-black text-amber-900 dark:text-amber-400 flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-400 font-semibold">#{idx + 1}</span>
-                            {p.projectCode}
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            {renderPriorityBadge(p.priority || 'MEDIUM')}
-                          </div>
-                        </div>
-
-                        {/* Title */}
-                        <h3 className="text-base font-black text-slate-900 dark:text-white mt-2 line-clamp-1">{p.name}</h3>
-
-                        {/* Quick Status / Priority Dropdowns for Thekedar */}
-                        {isThekedar ? (
-                          <div className="mt-2.5 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
-                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{t('projects.status', 'Status')}:</span>
-                              <select
-                                value={p.status}
-                                onChange={(e) => handleProjectStatusChange(p._id, e.target.value)}
-                                className="text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
-                              >
-                                <option value="PLANNED">PLANNED</option>
-                                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                                <option value="ON_HOLD">ON_HOLD</option>
-                                <option value="COMPLETED">COMPLETED</option>
-                                <option value="ARCHIVED">ARCHIVED 📁</option>
-                              </select>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{t('projects.importance', 'Priority')}:</span>
-                              <select
-                                value={p.priority || 'MEDIUM'}
-                                onChange={(e) => handleProjectPriorityChange(p._id, e.target.value)}
-                                className="text-xs font-black rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
-                              >
-                                <option value="CRITICAL">🔥 CRITICAL</option>
-                                <option value="HIGH">⚡ HIGH</option>
-                                <option value="MEDIUM">🔷 MEDIUM</option>
-                                <option value="LOW">🟢 LOW</option>
-                              </select>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge variant={p.status} size="sm">{p.status}</Badge>
-                            <Badge variant="default" size="sm">{p.projectType?.replace('_', ' ')}</Badge>
-                          </div>
-                        )}
-
-                        {/* Project Details */}
-                        <div className="mt-3 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-900 dark:text-white">{p.clientName}</strong></span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{p.siteAddress}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.type', 'Type')}: <strong className="text-amber-900 dark:text-amber-400">{p.projectType?.replace('_', ' ')}</strong></span>
-                          </div>
-                        </div>
-
-                        {/* Financial Card (Non-worker) */}
-                        {!isWorker && (
-                          p.totalMoneyReceived > 0 ? (
-                            <div className="mt-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 text-xs">
-                              <div className="flex items-center justify-between">
-                                <span className="text-emerald-800 dark:text-emerald-400 font-bold uppercase tracking-wider text-[10px]">{t('projects.clientMoneyReceived', 'Client Money Received')}</span>
-                                {p.paymentsCount > 0 && (
-                                  <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-semibold">
-                                    {p.paymentsCount} {p.paymentsCount === 1 ? 'receipt' : 'receipts'}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="mt-1 text-base font-black text-emerald-950 dark:text-emerald-200">
-                                ₹{p.totalMoneyReceived.toLocaleString('en-IN')}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 p-2.5 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
-                              <span className="font-medium">{t('projects.noPaymentReceived', 'No client payment received yet')}</span>
-                              <span className="text-[10px] text-slate-400 italic">₹0</span>
-                            </div>
-                          )
-                        )}
-
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-black text-amber-900 dark:text-amber-400">{p.projectCode}</span>
+                        {renderPriorityBadge(p.priority || 'MEDIUM')}
                       </div>
-
-                      {/* Footer Actions */}
-                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-600 dark:text-slate-400 truncate">
-                          Thekedar: {p.thekedarId?.name || 'Assigned'}
-                        </span>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {isThekedar && (
-                            <button
-                              type="button"
-                              onClick={() => handleProjectStatusChange(p._id, 'ARCHIVED')}
-                              className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1 rounded-md transition"
-                              title="Archive project"
-                            >
-                              {t('projects.archive', 'Archive')}
-                            </button>
-                          )}
-                          <Link to={`/projects/${p._id}`}>
-                            <Button size="sm" variant="outline" className="text-xs font-bold">
-                              {t('common.view', 'View')} <ArrowRight className="h-3 w-3 ml-1" />
-                            </Button>
-                          </Link>
-                        </div>
+                      <h3 className="mt-1.5 line-clamp-2 text-base font-black text-slate-900 dark:text-white">{p.name}</h3>
+                      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{p.clientName}</p>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <Badge variant={p.status} size="sm">{p.status?.replace('_', ' ')}</Badge>
+                        {!isWorker && <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{(p.totalMoneyReceived || 0).toLocaleString('en-IN')}</span>}
                       </div>
-                    </Card>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -741,84 +508,24 @@ export const ProjectsPage = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredArchivedProjects.map((p) => (
-                    <Card
+                    <Link
                       key={p._id}
-                      className="flex flex-col justify-between border-slate-300/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-xs"
+                      to={`/projects/${p._id}`}
+                      className="block rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4 shadow-sm transition hover:border-amber-400 active:scale-[0.99]"
                     >
-                      <div>
-                        {/* Header: Project Code & Badges */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-slate-600">{p.projectCode}</span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-700">
-                              <Archive className="h-2.5 w-2.5" /> ARCHIVED
-                            </span>
-                            {renderPriorityBadge(p.priority || 'MEDIUM')}
-                          </div>
-                        </div>
-
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mt-2 line-clamp-1">{p.name}</h3>
-
-                        {/* Details */}
-                        <div className="mt-3 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-                          <div className="flex items-center gap-2">
-                            <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-800 dark:text-slate-200">{p.clientName}</strong></span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span className="truncate">{p.siteAddress}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.type', 'Type')}: <strong className="text-slate-700 dark:text-slate-300">{p.projectType?.replace('_', ' ')}</strong></span>
-                          </div>
-                        </div>
-
-                        {/* Status Change / Re-activate */}
-                        {isThekedar && (
-                          <div className="mt-3 p-2.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold text-slate-600 dark:text-slate-400">{t('projects.status', 'Status')}:</span>
-                              <select
-                                value={p.status}
-                                onChange={(e) => handleProjectStatusChange(p._id, e.target.value)}
-                                className="text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
-                              >
-                                <option value="ARCHIVED">ARCHIVED 📁</option>
-                                <option value="IN_PROGRESS">Restore: IN_PROGRESS</option>
-                                <option value="PLANNED">Restore: PLANNED</option>
-                                <option value="COMPLETED">COMPLETED</option>
-                              </select>
-                            </div>
-                          </div>
-                        )}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-black text-amber-900 dark:text-amber-400">{p.projectCode}</span>
+                        {renderPriorityBadge(p.priority || 'MEDIUM')}
                       </div>
-
-                      {/* Footer */}
-                      <div className="mt-5 pt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2">
-                        {isThekedar ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs font-bold text-emerald-800 border-emerald-300 hover:bg-emerald-50 flex items-center gap-1 shadow-xs"
-                            onClick={() => handleProjectStatusChange(p._id, 'IN_PROGRESS')}
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" /> Restore to Active
-                          </Button>
-                        ) : (
-                          <span className="text-[11px] text-slate-500">Archived Record</span>
-                        )}
-
-                        <Link to={`/projects/${p._id}`}>
-                          <Button size="sm" variant="outline" className="text-xs">
-                            {t('projects.viewDetails', 'View Details')} <ArrowRight className="h-3 w-3 ml-1" />
-                          </Button>
-                        </Link>
+                      <h3 className="mt-1.5 line-clamp-2 text-base font-black text-slate-900 dark:text-white">{p.name}</h3>
+                      <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{p.clientName}</p>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <Badge variant={p.status} size="sm">{p.status?.replace('_', ' ')}</Badge>
+                        {!isWorker && <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{(p.totalMoneyReceived || 0).toLocaleString('en-IN')}</span>}
                       </div>
-                    </Card>
+                    </Link>
                   ))}
                 </div>
               )

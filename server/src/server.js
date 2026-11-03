@@ -3,11 +3,24 @@ import { Server as SocketIOServer } from 'socket.io';
 import { createApp } from './app.js';
 import { connectDB, disconnectDB } from './config/db.js';
 import { env } from './config/env.js';
+import { verifyEmailTransport } from './services/emailService.js';
+
+// Last-resort logging so a stray rejection never fails silently; uncaught exceptions leave the process unsafe, so exit and let the host restart it.
+process.on('unhandledRejection', (reason) => {
+  console.error('[Process] Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[Process] Uncaught exception, shutting down:', err);
+  process.exit(1);
+});
 
 const startServer = async () => {
   try {
     // 1. Connect to Database
     await connectDB();
+
+    // Log whether OTP email can actually be sent (does not block startup)
+    verifyEmailTransport();
 
     // 2. Initialize Express App & HTTP Server
     const app = createApp();

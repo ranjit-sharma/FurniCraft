@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
+import { localToday } from '../utils/date';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
@@ -7,25 +9,15 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import {
-  Users,
   UserPlus,
   IndianRupee,
   Phone,
-  Mail,
-  Award,
   Edit,
-  Activity,
-  CheckSquare,
+  ChevronRight,
   Calendar,
-  Wrench,
   Receipt,
-  Clock,
-  FolderKanban,
   CheckCircle2,
-  AlertCircle,
-  Layers,
   FileText,
-  Hammer,
   UserX,
   UserCheck,
   RefreshCw,
@@ -46,6 +38,58 @@ const formatDate = (dateStr) => {
     return dateStr;
   }
 };
+
+const ATTENDANCE_CODE_OPTIONS = [
+  { code: 'P', label: 'P (1.0x)', desc: 'Full Day' },
+  { code: 'HALF', label: 'HALF (0.5x)', desc: 'Half Day' },
+  { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
+  { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
+  { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
+];
+
+const MAX_ADVANCE = 10000; // mirrors MAX_ADVANCE_LIMIT on the server
+
+const PaymentMethodPicker = ({ value, onChange }) => (
+  <div>
+    <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Paid by</span>
+    <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Payment method">
+      {[
+        { id: 'CASH', label: 'Cash' },
+        { id: 'UPI', label: 'UPI' },
+        { id: 'BANK_TRANSFER', label: 'Bank' },
+      ].map((m) => (
+        <button
+          key={m.id}
+          type="button"
+          role="radio"
+          aria-checked={value === m.id}
+          onClick={() => onChange(m.id)}
+          className={`min-h-11 rounded-xl border text-sm font-bold transition ${
+            value === m.id
+              ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500/30'
+              : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+          }`}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+/** One line of the pay receipt: label (+/− sign, hint) on the left, amount input on the right. */
+const PayRow = ({ sign, label, hint, children }) => (
+  <div className="flex items-center justify-between gap-3 px-4 py-3">
+    <div className="min-w-0">
+      <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+        {sign && <span className={sign === '+' ? 'text-emerald-600 mr-1' : 'text-rose-600 mr-1'}>{sign}</span>}
+        {label}
+      </div>
+      {hint && <div className="text-xs text-slate-500 dark:text-slate-400">{hint}</div>}
+    </div>
+    {children}
+  </div>
+);
 
 export const WorkersPage = () => {
   const { user, isOwner, isThekedar } = useAuth();
@@ -78,21 +122,38 @@ export const WorkersPage = () => {
   const [selectedAttendanceWorker, setSelectedAttendanceWorker] = useState(null);
   const [attendanceWorkerId, setAttendanceWorkerId] = useState('');
   const [attendanceProjectId, setAttendanceProjectId] = useState('');
-  const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [attendanceDate, setAttendanceDate] = useState(localToday);
   const [attendanceShift, setAttendanceShift] = useState('GENERAL');
   const [attendanceCode, setAttendanceCode] = useState('P');
-  const [attendanceNotes, setAttendanceNotes] = useState('');
   const [markAttendanceSubmitting, setMarkAttendanceSubmitting] = useState(false);
   const [projectsList, setProjectsList] = useState([]);
 
-  // Worker 360° Activity Modal
+  // Worker details sheet (attendance history, advances, payment bills)
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityWorker, setActivityWorker] = useState(null);
   const [activityData, setActivityData] = useState(null);
-  const [activeTab, setActiveTab] = useState('tasks'); // 'tasks' | 'attendance' | 'payments' | 'activities'
+  const [activeTab, setActiveTab] = useState('attendance'); // 'attendance' | 'advances' | 'bills'
 
   // Pay Net Amount Modal
+  // Edit an existing attendance entry (not yet paid)
+  const [editAttendance, setEditAttendance] = useState(null);
+  const [editAttendanceCode, setEditAttendanceCode] = useState('P');
+  const [editAttendanceReason, setEditAttendanceReason] = useState('');
+  const [editAttendanceSubmitting, setEditAttendanceSubmitting] = useState(false);
+
+  // Give an advance directly to a worker
+  const [advanceWorker, setAdvanceWorker] = useState(null);
+  const [advanceAmount, setAdvanceAmount] = useState('');
+  const [advanceReason, setAdvanceReason] = useState('');
+  const [advanceMethod, setAdvanceMethod] = useState('CASH');
+  const [advanceReference, setAdvanceReference] = useState('');
+  const [advanceSubmitting, setAdvanceSubmitting] = useState(false);
+
+  // Monthly attendance PDF picker
+  const [pdfTarget, setPdfTarget] = useState(null);
+  const [pdfMonth, setPdfMonth] = useState(() => localToday().slice(0, 7));
+
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [payWorker, setPayWorker] = useState(null);
   const [payBaseEarned, setPayBaseEarned] = useState(0);
@@ -100,7 +161,6 @@ export const WorkersPage = () => {
   const [payFoodDeduction, setPayFoodDeduction] = useState(0);
   const [payRoomRentDeduction, setPayRoomRentDeduction] = useState(0);
   const [payAdditionalWages, setPayAdditionalWages] = useState(0);
-  const [deductBonusFromAdvance, setDeductBonusFromAdvance] = useState(true);
   const [payMethod, setPayMethod] = useState('CASH');
   const [payReference, setPayReference] = useState('');
   const [payNotes, setPayNotes] = useState('');
@@ -119,7 +179,7 @@ export const WorkersPage = () => {
   // Worker Account Status Action State
   const [statusActionLoadingId, setStatusActionLoadingId] = useState(null);
 
-  // Advance Review & Disbursal inside Activity Modal
+  // Advance review & disbursal inside the worker details sheet
   const [reviewLoadingId, setReviewLoadingId] = useState(null);
   const [disburseModalOpen, setDisburseModalOpen] = useState(false);
   const [selectedAdvanceForDisburse, setSelectedAdvanceForDisburse] = useState(null);
@@ -127,12 +187,15 @@ export const WorkersPage = () => {
   const [disburseReceiptReference, setDisburseReceiptReference] = useState('');
   const [disburseSubmitting, setDisburseSubmitting] = useState(false);
 
+  const [loadError, setLoadError] = useState(null);
+
   const fetchWorkers = async () => {
     try {
+      setLoadError(null);
       const res = await api.get('/users/workers');
       setWorkers(res.data.workers);
     } catch (err) {
-      console.error(err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -203,10 +266,9 @@ export const WorkersPage = () => {
     if (projectsList.length > 0 && !attendanceProjectId) {
       setAttendanceProjectId(projectsList[0]._id);
     }
-    setAttendanceDate(new Date().toISOString().split('T')[0]);
+    setAttendanceDate(localToday());
     setAttendanceShift('GENERAL');
     setAttendanceCode('P');
-    setAttendanceNotes('');
     setMarkAttendanceModalOpen(true);
   };
 
@@ -222,17 +284,15 @@ export const WorkersPage = () => {
     }
     try {
       setMarkAttendanceSubmitting(true);
-      await api.post('/attendance/submit', {
+      const res = await api.post('/attendance/submit', {
         workerId: attendanceWorkerId,
         projectId: attendanceProjectId,
         date: attendanceDate,
         shift: attendanceShift,
         code: attendanceCode,
-        notes: attendanceNotes || undefined,
       });
-      setMessage({ type: 'success', text: `Attendance for date ${attendanceDate} successfully marked and authorized!` });
+      setMessage({ type: 'success', text: res.data?.updated ? `Attendance for ${attendanceDate} updated to ${attendanceCode}.` : `Attendance for ${attendanceDate} marked as ${attendanceCode}.` });
       setMarkAttendanceModalOpen(false);
-      setAttendanceNotes('');
       fetchWorkers();
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to submit attendance' });
@@ -241,10 +301,85 @@ export const WorkersPage = () => {
     }
   };
 
+  // Reload the open worker sheet and the cards after a change.
+  const refreshWorkerData = async (worker) => {
+    fetchWorkers();
+    const userId = worker?.userId?._id;
+    if (userId) {
+      const res = await api.get(`/users/workers/${userId}`);
+      setActivityData(res.data);
+    }
+  };
+
+  const handleOpenEditAttendance = (att) => {
+    setEditAttendance(att);
+    setEditAttendanceCode(att.code);
+    setEditAttendanceReason('');
+  };
+
+  const handleSaveAttendanceEdit = async (e) => {
+    e.preventDefault();
+    setEditAttendanceSubmitting(true);
+    try {
+      await api.patch(`/attendance/${editAttendance._id}/rectify`, {
+        code: editAttendanceCode,
+        reason: editAttendanceReason.trim() || undefined,
+      });
+      setMessage({ type: 'success', text: `Attendance for ${editAttendance.date} updated to ${editAttendanceCode}.` });
+      setEditAttendance(null);
+      await refreshWorkerData(activityWorker);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setEditAttendanceSubmitting(false);
+    }
+  };
+
+  const handleOpenGiveAdvance = (w) => {
+    setActivityModalOpen(false);
+    setAdvanceWorker(w);
+    setAdvanceAmount('');
+    setAdvanceReason('');
+    setAdvanceMethod('CASH');
+    setAdvanceReference('');
+  };
+
+  const handleGiveAdvance = async (e) => {
+    e.preventDefault();
+    setAdvanceSubmitting(true);
+    try {
+      const res = await api.post(`/finance/workers/${advanceWorker.userId?._id}/advance`, {
+        amount: parseFloat(advanceAmount),
+        reason: advanceReason.trim(),
+        paymentMethod: advanceMethod,
+        receiptReference: advanceReference.trim() || undefined,
+      });
+      const txId = res.data?.transaction?.transactionId;
+      setMessage({ type: 'success', text: `Advance of ₹${parseFloat(advanceAmount).toLocaleString('en-IN')} given to ${advanceWorker.userId?.name}${txId ? ` (${txId})` : ''}. It will be deducted at the next payment.` });
+      const worker = advanceWorker;
+      setAdvanceWorker(null);
+      fetchWorkers();
+      handleOpenActivity(worker, 'advances');
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message });
+    } finally {
+      setAdvanceSubmitting(false);
+    }
+  };
+
+  // Attendance PDFs are per month: open the month picker (worker = null means all workers).
   const handleExportWorkerAttendancePDF = (worker) => {
-    const workerUserId = worker?.userId?._id || worker?._id;
-    if (!workerUserId) return;
-    window.open(`/api/v1/reports/export/attendance?workerId=${workerUserId}&lang=${language}`, '_blank');
+    setPdfTarget({ worker: worker || null });
+    setPdfMonth(localToday().slice(0, 7));
+  };
+
+  const handleDownloadMonthPdf = () => {
+    const [year, month] = pdfMonth.split('-');
+    const workerUserId = pdfTarget?.worker?.userId?._id || pdfTarget?.worker?._id;
+    const params = new URLSearchParams({ year, month: String(Number(month)), lang: language });
+    if (workerUserId) params.set('workerId', workerUserId);
+    window.open(`/api/v1/reports/export/attendance?${params}`, '_blank');
+    setPdfTarget(null);
   };
 
   const handleOpenEditWorker = (worker) => {
@@ -304,57 +439,30 @@ export const WorkersPage = () => {
     setPayFoodDeduction(0);
     setPayRoomRentDeduction(0);
     setPayAdditionalWages(0);
-    setDeductBonusFromAdvance(true);
     setPayMethod('CASH');
     setPayReference('');
     setPayNotes('');
     setPayModalOpen(true);
   };
 
+  // Advance cut follows wages + bonus automatically (capped at the outstanding advance); the user can still edit it.
+  const autoAdvanceCut = (base, bonus) =>
+    setPayAdvanceDeduction(Math.min((parseFloat(base) || 0) + (parseFloat(bonus) || 0), payWorker?.outstandingAdvanceBalance || 0));
+
   const handleBaseEarnedChange = (val) => {
     setPayBaseEarned(val);
-    const base = parseFloat(val) || 0;
-    const bonus = parseFloat(payAdditionalWages) || 0;
-    const adv = payWorker?.outstandingAdvanceBalance || 0;
-    if (deductBonusFromAdvance) {
-      setPayAdvanceDeduction(Math.min(base + bonus, adv));
-    } else {
-      setPayAdvanceDeduction(Math.min(base, adv));
-    }
+    autoAdvanceCut(val, payAdditionalWages);
   };
 
   const handleAdditionalWagesChange = (val) => {
     setPayAdditionalWages(val);
-    const bonus = parseFloat(val) || 0;
-    const base = parseFloat(payBaseEarned) || 0;
-    const adv = payWorker?.outstandingAdvanceBalance || 0;
-    if (deductBonusFromAdvance) {
-      setPayAdvanceDeduction(Math.min(base + bonus, adv));
-    }
-  };
-
-  const handleToggleBonusDeduct = (checked) => {
-    setDeductBonusFromAdvance(checked);
-    const base = parseFloat(payBaseEarned) || 0;
-    const bonus = parseFloat(payAdditionalWages) || 0;
-    const adv = payWorker?.outstandingAdvanceBalance || 0;
-    if (checked) {
-      setPayAdvanceDeduction(Math.min(base + bonus, adv));
-    } else {
-      setPayAdvanceDeduction(Math.min(base, adv));
-    }
+    autoAdvanceCut(payBaseEarned, val);
   };
 
   const handleUseFullEarned = () => {
     const full = payWorker?.totalEarned || 0;
     setPayBaseEarned(full);
-    const bonus = parseFloat(payAdditionalWages) || 0;
-    const adv = payWorker?.outstandingAdvanceBalance || 0;
-    if (deductBonusFromAdvance) {
-      setPayAdvanceDeduction(Math.min(full + bonus, adv));
-    } else {
-      setPayAdvanceDeduction(Math.min(full, adv));
-    }
+    autoAdvanceCut(full, payAdditionalWages);
   };
 
   const handleSubmitPayNet = async (e) => {
@@ -400,8 +508,8 @@ export const WorkersPage = () => {
 
     const confirmed = window.confirm(
       newStatus === 'ACTIVE'
-        ? `Are you sure you want to ACTIVATE the account for worker "${workerUser.name}"?\n\nThey will regain access to log in and view their craftsman assignments and ledger.`
-        : `Are you sure you want to DEACTIVATE / SUSPEND the account for worker "${workerUser.name}"?\n\nTheir active sessions will be terminated immediately and they will be blocked from logging in.`
+        ? `Are you sure you want to ACTIVATE the account for worker "${workerUser.name}"?\n\nThey will appear again for attendance and payments.`
+        : `Are you sure you want to DEACTIVATE / SUSPEND the account for worker "${workerUser.name}"?\n\nThey will be hidden from attendance until reactivated. Their records stay intact.`
     );
     if (!confirmed) return;
 
@@ -540,6 +648,7 @@ export const WorkersPage = () => {
 
   return (
     <div className="space-y-6">
+      <LoadError message={loadError} onRetry={fetchWorkers} />
       {message && (
         <div className={`rounded-xl p-4 text-sm font-semibold border ${message.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'}`}>
           {message.text}
@@ -549,15 +658,20 @@ export const WorkersPage = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('workers.registryTitle', 'Workforce & Craftsmen Registry')}</h2>
-          <p className="text-xs text-slate-700 dark:text-slate-400">{t('workers.registrySub', 'Carpenters, edge banders, cabinet fitters, polishers, assigned tasks, and daily wage agreements.')}</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('workers.pageTitle', 'Workers')}</h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            {workers.length} {t('workers.countLabel', 'workers')} · {t('workers.tapHint', 'tap a card for attendance, advances and bills')}
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+          <Button variant="outline" className="justify-center" icon={FileText} onClick={() => handleExportWorkerAttendancePDF(null)}>
+            {t('workers.monthlyPdf', 'Monthly PDF')}
+          </Button>
           {isThekedar && (
             <Button
               variant="outline"
-              className="w-full sm:w-auto justify-center text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-400 font-bold"
+              className="justify-center text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-400 font-bold"
               onClick={handleOpenSelectDeleteModal}
               icon={Trash2}
             >
@@ -565,7 +679,7 @@ export const WorkersPage = () => {
             </Button>
           )}
           {(isOwner || isThekedar) && (
-            <Button variant="primary" onClick={() => setRegisterModalOpen(true)} icon={UserPlus} className="w-full sm:w-auto justify-center">
+            <Button variant="primary" onClick={() => setRegisterModalOpen(true)} icon={UserPlus} className="col-span-2 justify-center sm:col-span-1">
               {t('workers.registerWorker', 'Register Worker')}
             </Button>
           )}
@@ -583,15 +697,25 @@ export const WorkersPage = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {workers.map((w) => (
-            <Card key={w.userId?._id || w._id} className="flex flex-col justify-between hover:border-amber-400 dark:hover:border-amber-600">
-              <div>
+          {workers.map((w) => {
+            const wid = w.userId?._id || w._id;
+            return (
+            <Card key={wid} className="flex flex-col gap-3 hover:border-amber-400 dark:hover:border-amber-600 transition">
+              {/* Tap the card for wages, balances and all other actions */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => handleOpenActivity(w)}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleOpenActivity(w))}
+                aria-label={`${w.userId?.name || 'Worker'}: ${t('workers.viewDetails', 'view details and actions')}`}
+                className="cursor-pointer rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-xs font-bold text-amber-800 dark:text-amber-400 font-mono">{w.workerCode}</span>
                     {w.hasPendingAdvance && (
                       <span
-                        onClick={() => handleOpenActivity(w, 'payments')}
+                        onClick={(e) => { e.stopPropagation(); handleOpenActivity(w, 'advances'); }}
                         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-xs border border-amber-400 cursor-pointer animate-pulse transition tracking-tight"
                         title={`Worker requested advance of ₹${(w.requestedAdvanceAmount || w.pendingAdvance?.totalRequested || 0).toLocaleString('en-IN')}. Click to review.`}
                       >
@@ -600,8 +724,7 @@ export const WorkersPage = () => {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span
+                  <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
                         w.userId?.status === 'ACTIVE'
                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -615,228 +738,41 @@ export const WorkersPage = () => {
                       />
                       {w.userId?.status === 'ACTIVE' ? t('workers.active', 'Active') : t('workers.suspended', 'Suspended')}
                     </span>
-                    {(isThekedar || isOwner) && (
-                      <button
-                        type="button"
-                        disabled={statusActionLoadingId === w.userId?._id}
-                        onClick={(e) => handleToggleWorkerStatus(w, e)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border transition cursor-pointer disabled:opacity-50 ${
-                          w.userId?.status === 'ACTIVE'
-                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/50'
-                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
-                        }`}
-                        title={w.userId?.status === 'ACTIVE' ? 'Deactivate Worker login access' : 'Activate Worker login access'}
-                      >
-                        {statusActionLoadingId === w.userId?._id ? (
-                          <RefreshCw className="h-2.5 w-2.5 animate-spin" />
-                        ) : w.userId?.status === 'ACTIVE' ? (
-                          <>
-                            <UserX className="h-2.5 w-2.5" />
-                            <span>{t('workers.deactivate', 'Deactivate')}</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="h-2.5 w-2.5" />
-                            <span>{t('workers.activate', 'Activate')}</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-                  </div>
                 </div>
 
-                <div className="mt-3 flex items-start gap-3">
+                <div className="mt-3 flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold text-sm">
                     <i className="fa-solid fa-user"></i>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{w.userId?.name || 'Worker'}</h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{w.userId?.name || 'Worker'}</h3>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
                   </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-slate-400" />
                 </div>
 
-                {/* Skills */}
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {w.skills?.map((s, idx) => (
-                    <span key={idx} className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:text-slate-300">
-                      {s}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Wage and Balances */}
-                <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 space-y-1.5 text-xs border border-slate-200/70 dark:border-slate-700">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-700 dark:text-slate-400">{t('dashboard.standardDailyWage', 'Standard Daily Wage')}:</span>
-                    <strong className="text-amber-900 dark:text-amber-300 text-sm">₹{w.defaultDailyWage} / {t('calendar.day', 'day')}</strong>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px] bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-1.5 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <span className="text-amber-900 dark:text-amber-300 font-semibold">{t('workers.thisMonthWorked', 'Worked This Month')}:</span>
-                    <strong className="text-amber-950 dark:text-amber-200 font-bold">
-                      {w.monthDehadi !== undefined ? `${w.monthDehadi} ${t('calendar.dehadiUnit', 'Shifts')} (${w.monthWorkedDays || 0}d)` : `${w.monthWorkedDays || 0} ${t('calendar.days', 'days')}`}
-                      <span className="text-emerald-700 dark:text-emerald-400 ml-1.5 font-black">(₹{(w.monthEarnings || 0).toLocaleString('en-IN')})</span>
-                    </strong>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-700 dark:text-slate-400 font-semibold">{t('worker.totalIncome', 'Total Income')}:</span>
-                    <strong className="text-slate-900 dark:text-white font-bold">
-                      ₹{(w.totalEarned || 0).toLocaleString('en-IN')}
-                      {w.approvedDaysCount > 0 && (
-                        <span className="ml-1 text-[10px] text-slate-500 dark:text-slate-400 font-normal">({w.approvedDaysCount} {t('calendar.days', 'days')})</span>
-                      )}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-700 dark:text-slate-400 font-semibold">{t('dashboard.outstandingAdvance', 'Outstanding Advance Balance')}:</span>
-                    <strong className="text-rose-700 dark:text-rose-400 font-bold">₹{(w.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</strong>
-                  </div>
-                  {w.hasPendingAdvance && (
-                    <div
-                      onClick={() => handleOpenActivity(w, 'payments')}
-                      className="flex justify-between items-center text-[11px] bg-amber-50/90 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-300 px-2 py-1.5 rounded-lg font-bold cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/50 transition shadow-xs"
-                      title="Pending advance request awaiting review. Click to review."
-                    >
-                      <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400">
-                        <IndianRupee className="h-3 w-3 text-amber-600 stroke-[2.5]" />
-                        <span>{t('worker.reqAdvBadge', 'Req Adv')}:</span>
-                      </span>
-                      <span className="font-black text-amber-950 dark:text-amber-200 flex items-center gap-1">
-                        <span>₹{(w.requestedAdvanceAmount || w.pendingAdvance?.totalRequested || 0).toLocaleString('en-IN')}</span>
-                        <span className="text-[10px] font-bold text-white bg-amber-600 hover:bg-amber-700 px-1.5 py-0.2 rounded">{t('thekedar.review', 'Review')} →</span>
-                      </span>
-                    </div>
-                  )}
-                  <div className="pt-1.5 mt-1 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                      {((w.netBalance !== undefined ? w.netBalance : (w.netPayable !== undefined ? w.netPayable : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0)))) < 0)
-                        ? `${t('worker.netBalance', 'Net Balance')}:`
-                        : `${t('worker.netDueToPay', 'Net Due to Pay')}:`}
-                    </span>
-                    {(() => {
-                      const nb = w.netBalance !== undefined ? w.netBalance : (w.netPayable !== undefined ? w.netPayable : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0)));
-                      if (nb < 0) {
-                        return (
-                          <span className="font-black text-rose-700 dark:text-rose-300 text-sm bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-800">
-                            -₹{Math.abs(nb).toLocaleString('en-IN')}
-                          </span>
-                        );
-                      }
-                      if (nb > 0) {
-                        return (
-                          <span className="font-black text-emerald-700 dark:text-emerald-300 text-sm bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
-                            ₹{nb.toLocaleString('en-IN')}
-                          </span>
-                        );
-                      }
-                      return (
-                        <span className="font-bold text-slate-800 dark:text-slate-200 text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                          ₹0 ({t('common.settled', 'Settled')})
-                        </span>
-                      );
-                    })()}
-                  </div>
-                  {/* Calculation Breakdown: Total Income - Advance = Net Amount */}
-                  {(() => {
-                    const totalIncome = w.totalEarned || 0;
-                    const advance = w.outstandingAdvanceBalance || 0;
-                    const nb = w.netBalance !== undefined ? w.netBalance : (w.netPayable !== undefined ? w.netPayable : (totalIncome - advance));
-                    if (nb < 0) {
-                      return (
-                        <div className="mt-1 rounded-lg bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2 text-right space-y-0.5">
-                          <div className="text-[11px] font-bold text-rose-950 dark:text-rose-200">
-                            ₹{totalIncome.toLocaleString('en-IN')} <span className="font-normal text-slate-600 dark:text-slate-400">(Total Income)</span> − ₹{advance.toLocaleString('en-IN')} <span className="font-normal text-slate-600 dark:text-slate-400">(Advance)</span> = <span className="text-rose-700 dark:text-rose-300 font-black">-₹{Math.abs(nb).toLocaleString('en-IN')}</span>
-                          </div>
-                          <div className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold">
-                            {t('worker.advanceExceeds', 'Advance exceeds earnings by ₹{amt}').replace('{amt}', Math.abs(nb).toLocaleString('en-IN'))}
-                          </div>
-                        </div>
-                      );
-                    }
-                    if (nb > 0) {
-                      return (
-                        <div className="mt-1 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-2 text-right">
-                          <div className="text-[11px] font-bold text-emerald-950 dark:text-emerald-200">
-                            ₹{totalIncome.toLocaleString('en-IN')} <span className="font-normal text-slate-600 dark:text-slate-400">(Total Income)</span> − ₹{advance.toLocaleString('en-IN')} <span className="font-normal text-slate-600 dark:text-slate-400">(Advance)</span> = <span className="text-emerald-700 dark:text-emerald-300 font-black">₹{nb.toLocaleString('en-IN')} (Net Due)</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="mt-1 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-1.5 text-right text-[10px] text-slate-600 dark:text-slate-400 font-medium">
-                        ₹{totalIncome.toLocaleString('en-IN')} (Total Income) − ₹{advance.toLocaleString('en-IN')} (Advance) = ₹0 (Fully Settled)
-                      </div>
-                    );
-                  })()}
+                <div className="mt-3 flex justify-between items-center text-[11px] bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-2 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <span className="text-amber-900 dark:text-amber-300 font-semibold">{t('workers.thisMonthWorked', 'Worked This Month')}:</span>
+                  <strong className="text-amber-950 dark:text-amber-200 font-bold">
+                    {w.monthDehadi !== undefined ? `${w.monthDehadi} ${t('calendar.dehadiUnit', 'Shifts')} (${w.monthWorkedDays || 0}d)` : `${w.monthWorkedDays || 0} ${t('calendar.days', 'days')}`}
+                  </strong>
                 </div>
               </div>
 
-              {/* Action Buttons: Thekedar activities + Wage Update + Pay Net + Delete */}
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-                  <span className="inline-flex items-center gap-1 rounded bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                    {t('disputes.thekedar', 'Thekedar')}: {w.thekedarId?.name || 'Assigned Lead'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="flex-[1.4] bg-amber-600 hover:bg-amber-700 text-white shadow-sm justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap"
-                    onClick={() => handleOpenActivity(w)}
-                    icon={Activity}
-                  >
-                    {t('nav.activities', 'Activities')}
-                  </Button>
-                  {(isOwner || isThekedar) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      onClick={() => handleOpenEditWorker(w)}
-                      icon={Edit}
-                      title="Edit Craftsman Details"
-                    >
-                      Edit
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    onClick={() => handleExportWorkerAttendancePDF(w)}
-                    icon={FileText}
-                    title={`Export Individual Attendance Statement (PDF) for ${w.userId?.name || w.name}`}
-                  >
-                    PDF
-                  </Button>
-                  {(isOwner || isThekedar) && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
-                      onClick={() => handleOpenMarkAttendance(w)}
-                      icon={Calendar}
-                      title="Mark Attendance for this Craftsman"
-                    >
-                      Attendance
-                    </Button>
-                  )}
-                  {isThekedar && (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      className="flex-[1] bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm justify-center text-xs font-semibold px-2.5 py-2 whitespace-nowrap"
-                      onClick={() => handleOpenPayModal(w)}
-                      icon={IndianRupee}
-                      title="Pay Net Amount"
-                    >
-                      {t('thekedar.payWorkerNet', 'Pay Net')}
-                    </Button>
-                  )}
-                </div>
-              </div>
+              {(isOwner || isThekedar) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-center font-semibold border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
+                  onClick={() => handleOpenMarkAttendance(w)}
+                  icon={Calendar}
+                  title="Mark Attendance for this Craftsman"
+                >
+                  {t('workers.markAttendance', 'Attendance')}
+                </Button>
+              )}
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -1032,7 +968,7 @@ export const WorkersPage = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Assigned Furniture Project *
+              Furniture Project *
             </label>
             <select
               required
@@ -1084,13 +1020,7 @@ export const WorkersPage = () => {
               Attendance Multiplier Code *
             </label>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-1">
-              {[
-                { code: 'P', label: 'P (1.0x)', desc: 'Full Day' },
-                { code: 'HALF', label: 'HALF (0.5x)', desc: 'Half Day' },
-                { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
-                { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
-                { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
-              ].map((item) => (
+              {ATTENDANCE_CODE_OPTIONS.map((item) => (
                 <button
                   type="button"
                   key={item.code}
@@ -1108,18 +1038,6 @@ export const WorkersPage = () => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Work Notes / Tasks Completed (Optional)
-            </label>
-            <input
-              type="text"
-              value={attendanceNotes}
-              onChange={(e) => setAttendanceNotes(e.target.value)}
-              placeholder="e.g. Wardrobe carcass installation or edge polishing"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
-          </div>
 
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setMarkAttendanceModalOpen(false)}>
@@ -1132,11 +1050,11 @@ export const WorkersPage = () => {
         </form>
       </Modal>
 
-      {/* Modal: Worker 360° Activity, Tasks, Attendance & Payments */}
+      {/* Modal: Worker details — attendance, advances and bills (opened by tapping a worker card) */}
       <Modal
         isOpen={activityModalOpen}
         onClose={() => setActivityModalOpen(false)}
-        title={activityWorker ? `${activityWorker.userId?.name || 'Worker'} (${activityWorker.workerCode}) — Complete Activity Stream` : 'Worker Activities'}
+        title={activityWorker ? `${activityWorker.userId?.name || 'Worker'} (${activityWorker.workerCode})` : 'Worker'}
         maxWidth="max-w-5xl"
       >
         {activityWorker && (
@@ -1223,52 +1141,50 @@ export const WorkersPage = () => {
               </div>
             </div>
 
+            {/* Actions (each closes this sheet before opening its own form) */}
+            {(isOwner || isThekedar) && (
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                <Button variant="outline" className="justify-center border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200" icon={Calendar} onClick={() => { setActivityModalOpen(false); handleOpenMarkAttendance(activityWorker); }}>
+                  {t('workers.markAttendance', 'Attendance')}
+                </Button>
+                {isThekedar && (
+                  <Button variant="success" className="justify-center" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
+                    {t('thekedar.payWorkerNet', 'Pay Net')}
+                  </Button>
+                )}
+                {isThekedar && (
+                  <Button variant="outline" className="justify-center border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300" icon={Receipt} onClick={() => handleOpenGiveAdvance(activityWorker)}>
+                    Give Advance
+                  </Button>
+                )}
+                <Button variant="outline" className="justify-center" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
+                  {t('common.edit', 'Edit')}
+                </Button>
+              </div>
+            )}
+
             {/* Tab Navigation */}
             <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1 text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none shrink-0">
-              <button
-                onClick={() => setActiveTab('attendance')}
-                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
-                  activeTab === 'attendance'
-                    ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Calendar className="h-4 w-4" />
-                <span>Attendance History</span>
-                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300">
-                  {activityData?.attendanceHistory?.length || 0}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('payments')}
-                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
-                  activeTab === 'payments'
-                    ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <IndianRupee className="h-4 w-4" />
-                <span>Payments & Advances</span>
-                <span className="rounded-full bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 text-[10px] font-extrabold text-blue-800 dark:text-blue-300">
-                  {(activityData?.transactions?.length || 0) + (activityData?.advanceRequests?.length || 0)}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('activities')}
-                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
-                  activeTab === 'activities'
-                    ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <FolderKanban className="h-4 w-4" />
-                <span>Projects & Tools</span>
-                <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-300">
-                  {(activityData?.assignments?.length || 0) + (activityData?.assignedTools?.length || 0)}
-                </span>
-              </button>
+              {[
+                { id: 'attendance', label: t('workers.tabAttendance', 'Attendance History'), icon: Calendar, count: activityData?.attendanceHistory?.length || 0 },
+                { id: 'advances', label: t('workers.tabAdvances', 'Advances Taken'), icon: Receipt, count: activityData?.advanceRequests?.length || 0 },
+                { id: 'bills', label: t('workers.tabBills', 'Payment Bills'), icon: IndianRupee, count: activityData?.transactions?.length || 0 },
+              ].map(({ id, label, icon: Icon, count }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setActiveTab(id)}
+                  className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
+                    activeTab === id
+                      ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
+                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                  <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-300">{count}</span>
+                </button>
+              ))}
             </div>
 
             {/* Loading Spinner */}
@@ -1285,7 +1201,7 @@ export const WorkersPage = () => {
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl">
-                        Attendance logs for work shifts including duty codes (P, HALF, P1/5, PP), check-in/out timestamps, and authorized wage calculations.
+                        Every logged shift with its earnings. Tap Edit to correct a shift; paid entries are locked.
                       </p>
                       <div className="flex items-center gap-2.5">
                         <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
@@ -1298,7 +1214,7 @@ export const WorkersPage = () => {
                           onClick={() => handleExportWorkerAttendancePDF(activityWorker)}
                           className="text-xs font-bold border-amber-300 dark:border-amber-700 bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
                         >
-                          Export Worker Attendance PDF
+                          Monthly Attendance PDF
                         </Button>
                       </div>
                     </div>
@@ -1317,9 +1233,8 @@ export const WorkersPage = () => {
                               <th className="px-4 py-3">Date</th>
                               <th className="px-4 py-3">Project / Site</th>
                               <th className="px-4 py-3">Code & Weight</th>
-                              <th className="px-4 py-3">Work Hours</th>
-                              <th className="px-4 py-3">Daily Wage (Earned)</th>
-                              <th className="px-4 py-3">Notes</th>
+                              <th className="px-4 py-3">Earned</th>
+                              <th className="px-4 py-3 text-right">Action</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
@@ -1337,17 +1252,19 @@ export const WorkersPage = () => {
                                 <td className="px-4 py-3">
                                   <Badge variant={att.code} size="sm">{att.code}</Badge>
                                 </td>
-                                <td className="px-4 py-3 text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3 text-slate-400" />
-                                    <span>{att.checkInTime || '09:00'} — {att.checkOutTime || '18:00'}</span>
-                                  </div>
-                                </td>
                                 <td className="px-4 py-3 font-bold text-amber-900 dark:text-amber-300">
-                                  {att.calculatedWage ? `₹${att.calculatedWage}` : `₹${activityWorker.defaultDailyWage} (base)`}
+                                  ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
                                 </td>
-                                <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-[11px] max-w-xs truncate">
-                                  {att.notes || '-'}
+                                <td className="px-4 py-3 text-right">
+                                  {att.isPayrollProcessed ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                      <CheckCircle2 className="h-3.5 w-3.5" /> Paid (locked)
+                                    </span>
+                                  ) : (
+                                    <Button size="sm" variant="outline" icon={Edit} onClick={() => handleOpenEditAttendance(att)}>
+                                      {t('common.edit', 'Edit')}
+                                    </Button>
+                                  )}
                                 </td>
                               </tr>
                             ))}
@@ -1358,46 +1275,21 @@ export const WorkersPage = () => {
                   </div>
                 )}
 
-                {/* TAB 3: PAYMENTS, ADVANCES & PAYROLL */}
-                {activeTab === 'payments' && (
+                {/* TAB 2: ADVANCES TAKEN */}
+                {activeTab === 'advances' && (
                   <div className="space-y-5">
-                    {/* Financial Balances Card Bar */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/40 p-3.5">
-                        <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 uppercase">Standard Base Daily Wage</span>
-                        <div className="mt-1 text-xl font-black text-amber-900 dark:text-amber-200">₹{activityWorker.defaultDailyWage} <span className="text-xs font-normal text-slate-600 dark:text-slate-400">/ day</span></div>
-                        <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-400">Calculated on 8-hour modular carpentry shifts</p>
+                    {/* Outstanding advance + give a new one */}
+                    <div className="flex flex-col gap-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">Outstanding Advance</div>
+                        <div className="text-2xl font-black text-rose-700 dark:text-rose-300">₹{(activityData.profile?.outstandingAdvanceBalance ?? 0).toLocaleString('en-IN')}</div>
+                        <div className="text-xs text-slate-600 dark:text-slate-400">Deducted from the next net payment · limit ₹{MAX_ADVANCE.toLocaleString('en-IN')}</div>
                       </div>
-
-                      <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/40 p-3.5">
-                        <span className="text-[11px] font-semibold text-blue-800 dark:text-blue-300 uppercase">Total Income (Earned)</span>
-                        <div className="mt-1 text-xl font-black text-blue-900 dark:text-blue-200">₹{(activityWorker.totalEarned ?? activityData.profile?.outstandingSalaryBalance ?? 0).toLocaleString('en-IN')}</div>
-                        <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-400">Approved attendance shifts & work</p>
-                      </div>
-
-                      <div className="rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50/60 dark:bg-rose-950/40 p-3.5">
-                        <span className="text-[11px] font-semibold text-rose-800 dark:text-rose-300 uppercase">Outstanding Advance Balance</span>
-                        <div className="mt-1 text-xl font-black text-rose-700 dark:text-rose-300">₹{(activityData.profile?.outstandingAdvanceBalance ?? activityWorker.outstandingAdvanceBalance ?? 0).toLocaleString('en-IN')}</div>
-                        <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-400">Auto-deducted during settlement</p>
-                      </div>
-
-                      <div className={`rounded-xl border p-3.5 ${
-                        ((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0
-                          ? 'border-rose-300 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/40'
-                          : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/40'
-                      }`}>
-                        <span className={`text-[11px] font-semibold uppercase ${
-                          ((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0 ? 'text-rose-800 dark:text-rose-300' : 'text-emerald-800 dark:text-emerald-300'
-                        }`}>
-                          Net Amount (Balance)
-                        </span>
-                        <div className={`mt-1 text-xl font-black ${
-                          ((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0 ? 'text-rose-700 dark:text-rose-300' : 'text-emerald-700 dark:text-emerald-300'
-                        }`}>
-                          {((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0 ? '-' : ''}₹{Math.abs((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}
-                        </div>
-                        <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-400">Total Income − Advance = Net</p>
-                      </div>
+                      {isThekedar && (
+                        <Button variant="danger" icon={IndianRupee} onClick={() => handleOpenGiveAdvance(activityWorker)}>
+                          Give Advance
+                        </Button>
+                      )}
                     </div>
 
                     {/* Section: Advance Requests */}
@@ -1405,7 +1297,7 @@ export const WorkersPage = () => {
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                           <Receipt className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                          Craftsman Advance Requests
+                          Advance History
                         </h4>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
                           {activityData.advanceRequests?.length || 0} Requests
@@ -1521,6 +1413,12 @@ export const WorkersPage = () => {
                       )}
                     </div>
 
+                  </div>
+                )}
+
+                {/* TAB 3: PAYMENT BILLS */}
+                {activeTab === 'bills' && (
+                  <div className="space-y-5">
                     {/* Section: Payment Transactions */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -1596,217 +1494,6 @@ export const WorkersPage = () => {
                       )}
                     </div>
 
-                    {/* Section: Finalized Monthly Payrolls */}
-                    {activityData.payrolls && activityData.payrolls.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <FileText className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                          Finalized Payroll Statements
-                        </h4>
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                              <tr>
-                                <th className="px-4 py-2.5">Period</th>
-                                <th className="px-4 py-2.5">Days Present</th>
-                                <th className="px-4 py-2.5">Gross Pay</th>
-                                <th className="px-4 py-2.5">Advance Deducted</th>
-                                <th className="px-4 py-2.5">Net Disbursed</th>
-                                <th className="px-4 py-2.5">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                              {activityData.payrolls.map((pr) => (
-                                <tr key={pr._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                  <td className="px-4 py-2.5 font-bold text-slate-900 dark:text-white">
-                                    {pr.periodMonth}/{pr.periodYear}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
-                                    {pr.presentDays || 0} days
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-800 dark:text-slate-200">
-                                    ₹{pr.grossPay || 0}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-rose-600 dark:text-rose-400">
-                                    ₹{pr.advanceDeduction || 0}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-black text-emerald-800 dark:text-emerald-400">
-                                    ₹{pr.netPayable || 0}
-                                  </td>
-                                  <td className="px-4 py-2.5">
-                                    <Badge variant={pr.status} size="sm">{pr.status}</Badge>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* TAB 4: PROJECTS, TOOLS & ACTIVITIES */}
-                {activeTab === 'activities' && (
-                  <div className="space-y-6">
-                    {/* Section 1: Active Project Deployments */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <FolderKanban className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          Active Project Site Deployments
-                        </h4>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {activityData.assignments?.length || 0} Projects Assigned
-                        </span>
-                      </div>
-
-                      {(!activityData.assignments || activityData.assignments.length === 0) ? (
-                        <p className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 text-center text-xs text-slate-500 dark:text-slate-400 italic">
-                          Worker has not been assigned to any project sites yet.
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {activityData.assignments.map((asgn) => (
-                            <div key={asgn._id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3.5 bg-white dark:bg-slate-800/70 hover:border-amber-400 dark:hover:border-amber-500 transition-colors">
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <h5 className="font-bold text-slate-900 dark:text-white text-xs">{asgn.projectId?.name || 'Project Name'}</h5>
-                                  <span className="text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                                    {asgn.projectId?.projectCode || 'MOD-FURN'}
-                                  </span>
-                                </div>
-                                <Badge variant={asgn.projectId?.status || 'IN_PROGRESS'} size="sm">
-                                  {asgn.projectId?.status || 'IN_PROGRESS'}
-                                </Badge>
-                              </div>
-                              <div className="mt-2.5 space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                                <div className="flex justify-between">
-                                  <span>Site Address:</span>
-                                  <span className="font-medium text-slate-800 dark:text-slate-200 text-right truncate max-w-[180px]">{asgn.projectId?.siteAddress || 'Main Workshop'}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Assigned Role:</span>
-                                  <strong className="text-amber-900 dark:text-amber-300">{asgn.roleOnProject || 'Craftsman'}</strong>
-                                </div>
-                                <div className="flex justify-between text-[11px]">
-                                  <span>Assignment Date:</span>
-                                  <span>{formatDate(asgn.assignedAt || asgn.createdAt)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Section 2: Tools & Equipment in Possession */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                          <Wrench className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          Assigned Power Tools & Equipment (Custody)
-                        </h4>
-                        <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400">
-                          {activityData.assignedTools?.length || 0} Tools Issued
-                        </span>
-                      </div>
-
-                      {(!activityData.assignedTools || activityData.assignedTools.length === 0) ? (
-                        <p className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 text-center text-xs text-slate-500 dark:text-slate-400 italic">
-                          No machinery or power tools currently checked out to this craftsman.
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {activityData.assignedTools.map((toolIssue) => (
-                            <div key={toolIssue._id} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-white dark:bg-slate-800/70">
-                              <div className="flex items-center justify-between">
-                                <span className="font-mono text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                                  {toolIssue.toolId?.toolCode || 'TOOL'}
-                                </span>
-                                <Badge variant={toolIssue.toolId?.condition || 'GOOD'} size="sm">
-                                  {toolIssue.toolId?.condition || 'GOOD'}
-                                </Badge>
-                              </div>
-                              <h5 className="mt-2 text-xs font-bold text-slate-900 dark:text-white truncate">
-                                {toolIssue.toolId?.name || 'Power Tool'}
-                              </h5>
-                              <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                                {toolIssue.toolId?.brand || 'Professional'} {toolIssue.toolId?.modelNumber || ''}
-                              </p>
-                              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-[10px] text-slate-600 dark:text-slate-400">
-                                <span>Issued On:</span>
-                                <strong className="text-slate-800 dark:text-slate-200">{formatDate(toolIssue.issueDate)}</strong>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Section 3: Wage Revision Agreements */}
-                    {activityData.wageAgreements && activityData.wageAgreements.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                          <Award className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                          Wage Agreement History
-                        </h4>
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                              <tr>
-                                <th className="px-4 py-2.5">Effective Date</th>
-                                <th className="px-4 py-2.5">Daily Wage</th>
-                                <th className="px-4 py-2.5">Agreed By</th>
-                                <th className="px-4 py-2.5">Notes</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                              {activityData.wageAgreements.map((wa) => (
-                                <tr key={wa._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                  <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">
-                                    {formatDate(wa.effectiveFrom)}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-black text-amber-900 dark:text-amber-300">
-                                    ₹{wa.dailyWage} / day
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
-                                    {wa.thekedarId?.name || 'Thekedar Lead'}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 text-[11px]">
-                                    {wa.notes || 'Routine revision'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Section 4: Grievances & Disputes */}
-                    {activityData.disputes && activityData.disputes.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                          <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                          Worker Grievances & Attendance Disputes
-                        </h4>
-                        <div className="space-y-2">
-                          {activityData.disputes.map((disp) => (
-                            <div key={disp._id} className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/40 p-3 text-xs flex items-center justify-between">
-                              <div>
-                                <span className="font-bold text-slate-900 dark:text-white">{disp.subject || 'Dispute'}</span>
-                                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">{disp.description}</p>
-                              </div>
-                              <div className="text-right">
-                                <Badge variant={disp.status} size="sm">{disp.status}</Badge>
-                                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{formatDate(disp.createdAt)}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -1815,273 +1502,280 @@ export const WorkersPage = () => {
             {/* Modal Footer */}
             <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
               <Button variant="secondary" onClick={() => setActivityModalOpen(false)}>
-                Close Stream
+                Close
               </Button>
             </div>
           </div>
         )}
       </Modal>
 
-      {/* Modal: Pay Worker Net Amount */}
+      {/* Modal: Monthly attendance PDF */}
+      <Modal
+        isOpen={!!pdfTarget}
+        onClose={() => setPdfTarget(null)}
+        title={pdfTarget?.worker ? `Attendance PDF — ${pdfTarget.worker.userId?.name || 'Worker'}` : 'Monthly Attendance PDF — All Workers'}
+      >
+        {pdfTarget && (() => {
+          const thisMonth = localToday().slice(0, 7);
+          const d = new Date(`${thisMonth}-01T00:00:00`);
+          d.setMonth(d.getMonth() - 1);
+          const lastMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const label = (ym) => new Date(`${ym}-01T00:00:00`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                {[thisMonth, lastMonth].map((ym) => (
+                  <button
+                    key={ym}
+                    type="button"
+                    onClick={() => setPdfMonth(ym)}
+                    aria-pressed={pdfMonth === ym}
+                    className={`min-h-12 rounded-xl border text-sm font-bold transition ${
+                      pdfMonth === ym
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500/30'
+                        : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {ym === thisMonth ? 'This month' : 'Last month'}
+                    <span className="block text-xs font-medium text-slate-500 dark:text-slate-400">{label(ym)}</span>
+                  </button>
+                ))}
+              </div>
+              <label className="block">
+                <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Or pick any month</span>
+                <input
+                  type="month"
+                  value={pdfMonth}
+                  max={thisMonth}
+                  onChange={(e) => e.target.value && setPdfMonth(e.target.value)}
+                  className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none"
+                />
+              </label>
+              <Button className="w-full" size="lg" icon={FileText} onClick={handleDownloadMonthPdf}>
+                Download {label(pdfMonth)} PDF
+              </Button>
+            </div>
+          );
+        })()}
+      </Modal>
+
+      {/* Modal: Edit Attendance Entry */}
+      <Modal
+        isOpen={!!editAttendance}
+        onClose={() => setEditAttendance(null)}
+        title={editAttendance ? `Edit Attendance — ${editAttendance.date}` : 'Edit Attendance'}
+      >
+        {editAttendance && (
+          <form onSubmit={handleSaveAttendanceEdit} className="space-y-4">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 text-sm">
+              <div className="font-bold text-slate-900 dark:text-white">{activityWorker?.userId?.name}</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                {editAttendance.projectId?.name || 'Project'} · now <strong>{editAttendance.code}</strong> (₹{(editAttendance.calculatedEarnings ?? 0).toLocaleString('en-IN')})
+              </div>
+            </div>
+            <div>
+              <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Correct shift</span>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {ATTENDANCE_CODE_OPTIONS.map((item) => (
+                  <button
+                    type="button"
+                    key={item.code}
+                    onClick={() => setEditAttendanceCode(item.code)}
+                    aria-pressed={editAttendanceCode === item.code}
+                    className={`p-2 rounded-xl text-center border transition-all ${
+                      editAttendanceCode === item.code
+                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 ring-2 ring-amber-500/30'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <div className="text-xs font-black">{item.label}</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">{item.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Reason (optional)</label>
+              <input
+                type="text"
+                value={editAttendanceReason}
+                onChange={(e) => setEditAttendanceReason(e.target.value)}
+                placeholder="e.g. Worked till 9 PM, marked full day by mistake"
+                className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <Button variant="secondary" className="flex-1" onClick={() => setEditAttendance(null)}>Cancel</Button>
+              <Button type="submit" className="flex-1" loading={editAttendanceSubmitting} disabled={editAttendanceCode === editAttendance.code}>
+                Save Change
+              </Button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Modal: Give Advance */}
+      <Modal
+        isOpen={!!advanceWorker}
+        onClose={() => setAdvanceWorker(null)}
+        title={advanceWorker ? `Give Advance — ${advanceWorker.userId?.name}` : 'Give Advance'}
+      >
+        {advanceWorker && (() => {
+          const outstanding = advanceWorker.outstandingAdvanceBalance || 0;
+          const room = Math.max(0, MAX_ADVANCE - outstanding);
+          const amount = parseFloat(advanceAmount) || 0;
+          return (
+            <form onSubmit={handleGiveAdvance} className="space-y-4">
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Advance now</div>
+                  <div className="text-lg font-black text-rose-700 dark:text-rose-300">₹{outstanding.toLocaleString('en-IN')}</div>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Can still give</div>
+                  <div className="text-lg font-black text-slate-900 dark:text-white">₹{room.toLocaleString('en-IN')}</div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Amount (₹) *</label>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min="1"
+                  max={room}
+                  step="any"
+                  required
+                  value={advanceAmount}
+                  onChange={(e) => setAdvanceAmount(e.target.value)}
+                  placeholder="e.g. 2000"
+                  className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-3 text-lg font-bold focus:border-rose-500 focus:outline-none"
+                />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[500, 1000, 2000, 5000].filter((v) => v <= room).map((v) => (
+                    <button key={v} type="button" onClick={() => setAdvanceAmount(String(v))} className="inline-flex items-center rounded-full border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                      ₹{v.toLocaleString('en-IN')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Reason *</label>
+                <input
+                  type="text"
+                  required
+                  minLength={3}
+                  value={advanceReason}
+                  onChange={(e) => setAdvanceReason(e.target.value)}
+                  placeholder="e.g. Family medical need"
+                  className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-rose-500 focus:outline-none"
+                />
+              </div>
+              <PaymentMethodPicker value={advanceMethod} onChange={setAdvanceMethod} />
+              <input
+                type="text"
+                value={advanceReference}
+                onChange={(e) => setAdvanceReference(e.target.value)}
+                placeholder="UPI / receipt reference (optional)"
+                aria-label="Payment reference"
+                className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none"
+              />
+              {amount > 0 && (
+                <p className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 p-3 text-xs text-rose-900 dark:text-rose-200">
+                  Advance becomes <strong>₹{(outstanding + amount).toLocaleString('en-IN')}</strong> and is deducted from the next net payment. A transaction and bill are recorded.
+                </p>
+              )}
+              <Button type="submit" variant="danger" className="w-full" size="lg" loading={advanceSubmitting} disabled={amount <= 0 || amount > room}>
+                Give ₹{amount.toLocaleString('en-IN')} Advance
+              </Button>
+            </form>
+          );
+        })()}
+      </Modal>
+
+      {/* Modal: Pay Worker Net Amount (receipt layout: earned + bonus − advance − deductions = net cash) */}
       <Modal
         isOpen={payModalOpen}
         onClose={() => setPayModalOpen(false)}
-        title={`Pay Net Amount — ${payWorker?.userId?.name || 'Worker'} (${payWorker?.workerCode || ''})`}
+        title={`Pay ${payWorker?.userId?.name || 'Worker'} (${payWorker?.workerCode || ''})`}
       >
-        <form onSubmit={handleSubmitPayNet} className="space-y-4">
-          {/* Summary Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-3 text-xs">
-            <div>
-              <span className="text-slate-500 dark:text-slate-400 block text-[10px] font-semibold uppercase">Total Income (Earned)</span>
-              <span className="text-sm font-bold text-slate-900 dark:text-white mt-0.5 block">
-                ₹{(payWorker?.totalEarned || 0).toLocaleString('en-IN')}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 dark:text-slate-400 block text-[10px] font-semibold uppercase">Outstanding Advance</span>
-              <span className="text-sm font-bold text-rose-700 dark:text-rose-400 mt-0.5 block">
-                ₹{payWorker?.outstandingAdvanceBalance || 0}
-              </span>
-            </div>
-            <div>
-              <span className="text-slate-500 dark:text-slate-400 block text-[10px] font-semibold uppercase">Daily Wage</span>
-              <span className="text-sm font-bold text-amber-800 dark:text-amber-400 mt-0.5 block">
-                ₹{payWorker?.defaultDailyWage || 0}/day
-              </span>
-            </div>
-          </div>
+        {payWorker && (() => {
+          const outstanding = payWorker.outstandingAdvanceBalance || 0;
+          const base = parseFloat(payBaseEarned) || 0;
+          const bonus = parseFloat(payAdditionalWages) || 0;
+          const advCut = parseFloat(payAdvanceDeduction) || 0;
+          const maxCut = Math.min(base + bonus, outstanding);
+          const inputCls = 'w-28 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-right text-base font-bold focus:border-amber-500 focus:outline-none';
+          return (
+            <form onSubmit={handleSubmitPayNet} className="space-y-4">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Earned</div>
+                  <div className="text-base font-black text-slate-900 dark:text-white">₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')}</div>
+                </div>
+                <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 p-2.5">
+                  <div className="text-[11px] font-semibold uppercase text-rose-600">Advance</div>
+                  <div className="text-base font-black text-rose-700 dark:text-rose-300">₹{outstanding.toLocaleString('en-IN')}</div>
+                </div>
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Daily wage</div>
+                  <div className="text-base font-black text-amber-800 dark:text-amber-300">₹{payWorker.defaultDailyWage || 0}</div>
+                </div>
+              </div>
 
-          {/* Calculation inputs */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  1. Base Earned to Settle (₹)
-                </label>
-                <button
-                  type="button"
-                  onClick={handleUseFullEarned}
-                  className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold hover:underline cursor-pointer"
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                <PayRow label="Wages to settle" hint={<button type="button" onClick={handleUseFullEarned} className="font-semibold text-amber-700 dark:text-amber-400 underline">Use full ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')}</button>}>
+                  <input type="number" inputMode="decimal" min="0" step="any" required aria-label="Wages to settle" value={payBaseEarned} onChange={(e) => handleBaseEarnedChange(e.target.value)} className={inputCls} />
+                </PayRow>
+                <PayRow sign="+" label="Bonus / allowance" hint="Overtime, travel or festival bonus">
+                  <input type="number" inputMode="decimal" min="0" step="any" aria-label="Bonus or allowance" value={payAdditionalWages} onChange={(e) => handleAdditionalWagesChange(e.target.value)} className={inputCls} />
+                </PayRow>
+                <PayRow
+                  sign="−"
+                  label="Advance cut"
+                  hint={
+                    outstanding > 0 ? (
+                      <span className="flex flex-wrap items-center gap-x-2">
+                        <span>₹{outstanding.toLocaleString('en-IN')} → ₹{Math.max(0, outstanding - advCut).toLocaleString('en-IN')} left</span>
+                        <button type="button" onClick={() => setPayAdvanceDeduction(maxCut)} className="font-semibold text-rose-700 dark:text-rose-400 underline">Max</button>
+                        <button type="button" onClick={() => setPayAdvanceDeduction(0)} className="font-semibold text-slate-600 dark:text-slate-400 underline">None</button>
+                      </span>
+                    ) : 'No advance taken'
+                  }
                 >
-                  Use Full Earned (₹{payWorker?.totalEarned || 0})
-                </button>
-              </div>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                required
-                value={payBaseEarned}
-                onChange={(e) => handleBaseEarnedChange(e.target.value)}
-                placeholder="Amount earned from approved attendance"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                Wages from approved attendance shifts and completed tasks.
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-rose-800 dark:text-rose-400">
-                  2. Advance Deduction to Cut (₹)
-                </label>
-                <div className="flex gap-2">
-                  {(() => {
-                    const totalCredits = (parseFloat(payBaseEarned) || 0) + (parseFloat(payAdditionalWages) || 0);
-                    const maxCut = Math.min(totalCredits, payWorker?.outstandingAdvanceBalance || 0);
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => setPayAdvanceDeduction(maxCut)}
-                        className="text-[10px] text-rose-700 dark:text-rose-400 font-semibold hover:underline cursor-pointer"
-                      >
-                        Cut Max (₹{maxCut})
-                      </button>
-                    );
-                  })()}
-                  <button
-                    type="button"
-                    onClick={() => setPayAdvanceDeduction(0)}
-                    className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold hover:underline cursor-pointer"
-                  >
-                    Cut ₹0
-                  </button>
+                  <input type="number" inputMode="decimal" min="0" max={outstanding} step="any" aria-label="Advance cut" disabled={outstanding === 0} value={payAdvanceDeduction} onChange={(e) => setPayAdvanceDeduction(e.target.value)} className={`${inputCls} disabled:opacity-50`} />
+                </PayRow>
+                <PayRow sign="−" label="Food / mess">
+                  <input type="number" inputMode="decimal" min="0" step="any" aria-label="Food deduction" value={payFoodDeduction} onChange={(e) => setPayFoodDeduction(e.target.value)} className={inputCls} />
+                </PayRow>
+                <PayRow sign="−" label="Room rent">
+                  <input type="number" inputMode="decimal" min="0" step="any" aria-label="Room rent deduction" value={payRoomRentDeduction} onChange={(e) => setPayRoomRentDeduction(e.target.value)} className={inputCls} />
+                </PayRow>
+                <div className="flex items-center justify-between gap-3 rounded-b-2xl bg-emerald-50 dark:bg-emerald-950/40 px-4 py-4">
+                  <div>
+                    <div className="text-sm font-bold text-emerald-900 dark:text-emerald-200">Net cash to pay</div>
+                    <div className="text-xs text-emerald-800/80 dark:text-emerald-300/80">
+                      ₹{(base + bonus).toLocaleString('en-IN')} − ₹{(advCut + (parseFloat(payFoodDeduction) || 0) + (parseFloat(payRoomRentDeduction) || 0)).toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="text-3xl font-black text-emerald-700 dark:text-emerald-300">₹{computedNetPay.toLocaleString('en-IN')}</div>
                 </div>
               </div>
-              <input
-                type="number"
-                min="0"
-                max={payWorker?.outstandingAdvanceBalance || 0}
-                step="any"
-                value={payAdvanceDeduction}
-                onChange={(e) => setPayAdvanceDeduction(e.target.value)}
-                placeholder="Advance deduction"
-                className="mt-1 block w-full rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/30 text-slate-900 dark:text-white p-2 text-sm focus:border-rose-500 focus:outline-none"
-              />
-              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                Amount to deduct ("cut") from worker's outstanding advance balance.
-              </p>
-            </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-rose-800 dark:text-rose-400">
-                3. Food / Mess Deduction (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                value={payFoodDeduction}
-                onChange={(e) => setPayFoodDeduction(e.target.value)}
-                placeholder="e.g. 1200 for food expenses"
-                className="mt-1 block w-full rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/30 text-slate-900 dark:text-white p-2 text-sm focus:border-rose-500 focus:outline-none"
-              />
-              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                Amount to deduct for worker meals / mess facility.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                4. Room Rent Deduction (Optional) (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                value={payRoomRentDeduction}
-                onChange={(e) => setPayRoomRentDeduction(e.target.value)}
-                placeholder="e.g. 1500 (leave 0 if not applicable)"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                Optional accommodation / room rent charge deduction.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                5. Additional Wages / Bonus / Allowance (₹)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                value={payAdditionalWages}
-                onChange={(e) => handleAdditionalWagesChange(e.target.value)}
-                placeholder="e.g. 500 for site incentive"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-              <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">
-                Overtime incentive, travel allowance, or festive bonus.
-              </p>
-              {(payWorker?.outstandingAdvanceBalance || 0) > 0 && (
-                <div className="mt-2 rounded-lg bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 p-2.5 text-xs space-y-1.5">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={deductBonusFromAdvance}
-                      onChange={(e) => handleToggleBonusDeduct(e.target.checked)}
-                      className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
-                    />
-                    <span className="font-bold text-amber-950 dark:text-amber-200">
-                      Deduct bonus from advance balance (-)
-                    </span>
-                  </label>
-                  {parseFloat(payAdditionalWages) > 0 && deductBonusFromAdvance ? (
-                    <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/60 px-2 py-1 rounded border border-emerald-300 dark:border-emerald-800">
-                      ✓ Advance will be reduced by ₹{parseFloat(payAdvanceDeduction) || 0} (Bonus ₹{parseFloat(payAdditionalWages) || 0} + Base ₹{parseFloat(payBaseEarned) || 0})
-                    </div>
-                  ) : (
-                    <div className="text-[10px] text-amber-800 dark:text-amber-300">
-                      When checked, any bonus entered will automatically reduce the worker's outstanding advance.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Computed Net Pay Banner */}
-          <div className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/40 p-3.5 text-center shadow-sm space-y-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-              Net Cash Paid to Worker
-            </span>
-            <div className="mt-0.5 text-2xl font-black text-emerald-950 dark:text-emerald-200">
-              ₹{computedNetPay.toLocaleString('en-IN')}
-            </div>
-            <div className="text-[11px] text-emerald-900 dark:text-emerald-300 font-medium">
-              ₹{((parseFloat(payBaseEarned) || 0) + (parseFloat(payAdditionalWages) || 0)).toLocaleString('en-IN')} (Total Income: Base ₹{parseFloat(payBaseEarned) || 0} + Bonus ₹{parseFloat(payAdditionalWages) || 0}) − ₹{parseFloat(payAdvanceDeduction) || 0} (Advance Cut) − ₹{(parseFloat(payFoodDeduction) || 0) + (parseFloat(payRoomRentDeduction) || 0)} (Deductions) = ₹{computedNetPay.toLocaleString('en-IN')}
-            </div>
-            {(payWorker?.outstandingAdvanceBalance || 0) > 0 && (
-              <div className="pt-1 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 flex-wrap">
-                <span className="text-slate-600 dark:text-slate-400">Advance Balance:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">₹{(payWorker?.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</span>
-                <span className="text-rose-600 dark:text-rose-400 font-bold">− ₹{(parseFloat(payAdvanceDeduction) || 0).toLocaleString('en-IN')}</span>
-                <span>=</span>
-                <span className="font-black text-emerald-800 dark:text-emerald-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800 shadow-2xs">
-                  ₹{Math.max(0, (payWorker?.outstandingAdvanceBalance || 0) - (parseFloat(payAdvanceDeduction) || 0)).toLocaleString('en-IN')} Remaining Advance
-                </span>
+              <PaymentMethodPicker value={payMethod} onChange={setPayMethod} />
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <input type="text" aria-label="Payment reference" value={payReference} onChange={(e) => setPayReference(e.target.value)} placeholder="UPI / receipt reference (optional)" className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none" />
+                <input type="text" aria-label="Payment notes" value={payNotes} onChange={(e) => setPayNotes(e.target.value)} placeholder="Notes (optional)" className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none" />
               </div>
-            )}
-          </div>
 
-          {/* Payment Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Payment Method</label>
-              <select
-                value={payMethod}
-                onChange={(e) => setPayMethod(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              >
-                <option value="CASH">Cash</option>
-                <option value="UPI">UPI</option>
-                <option value="BANK_TRANSFER">Bank Transfer / IMPS</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Receipt / Ref (Optional)</label>
-              <input
-                type="text"
-                value={payReference}
-                onChange={(e) => setPayReference(e.target.value)}
-                placeholder="e.g. UPI Ref / Cash voucher #"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Payment Notes (Optional)</label>
-            <input
-              type="text"
-              value={payNotes}
-              onChange={(e) => setPayNotes(e.target.value)}
-              placeholder="e.g. Weekly net wage settlement"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setPayModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={paySubmitting}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              icon={IndianRupee}
-            >
-              Confirm & Pay ₹{computedNetPay.toLocaleString('en-IN')}
-            </Button>
-          </div>
-        </form>
+              <div className="sticky bottom-0 -mx-5 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-5 pt-3 backdrop-blur sm:-mx-6 sm:px-6">
+                <Button type="submit" variant="success" size="lg" className="w-full" loading={paySubmitting} icon={IndianRupee}>
+                  Confirm & Pay ₹{computedNetPay.toLocaleString('en-IN')}
+                </Button>
+              </div>
+            </form>
+          );
+        })()}
       </Modal>
-
-
 
       {/* Modal: Payment Bill / Voucher Generated */}
       <Modal
@@ -2319,7 +2013,7 @@ export const WorkersPage = () => {
                       </div>
                       <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                         Are you sure you want to permanently delete <strong className="text-slate-900 dark:text-white">{workerToDelete.userId?.name}</strong> ({workerToDelete.workerCode})?
-                        This will delete their user account, remove their craftsman profile, and unassign them from any active furniture projects.
+                        This will delete their user account and remove their craftsman profile.
                       </p>
                     </div>
                   </div>

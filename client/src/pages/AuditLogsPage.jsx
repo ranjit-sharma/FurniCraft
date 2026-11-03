@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
+import { PageHeader } from '../components/common/PageHeader';
 import { Badge } from '../components/common/Badge';
-import { ShieldAlert, Activity, Filter } from 'lucide-react';
+import {  } from 'lucide-react';
 
 export const AuditLogsPage = () => {
   const { t } = useLanguage();
@@ -12,8 +14,11 @@ export const AuditLogsPage = () => {
   const [actionFilter, setActionFilter] = useState('');
   const [targetTypeFilter, setTargetTypeFilter] = useState('');
 
+  const [loadError, setLoadError] = useState(null);
+
   const fetchLogs = async () => {
     try {
+      setLoadError(null);
       let url = '/audit?limit=100';
       if (actionFilter) url += `&action=${actionFilter}`;
       if (targetTypeFilter) url += `&targetType=${targetTypeFilter}`;
@@ -21,7 +26,7 @@ export const AuditLogsPage = () => {
       const res = await api.get(url);
       setLogs(res.data.logs);
     } catch (err) {
-      console.error(err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
     }
@@ -33,15 +38,11 @@ export const AuditLogsPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
-          <ShieldAlert className="h-4 w-4" />
-          <span>{t('audit.securityCompliance', 'Security & Compliance')}</span>
-        </div>
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">{t('audit.title', 'Append-Only Application Audit Trail')}</h2>
-        <p className="text-xs text-slate-700 dark:text-slate-300">{t('audit.subtitle', 'Tamper-evident logs of logins, user registrations, wage updates, payroll finalizations, and tool handovers.')}</p>
-      </div>
+      <LoadError message={loadError} onRetry={fetchLogs} />
+      <PageHeader
+        title={t('audit.pageTitle', 'Audit Log')}
+        subtitle={t('audit.pageSub', 'Every sign-in, wage change, payment and account action, newest first')}
+      />
 
       {/* Audit Log Table */}
       <Card title={`${t('audit.auditEvents', 'Audit Events')} (${logs.length})`} subtitle={t('audit.eventsStream', 'Chronological immutable events stream')}>

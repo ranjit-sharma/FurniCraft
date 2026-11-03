@@ -45,11 +45,12 @@ export const Button = ({
       case 'xs':
         return 'px-2 py-1 text-xs rounded-md gap-1';
       case 'sm':
-        return 'px-2.5 py-1.5 text-xs rounded-md gap-1.5';
+        return 'px-3 py-1.5 min-h-9 text-xs rounded-lg gap-1.5';
       case 'lg':
-        return 'px-5 py-2.5 text-base rounded-xl gap-2.5';
+        return 'px-5 py-2.5 min-h-12 text-base rounded-xl gap-2.5';
       default:
-        return 'px-4 py-2 text-sm rounded-lg gap-2';
+        // 44px tall on phones (minimum comfortable tap target), tighter on desktop
+        return 'px-4 py-2 min-h-11 sm:min-h-10 text-sm rounded-xl gap-2';
     }
   };
 

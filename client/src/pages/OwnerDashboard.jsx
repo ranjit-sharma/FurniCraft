@@ -1,531 +1,269 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
+import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
-import { Button } from '../components/common/Button';
 import {
-  ShieldAlert,
-  Building2,
+  HardHat,
   Users,
+  FolderKanban,
   IndianRupee,
-  Download,
-  FileSpreadsheet,
   FileText,
   Activity,
-  CheckCircle,
-  CheckCircle2,
-  Eye,
-  Search,
-  HardHat,
-  Shield,
-  ArrowUpRight,
   Database,
-  Server,
   RefreshCw,
-  Clock,
-  Zap,
-  AlertTriangle,
+  ChevronRight,
+  ArrowUpRight,
 } from 'lucide-react';
+
+const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
+
+const TXN_LABELS = {
+  SALARY_PAYMENT: 'Wage payment',
+  ADVANCE_DISBURSEMENT: 'Advance given',
+  ADVANCE_RECOVERY: 'Advance recovered',
+  REFUND_OR_REVERSAL: 'Reversal',
+};
+
+// "WORKER_NET_PAYMENT_PROCESSED" -> "Worker net payment processed"
+const humanize = (code = '') => code.toLowerCase().replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+
+const timeAgo = (date) => {
+  const mins = Math.round((Date.now() - new Date(date).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1440) return `${Math.round(mins / 60)}h ago`;
+  return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+};
+
+const StatTile = ({ to, icon: Icon, label, value, sub }) => (
+  <Link
+    to={to}
+    className="flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm active:scale-[0.98] transition"
+  >
+    <Icon className="h-5 w-5 text-purple-700 dark:text-purple-400" />
+    <span className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{value}</span>
+    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{label}</span>
+    {sub && <span className="text-[11px] text-slate-500 dark:text-slate-400">{sub}</span>}
+  </Link>
+);
 
 export const OwnerDashboard = () => {
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [memberRoleFilter, setMemberRoleFilter] = useState('ALL');
-  const [memberSearch, setMemberSearch] = useState('');
-
-  // Database Connection & Infrastructure Health State
+  const [loadError, setLoadError] = useState(null);
   const [dbHealth, setDbHealth] = useState(null);
-  const [dbLoading, setDbLoading] = useState(true);
-  const [dbError, setDbError] = useState(null);
-
-  const fetchDbHealth = async () => {
-    try {
-      setDbLoading(true);
-      const res = await api.get('/system/db-health');
-      const healthData = res?.data || res;
-      if (healthData && typeof healthData === 'object' && healthData.status) {
-        setDbHealth(healthData);
-        setDbError(null);
-      } else {
-        setDbHealth(healthData);
-      }
-    } catch (err) {
-      setDbError(err.message || 'Failed to ping database');
-      setDbHealth((prev) => prev ? { ...prev, isConnected: false, status: 'Disconnected' } : { isConnected: false, status: 'Disconnected' });
-    } finally {
-      setDbLoading(false);
-    }
-  };
-
-  const formatUptime = (seconds) => {
-    if (!seconds && seconds !== 0) return 'N/A';
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hrs > 0) return `${hrs}h ${mins}m`;
-    if (mins > 0) return `${mins}m ${secs}s`;
-    return `${secs}s`;
-  };
+  const [dbChecking, setDbChecking] = useState(false);
 
   const fetchDashboard = async () => {
     try {
+      setLoadError(null);
       const res = await api.get('/reports/dashboard');
       setData(res.data);
     } catch (err) {
-      console.error(err);
+      setLoadError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDbHealth = async () => {
+    setDbChecking(true);
+    try {
+      const res = await api.get('/system/db-health');
+      setDbHealth(res?.data || res);
+    } catch {
+      setDbHealth({ isConnected: false });
+    } finally {
+      setDbChecking(false);
     }
   };
 
   useEffect(() => {
     fetchDashboard();
     fetchDbHealth();
-    const interval = setInterval(fetchDbHealth, 30000); // 30s background health ping
+    const interval = setInterval(fetchDbHealth, 30000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
       </div>
     );
   }
 
-  const metrics = data?.metrics || {};
-  const recentAudits = data?.recentAudits || [];
-  const recentTransactions = data?.recentTransactions || [];
-  const allMembers = data?.allMembers || [];
-  const recentVisits = data?.recentVisits || [];
-
-  const filteredMembers = allMembers.filter((m) => {
-    const matchesRole = memberRoleFilter === 'ALL' || m.role === memberRoleFilter;
-    const q = memberSearch.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      m.name?.toLowerCase().includes(q) ||
-      m.email?.toLowerCase().includes(q) ||
-      m.phone?.toLowerCase().includes(q) ||
-      m.workerCode?.toLowerCase().includes(q) ||
-      m.assignedThekedar?.name?.toLowerCase().includes(q);
-    return matchesRole && matchesSearch;
-  });
-
-  const getRoleBadgeVariant = (role) => {
-    switch (role) {
-      case 'OWNER':
-        return 'primary';
-      case 'THEKEDAR':
-        return 'warning';
-      case 'WORKER':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return 'Never';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const m = data?.metrics || {};
+  const thekedars = [...(data?.thekedars || [])].sort((a, b) => b.workers - a.workers || a.name.localeCompare(b.name));
+  const transactions = data?.recentTransactions || [];
+  const audits = data?.recentAudits || [];
+  const dbOk = dbHealth?.isConnected;
 
   return (
-    <div className="space-y-6">
-      {/* Executive Command Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-purple-200 bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 p-4 sm:p-6 text-white shadow-lg">
-        <div className="flex items-center gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/20 text-purple-300 border border-purple-400/30 text-xl shadow-inner">
-            <i className="fa-solid fa-user"></i>
-          </div>
+    <div className="space-y-5">
+      <LoadError message={loadError} onRetry={fetchDashboard} />
+
+      {/* Header + database status */}
+      <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4 sm:p-5 text-white shadow-lg">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <span className="inline-block rounded-md bg-purple-500/20 px-2.5 py-0.5 text-xs font-semibold text-purple-300">
-              {t('profile.ownerDesc') || 'Executive Owner & Admin View'}
+            <span className="inline-block rounded-md bg-purple-500/25 px-2 py-0.5 text-[11px] font-semibold text-purple-200">
+              {t('profile.ownerDesc', 'Executive Business Owner')}
             </span>
-            <h2 className="text-xl sm:text-2xl font-black mt-1">{t('ownerDashboard.executiveTitle') || 'Enterprise Operations & Governance'}</h2>
-            <p className="text-xs text-purple-200/80">{t('common.tagline') || 'Organization-wide liabilities, central tool asset tracking, and audit logs.'}</p>
+            <h2 className="mt-1 text-xl sm:text-2xl font-black">{t('ownerDashboard.overviewTitle', 'Business Overview')}</h2>
+            <p className="text-xs text-purple-200/80">
+              {new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <Link to="/members" className="w-full sm:w-auto">
-            <Button
-              variant="outline-purple"
-              size="sm"
-              icon={Users}
-              className="w-full sm:w-auto justify-center"
-            >
-              {t('dashboard.totalWorkforce') || 'All Members'} ({metrics.totalMembers || 0})
-            </Button>
-          </Link>
-          <Link to="/thekedars" className="w-full sm:w-auto">
-            <Button
-              variant="outline-purple"
-              size="sm"
-              icon={Users}
-              className="w-full sm:w-auto justify-center"
-            >
-              {t('dashboard.activeContractors') || 'Thekedars'}
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Database Connection & Infrastructure Health Monitor (Owner Exclusive) */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm transition-colors">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-              dbHealth?.isConnected
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                : (dbLoading && !dbHealth
-                    ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
-                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200 dark:border-rose-800')
-            }`}>
-              <Database className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                  Database Infrastructure Health
-                </h3>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                  dbHealth?.isConnected
-                    ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700'
-                    : (dbLoading && !dbHealth
-                        ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700'
-                        : 'bg-rose-100 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200 border border-rose-300 dark:border-rose-700')
-                }`}>
-                  <span className={`h-2 w-2 rounded-full ${
-                    dbHealth?.isConnected
-                      ? 'bg-emerald-500 animate-pulse'
-                      : (dbLoading && !dbHealth ? 'bg-amber-500 animate-ping' : 'bg-rose-500')
-                  }`} />
-                  {dbHealth?.status || (dbLoading ? 'Checking...' : 'Disconnected')}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Real-time MongoDB connection state, query response latency, and cluster availability.
-              </p>
-            </div>
-          </div>
-
           <button
+            type="button"
             onClick={fetchDbHealth}
-            disabled={dbLoading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
+            aria-label="Check database connection"
+            className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold border ${
+              dbHealth === null
+                ? 'border-white/20 text-white/70'
+                : dbOk
+                ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
+                : 'border-rose-400/50 bg-rose-500/20 text-rose-100'
+            }`}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${dbLoading ? 'animate-spin' : ''}`} />
-            Refresh Check
+            {dbChecking ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" />}
+            {dbHealth === null ? 'Checking…' : dbOk ? `Online${dbHealth.latencyMs != null ? ` · ${dbHealth.latencyMs}ms` : ''}` : 'Database offline'}
           </button>
         </div>
 
-        {/* Disconnection Warning Alert: Only show when an actual confirmed disconnection or check error occurred */}
-        {((dbHealth && !dbHealth.isConnected) || dbError) && !dbLoading && (
-          <div className="mt-3.5 flex items-center gap-2.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs text-rose-900 dark:text-rose-200">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+        {/* Money owed across all Thekedars */}
+        <div className="mt-4 rounded-2xl bg-white/10 p-4">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-purple-200">{t('ownerDashboard.netPayable', 'Net payable to workers')}</div>
+          <div className="text-3xl font-black">{inr(m.netPayable)}</div>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <strong className="font-bold">Database Disconnected / Unavailable:</strong>{' '}
-              {dbHealth?.lastError || dbError || 'The database cluster is currently unreachable. Write operations will be rejected until reconnected.'}
+              <div className="text-[11px] text-purple-200/80">{t('ownerDashboard.unpaidWages', 'Unpaid wages')}</div>
+              <div className="font-bold">{inr(m.unpaidWages)}</div>
+            </div>
+            <div>
+              <div className="text-[11px] text-purple-200/80">{t('ownerDashboard.advancesOut', 'Advances outstanding')}</div>
+              <div className="font-bold text-rose-200">− {inr(m.outstandingAdvances)}</div>
             </div>
           </div>
-        )}
-
-        {/* Health Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-3.5 pt-1">
-          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Database Name</span>
-            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 truncate">
-              {dbHealth?.databaseName || 'furnicraft_db'}
-            </div>
-            <span className="text-[10px] text-slate-400">Target Database</span>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ping Latency</span>
-            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 flex items-center gap-1">
-              <Zap className="h-3.5 w-3.5 text-amber-500" />
-              {dbHealth?.latencyMs !== null && dbHealth?.latencyMs !== undefined ? `${dbHealth.latencyMs} ms` : 'N/A'}
-            </div>
-            <span className="text-[10px] text-slate-400">Round-trip response time</span>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Connection Uptime</span>
-            <div className="text-sm font-black text-slate-900 dark:text-white mt-1 flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5 text-blue-500" />
-              {formatUptime(dbHealth?.uptimeSeconds)}
-            </div>
-            <span className="text-[10px] text-slate-400">Since last connect</span>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 p-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Availability</span>
-            <div className="text-sm font-black text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 truncate">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-              {dbHealth?.availability || 'Operational'}
-            </div>
-            <span className="text-[10px] text-slate-400 truncate block">
-              Checked: {dbHealth?.lastCheck ? new Date(dbHealth.lastCheck).toLocaleTimeString('en-IN') : 'Just now'}
-            </span>
+          <div className="mt-3 border-t border-white/10 pt-3 text-[11px] text-purple-200/90">
+            {t('ownerDashboard.thisMonth', 'This month')}: {inr(m.paidThisMonth)} {t('ownerDashboard.paid', 'paid')} · {inr(m.advancesThisMonth)} {t('ownerDashboard.advanced', 'given as advance')}
           </div>
         </div>
       </div>
 
-      {/* Primary Metrics Grid */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
-        {/* Total App Visits */}
-        <Card className="col-span-2 sm:col-span-1 border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 dark:from-indigo-950/40 dark:to-purple-950/30">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t('ownerDashboard.appVisits') || 'App Visits'}</span>
-            <Activity className="h-4 w-4 text-indigo-700 dark:text-indigo-300" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-indigo-950 dark:text-indigo-100 mt-2">
-            {(metrics.totalVisits || 0).toLocaleString('en-IN')}
-          </div>
-          <span className="text-[11px] text-indigo-800 dark:text-indigo-400 font-semibold flex items-center gap-1 mt-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            {metrics.todayVisits || 0} {t('ownerDashboard.today') || t('calendar.today') || 'today'}
-          </span>
-        </Card>
-
-        {/* Workforce & Members */}
-        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/20">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">{t('dashboard.totalWorkforce') || 'Total Members'}</span>
-            <Users className="h-4 w-4 text-blue-700 dark:text-blue-300" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-blue-950 dark:text-blue-100 mt-2">{metrics.totalMembers || 0}</div>
-          <span className="text-[11px] text-blue-800 dark:text-blue-400 font-semibold mt-1 block truncate">
-            {metrics.totalThekedars || 0} {t('ownerDashboard.thekedarsFilter') || 'Thekedars'} • {metrics.totalWorkers || 0} {t('ownerDashboard.workersFilter') || 'Workers'}
-          </span>
-        </Card>
-
-        {/* Total Projects */}
-        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/20 dark:bg-purple-950/20">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider">{t('dashboard.systemProjects') || 'Total Projects'}</span>
-            <Building2 className="h-4 w-4 text-purple-700 dark:text-purple-300" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-purple-950 dark:text-purple-100 mt-2">{metrics.totalProjects || 0}</div>
-          <span className="text-[11px] text-purple-800 dark:text-purple-400 font-semibold mt-1 block">
-            {metrics.activeProjects || 0} {t('projects.active') || 'active'}
-          </span>
-        </Card>
-
-        {/* Financial Liabilities */}
-        <Card className="border-rose-200 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/20">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-rose-900 dark:text-rose-300 uppercase tracking-wider">{t('dashboard.financialTurnover') || 'Liabilities'}</span>
-            <IndianRupee className="h-4 w-4 text-rose-700 dark:text-rose-300" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-950 dark:text-rose-100 mt-2">₹{metrics.totalLiabilities?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-rose-800 dark:text-rose-400 font-semibold mt-1 block truncate">
-            {t('dashboard.approvedWages')}: ₹{metrics.totalSalaryLiability?.toLocaleString('en-IN')} | Adv: ₹{metrics.totalAdvanceLiability?.toLocaleString('en-IN')}
-          </span>
-        </Card>
+      {/* Counts */}
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile to="/thekedars" icon={HardHat} label={t('navShort.thekedars', 'Thekedars')} value={m.totalThekedars || 0} sub={`${m.activeThekedars || 0} active`} />
+        <StatTile to="/members" icon={Users} label={t('navShort.workers', 'Workers')} value={m.totalWorkers || 0} />
+        <StatTile to="/projects" icon={FolderKanban} label={t('navShort.projects', 'Projects')} value={m.totalProjects || 0} sub={`${m.activeProjects || 0} active`} />
       </div>
 
-      {/* Section: Whole Application Members & Platform Usage */}
+      {/* Per-Thekedar money */}
       <Card
-        title={t('ownerDashboard.wholeMembersTitle') || 'Whole Application Members & Platform Activity'}
-        subtitle={t('ownerDashboard.wholeMembersSubtitle') || `Audit of all ${allMembers.length} registered members, role counts (${metrics.totalThekedars || 0} Thekedars, ${metrics.totalWorkers || 0} Workers, ${metrics.totalOwners || 0} Owners), and total system visits (${(metrics.totalVisits || 0).toLocaleString('en-IN')})`}
+        title={t('ownerDashboard.byThekedar', 'By Thekedar')}
+        subtitle={t('ownerDashboard.byThekedarSub', 'Workers, open projects and what each Thekedar owes')}
         action={
-          <Link to="/members">
-            <Button size="xs" variant="outline-purple" icon={ArrowUpRight}>
-              {t('ownerDashboard.openDirectory') || 'Open Full Directory & Analytics'}
-            </Button>
+          <Link to="/thekedars" className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 dark:text-purple-400">
+            {t('ownerDashboard.viewAll', 'View all')} <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         }
       >
-        {/* Search & Role Filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
-            <input
-              type="text"
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder={t('ownerDashboard.searchMembersPlaceholder') || 'Filter members by name, email, or worker code...'}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white pl-8 pr-3 py-1.5 text-xs focus:border-purple-600 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {[
-              { id: 'ALL', label: `${t('ownerDashboard.allFilter') || 'All'} (${metrics.totalMembers || 0})` },
-              { id: 'THEKEDAR', label: `${t('ownerDashboard.thekedarsFilter') || 'Thekedars'} (${metrics.totalThekedars || 0})` },
-              { id: 'WORKER', label: `${t('ownerDashboard.workersFilter') || 'Workers'} (${metrics.totalWorkers || 0})` },
-              { id: 'OWNER', label: `${t('ownerDashboard.ownersFilter') || 'Owners'} (${metrics.totalOwners || 0})` },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setMemberRoleFilter(tab.id)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
-                  memberRoleFilter === tab.id
-                    ? 'bg-purple-900 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Member Table */}
-        {filteredMembers.length === 0 ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-4 text-center">{t('ownerDashboard.noMembersMatch') || 'No members found matching your search.'}</p>
+        {thekedars.length === 0 ? (
+          <p className="py-4 text-center text-sm text-slate-500">{t('ownerDashboard.noThekedars', 'No Thekedars registered yet.')}</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
-                <tr>
-                  <th className="px-3.5 py-2.5">{t('ownerDashboard.tableMember') || 'Member'}</th>
-                  <th className="px-3.5 py-2.5">{t('ownerDashboard.tableRole') || 'Role'}</th>
-                  <th className="px-3.5 py-2.5">{t('ownerDashboard.tableThekedar') || 'Assigned Thekedar'}</th>
-                  <th className="px-3.5 py-2.5">{t('ownerDashboard.tablePhone') || 'Phone'}</th>
-                  <th className="px-3.5 py-2.5 text-center">{t('ownerDashboard.tableAppVisits') || 'App Visits'}</th>
-                  <th className="px-3.5 py-2.5">{t('ownerDashboard.tableLastActive') || 'Last Active'}</th>
-                  <th className="px-3.5 py-2.5 text-right">{t('ownerDashboard.tableStatus') || 'Status'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                {filteredMembers.slice(0, 8).map((m) => (
-                  <tr key={m._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
-                    <td className="px-3.5 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-black text-[11px] ${
-                            m.role === 'OWNER'
-                              ? 'bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-300'
-                              : m.role === 'THEKEDAR'
-                              ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300'
-                              : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300'
-                          }`}
-                        >
-                          {m.name?.charAt(0)?.toUpperCase()}
-                        </div>
-                        <div>
-                          <span className="font-bold text-slate-900 dark:text-white block truncate max-w-[140px] sm:max-w-[200px]">
-                            {m.name}
-                          </span>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate max-w-[140px] sm:max-w-[200px]">
-                            {m.email}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3.5 py-2.5">
-                      <Badge variant={getRoleBadgeVariant(m.role)} size="sm">
-                        {m.role === 'OWNER' ? 'Owner' : m.role === 'THEKEDAR' ? 'Thekedar' : 'Worker'}
-                      </Badge>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-slate-700 dark:text-slate-300">
-                      {m.role === 'WORKER' ? (
-                        m.assignedThekedar ? (
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">{m.assignedThekedar.name}</span>
-                        ) : (
-                          <span className="text-slate-400 italic">Unassigned</span>
-                        )
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-3.5 py-2.5 font-mono text-slate-700 dark:text-slate-300">{m.phone}</td>
-                    <td className="px-3.5 py-2.5 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 text-xs font-black text-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                        {m.visitCount || 0}
-                      </span>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-slate-600 dark:text-slate-400 text-[11px]">{formatDateTime(m.lastLoginAt)}</td>
-                    <td className="px-3.5 py-2.5 text-right">
-                      <Badge variant={m.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
-                        {m.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {filteredMembers.length > 8 && (
-          <div className="pt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
-            <span>{(t('ownerDashboard.showingMembers') || 'Showing top 8 of {count} filtered members').replace('{count}', filteredMembers.length)}</span>
-            <Link to="/members" className="font-bold text-purple-700 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 inline-flex items-center gap-1">
-              {(t('ownerDashboard.viewAllMembers') || 'View all {count} members & full details').replace('{count}', allMembers.length)} <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          </div>
+          <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+            {thekedars.map((th) => (
+              <li key={th._id} className="flex items-center gap-3 px-1 py-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-black">
+                  {th.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm font-bold text-slate-900 dark:text-white">{th.name}</span>
+                    {th.status !== 'ACTIVE' && <Badge variant="danger" size="sm">{th.status}</Badge>}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    {th.workers} {t('navShort.workers', 'workers')} · {th.activeProjects} {t('ownerDashboard.openProjects', 'open projects')}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-black text-slate-900 dark:text-white">{inr(th.netPayable)}</div>
+                  {th.outstandingAdvances > 0 && <div className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">adv {inr(th.outstandingAdvances)}</div>}
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </Card>
 
-      {/* Grid: Audit Logs Feed & Recent Transactions */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Real-time System Audit Trail */}
-        <Card
-          title={t('audit.title') || 'Append-Only Audit Log Stream'}
-          subtitle={t('audit.subtitle') || 'All security, wage, payroll finalization, and attendance events'}
-        >
-          {recentAudits.length === 0 ? (
-            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('audit.noAudits') || 'No audit records found.'}</p>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {/* Recent payments & advances */}
+        <Card title={t('ownerDashboard.recentMoney', 'Recent payments & advances')}>
+          {transactions.length === 0 ? (
+            <p className="py-4 text-center text-sm text-slate-500">{t('transactionSearch.noFound', 'No transactions recorded yet.')}</p>
           ) : (
-            <div className="space-y-3">
-              {recentAudits.map((log) => (
-                <div key={log._id} className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-xs">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                    <Activity className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 dark:text-white">{log.action}</span>
-                      <span className="text-[10px] text-slate-700 dark:text-slate-400">{new Date(log.createdAt).toLocaleTimeString()}</span>
+            <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+              {transactions.map((tx) => {
+                const isAdvance = tx.category === 'ADVANCE_DISBURSEMENT';
+                return (
+                  <li key={tx._id} className="flex items-center gap-3 px-1 py-3">
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isAdvance ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-600' : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600'}`}>
+                      <IndianRupee className="h-4 w-4" />
                     </div>
-                    <p className="text-slate-700 dark:text-slate-400 mt-0.5 truncate">
-                      By <span className="font-semibold text-slate-800 dark:text-slate-200">{log.actorName}</span> ({log.actorRole}) • Target: {log.targetType}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{tx.workerId?.name || 'Worker'}</div>
+                      <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                        {TXN_LABELS[tx.category] || humanize(tx.category)} · {tx.thekedarId?.name || '—'} · {timeAgo(tx.transactionDate)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className={`text-sm font-black ${isAdvance ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{inr(tx.amount)}</span>
+                      <button
+                        type="button"
+                        onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                        aria-label={`Download bill ${tx.transactionId}`}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </Card>
 
-        {/* Recent Financial Transactions */}
+        {/* Recent activity */}
         <Card
-          title={t('transactionSearch.title') || 'Recent Financial Transactions'}
-          subtitle={t('transactionSearch.subtitle') || 'Real disbursements, payroll allocations, and recoveries'}
+          title={t('ownerDashboard.recentActivity', 'Recent activity')}
+          action={
+            <Link to="/audit" className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 dark:text-purple-400">
+              {t('ownerDashboard.auditLog', 'Audit log')} <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          }
         >
-          {recentTransactions.length === 0 ? (
-            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('transactionSearch.noFound') || 'No transactions recorded.'}</p>
+          {audits.length === 0 ? (
+            <p className="py-4 text-center text-sm text-slate-500">{t('audit.noAudits', 'No activity yet.')}</p>
           ) : (
-            <div className="space-y-3">
-              {recentTransactions.map((tx) => (
-                <div key={tx._id} className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-xs">
-                  <div>
-                    <span className="font-bold text-slate-900 dark:text-white">{tx.transactionId}</span>
-                    <p className="text-slate-700 dark:text-slate-400">{tx.category.replace('_', ' ')} • {tx.paymentMethod}</p>
-                    <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('thekedarDashboard.tableWorker') || 'Worker'}: {tx.workerId?.name || 'N/A'}</span>
+            <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
+              {audits.map((log) => (
+                <li key={log._id} className="flex items-start gap-3 px-1 py-3">
+                  <Activity className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white">{humanize(log.action)}</div>
+                    <div className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {log.actorName || 'System'} · {timeAgo(log.createdAt)}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-black text-sm text-slate-950 dark:text-slate-100">₹{tx.amount.toLocaleString('en-IN')}</div>
-                    <span className="text-[10px] text-slate-700 dark:text-slate-400">{new Date(tx.transactionDate).toLocaleDateString()}</span>
-                  </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </Card>
       </div>
