@@ -306,7 +306,7 @@ export const ProjectsPage = () => {
 
       {/* Filters: status chips swipe sideways on phones; search + dropdowns below */}
       <div className="space-y-3">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 no-scrollbar sm:mx-0 sm:flex-wrap sm:px-0" role="tablist" aria-label="Project status">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Project status">
           {[
             { id: 'ALL_ACTIVE', label: t('projects.allActive', 'Active'), count: counts.active },
             { id: 'IN_PROGRESS', label: t('projects.inProgress', 'In Progress'), count: counts.inProgress, dot: 'bg-amber-400' },

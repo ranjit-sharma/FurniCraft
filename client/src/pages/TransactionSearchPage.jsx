@@ -147,7 +147,7 @@ export const TransactionSearchPage = () => {
             {t('transactionSearch.searchBtn', 'Search')}
           </Button>
         </form>
-        <div className="-mx-3 flex gap-2 overflow-x-auto px-3 no-scrollbar sm:mx-0 sm:px-0" role="tablist" aria-label="Category">
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Category">
           {[
             { id: 'ALL', label: t('transactionSearch.allCategories', 'All') },
             { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage payments') },

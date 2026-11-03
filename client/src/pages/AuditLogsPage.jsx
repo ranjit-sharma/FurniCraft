@@ -53,8 +53,30 @@ export const AuditLogsPage = () => {
         ) : logs.length === 0 ? (
           <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('audit.noLogs', 'No audit records found.')}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-[700px] w-full text-left text-xs">
+          <div>
+            {/* Mobile / Tablet Responsive Cards: Single View, Zero Side Scroll */}
+            <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
+              {logs.map((l) => (
+                <div key={l._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2 shadow-xs">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="font-bold text-slate-900 dark:text-white text-xs">{l.actorName}</span>
+                    <Badge variant="default" size="sm">{l.actorRole}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="font-semibold text-purple-900 dark:text-purple-300">{l.action}</span>
+                    <span className="font-mono text-[11px] text-slate-500">{new Date(l.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg break-words">
+                    <span className="font-semibold">{l.targetType}: </span>
+                    {l.newValues ? JSON.stringify(l.newValues) : l.reason || l.targetId || '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="p-3">{t('audit.timestamp', 'Timestamp')}</th>
@@ -88,6 +110,7 @@ export const AuditLogsPage = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </Card>

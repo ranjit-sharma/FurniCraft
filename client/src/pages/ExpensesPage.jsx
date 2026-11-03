@@ -136,52 +136,82 @@ export const ExpensesPage = () => {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-[700px] w-full text-left text-sm">
-              <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                <tr>
-                  <th className="px-6 py-3.5">{t('expenses.receiptCodeCol') || 'Receipt Code'}</th>
-                  <th className="px-6 py-3.5">{t('expenses.projectCol') || 'Project'}</th>
-                  <th className="px-6 py-3.5">{t('expenses.clientPayerCol') || 'Client / Payer'}</th>
-                  <th className="px-6 py-3.5">{t('expenses.stageCol') || 'Milestone Stage'}</th>
-                  <th className="px-6 py-3.5">{t('expenses.methodRefCol') || 'Method & Ref'}</th>
-                  <th className="px-6 py-3.5">{t('expenses.dateCol') || t('common.date') || 'Date'}</th>
-                  <th className="px-6 py-3.5 text-right">{t('expenses.amountReceivedCol') || 'Amount Received'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {payments.map((p) => (
-                  <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-mono font-bold text-emerald-800 dark:text-emerald-400 text-xs">{p.receiptCode}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-900 dark:text-white">{p.projectId?.name || 'Project Site'}</div>
-                      <div className="text-[11px] text-slate-700 dark:text-slate-400 font-mono">{p.projectId?.projectCode}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">{p.payerName || p.projectId?.clientName || 'Client'}</div>
-                      {p.notes && <div className="text-[11px] text-slate-700 dark:text-slate-400 italic">{p.notes}</div>}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant="success" size="sm">{p.stage || 'Stage Payment'}</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{p.paymentMethod}</div>
-                      {p.receiptReference && (
-                        <div className="text-[11px] text-slate-700 dark:text-slate-400 font-mono">Ref: {p.receiptReference}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-xs text-slate-700 dark:text-slate-400">
-                      {new Date(p.receivedDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="font-black text-emerald-950 dark:text-emerald-300 text-base">₹{p.amount.toLocaleString('en-IN')}</div>
-                    </td>
+          <div>
+            {/* Mobile / Small Screen Card Layout: Single View, Zero Side Scroll */}
+            <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
+              {payments.map((p) => (
+                <div key={p._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="font-mono font-bold text-emerald-800 dark:text-emerald-400 text-xs">{p.receiptCode}</span>
+                    <div className="font-black text-emerald-700 dark:text-emerald-400 text-base">₹{p.amount.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 dark:text-white text-sm">{p.projectId?.name || 'Project Site'}</div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">{p.projectId?.projectCode}</div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2">
+                    <div>
+                      <span className="font-semibold text-slate-500">Payer: </span>
+                      {p.payerName || p.projectId?.clientName || 'Client'}
+                    </div>
+                    <Badge variant="success" size="sm">{p.stage || 'Stage Payment'}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1 flex-wrap gap-1">
+                    <span>{p.paymentMethod} {p.receiptReference ? `· Ref: ${p.receiptReference}` : ''}</span>
+                    <span>{new Date(p.receivedDate).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table Layout: Full Width */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  <tr>
+                    <th className="px-6 py-3.5">{t('expenses.receiptCodeCol') || 'Receipt Code'}</th>
+                    <th className="px-6 py-3.5">{t('expenses.projectCol') || 'Project'}</th>
+                    <th className="px-6 py-3.5">{t('expenses.clientPayerCol') || 'Client / Payer'}</th>
+                    <th className="px-6 py-3.5">{t('expenses.stageCol') || 'Milestone Stage'}</th>
+                    <th className="px-6 py-3.5">{t('expenses.methodRefCol') || 'Method & Ref'}</th>
+                    <th className="px-6 py-3.5">{t('expenses.dateCol') || t('common.date') || 'Date'}</th>
+                    <th className="px-6 py-3.5 text-right">{t('expenses.amountReceivedCol') || 'Amount Received'}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {payments.map((p) => (
+                    <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-bold text-emerald-800 dark:text-emerald-400 text-xs">{p.receiptCode}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-900 dark:text-white">{p.projectId?.name || 'Project Site'}</div>
+                        <div className="text-[11px] text-slate-700 dark:text-slate-400 font-mono">{p.projectId?.projectCode}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200">{p.payerName || p.projectId?.clientName || 'Client'}</div>
+                        {p.notes && <div className="text-[11px] text-slate-700 dark:text-slate-400 italic">{p.notes}</div>}
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge variant="success" size="sm">{p.stage || 'Stage Payment'}</Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">{p.paymentMethod}</div>
+                        {p.receiptReference && (
+                          <div className="text-[11px] text-slate-700 dark:text-slate-400 font-mono">Ref: {p.receiptReference}</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-xs text-slate-700 dark:text-slate-400">
+                        {new Date(p.receivedDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="font-black text-emerald-950 dark:text-emerald-300 text-base">₹{p.amount.toLocaleString('en-IN')}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </Card>

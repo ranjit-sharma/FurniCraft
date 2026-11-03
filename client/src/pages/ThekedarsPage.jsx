@@ -273,8 +273,109 @@ export const ThekedarsPage = () => {
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-[750px] w-full text-left text-sm">
+          <div>
+            {/* Mobile / Tablet Responsive Cards: Single View, Zero Side Scroll */}
+            <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
+              {thekedars.map((th) => (
+                <div key={th._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-3 shadow-xs">
+                  {/* Top: Name, Avatar, Status */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 font-bold text-xs shadow-xs">
+                        <i className="fa-solid fa-user"></i>
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">{th.name}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Joined: {new Date(th.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                        th.status === 'ACTIVE'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60'
+                      }`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${th.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                      {th.status === 'ACTIVE' ? 'Active' : 'Suspended'}
+                    </span>
+                  </div>
+
+                  {/* Contact Info */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                    <div className="flex items-center gap-1.5">
+                      <Mail className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                      <span>{th.email}</span>
+                    </div>
+                    {th.phone && (
+                      <div className="flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        <span>{th.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Projects & Workforce stats */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 p-2">
+                      <span className="text-[10px] uppercase font-bold text-amber-800 dark:text-amber-400 block">Projects</span>
+                      <strong className="text-sm font-black text-slate-900 dark:text-white">{th.totalProjects || 0}</strong>
+                    </div>
+                    <div className="rounded-lg bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-900/40 p-2">
+                      <span className="text-[10px] uppercase font-bold text-purple-800 dark:text-purple-400 block">Workforce</span>
+                      <strong className="text-sm font-black text-slate-900 dark:text-white">{th.workerCount || th.workers?.length || 0} Workers</strong>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+                    {th.status === 'ACTIVE' ? (
+                      <button
+                        type="button"
+                        disabled={statusActionLoadingId === th._id}
+                        onClick={(e) => handleToggleStatus(th, e)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 cursor-pointer"
+                      >
+                        <UserX className="h-3 w-3" /> Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={statusActionLoadingId === th._id}
+                        onClick={(e) => handleToggleStatus(th, e)}
+                        className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 cursor-pointer"
+                      >
+                        <UserCheck className="h-3 w-3" /> Activate
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedThekedar(th);
+                        setDetailsModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 cursor-pointer"
+                    >
+                      <Eye className="h-3 w-3" /> View Scope
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDelete(th)}
+                      className="inline-flex items-center justify-center h-7 w-7 rounded-lg border border-rose-200 dark:border-rose-800/60 bg-white dark:bg-slate-800 text-rose-600 hover:bg-rose-50 cursor-pointer"
+                      title="Delete Thekedar"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="px-5 py-3.5">Thekedar Name</th>
@@ -469,6 +570,7 @@ export const ThekedarsPage = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </Card>

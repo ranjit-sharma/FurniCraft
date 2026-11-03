@@ -340,8 +340,83 @@ export const MembersOverviewPage = () => {
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="min-w-[700px] w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+          <div>
+            {/* Mobile / Tablet Cards View: Single View, Zero Side Scroll */}
+            <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
+              {filteredMembers.map((m) => (
+                <div key={m._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-black text-xs ${
+                          m.role === 'OWNER'
+                            ? 'bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
+                            : m.role === 'THEKEDAR'
+                            ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                        }`}
+                      >
+                        <i className="fa-solid fa-user text-xs"></i>
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+                          {m.name}
+                          {m.workerCode && (
+                            <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-semibold">
+                              {m.workerCode}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>
+                      </div>
+                    </div>
+                    <Badge variant={getRoleBadgeVariant(m.role)} size="sm">
+                      {m.role === 'OWNER' ? 'Owner' : m.role === 'THEKEDAR' ? 'Thekedar' : 'Worker'}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg gap-2">
+                    <div>Phone: <strong className="text-slate-800 dark:text-slate-200">{m.phone || 'N/A'}</strong></div>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-indigo-700 dark:text-indigo-400">
+                      <Eye className="h-3 w-3" /> {m.visitCount || 0} visits
+                    </span>
+                  </div>
+
+                  {m.role === 'WORKER' && m.assignedThekedar && (
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                      Thekedar: <strong className="text-slate-800 dark:text-slate-200">{m.assignedThekedar.name}</strong> ({m.assignedThekedar.phone})
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2">
+                    <span className="text-[11px] text-slate-500">Active: {formatDateTime(m.lastLoginAt)}</span>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={m.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
+                        {m.status}
+                      </Badge>
+                      {m.role === 'THEKEDAR' && (
+                        <button
+                          type="button"
+                          disabled={actionLoadingId === m._id}
+                          onClick={() => handleToggleThekedarStatus(m)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer disabled:opacity-50 ${
+                            m.status === 'ACTIVE'
+                              ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                          }`}
+                        >
+                          {actionLoadingId === m._id ? '...' : m.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table className="w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="px-4 py-3">{t('profile.accountDetails', 'Member Details')}</th>
@@ -457,6 +532,7 @@ export const MembersOverviewPage = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </Card>

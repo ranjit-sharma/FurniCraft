@@ -1107,26 +1107,27 @@ export const WorkersPage = () => {
               </div>
             )}
 
-            {/* Tab Navigation */}
-            <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1 text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none shrink-0">
+            {/* Tab Navigation — 3-column responsive grid: all tabs visible in single view with zero side-scroll */}
+            <div className="grid grid-cols-3 border-b border-slate-200 dark:border-slate-700 text-xs font-bold shrink-0">
               {[
-                { id: 'attendance', label: t('workers.tabAttendance', 'Attendance History'), icon: Calendar, count: activityData?.attendanceHistory?.length || 0 },
-                { id: 'advances', label: t('workers.tabAdvances', 'Advances Taken'), icon: Receipt, count: activityData?.advanceRequests?.length || 0 },
-                { id: 'bills', label: t('workers.tabBills', 'Payment Bills'), icon: IndianRupee, count: activityData?.transactions?.length || 0 },
-              ].map(({ id, label, icon: Icon, count }) => (
+                { id: 'attendance', label: t('workers.tabAttendance', 'Attendance History'), shortLabel: 'Attendance', icon: Calendar, count: activityData?.attendanceHistory?.length || 0 },
+                { id: 'advances', label: t('workers.tabAdvances', 'Advances Taken'), shortLabel: 'Advances', icon: Receipt, count: activityData?.advanceRequests?.length || 0 },
+                { id: 'bills', label: t('workers.tabBills', 'Payment Bills'), shortLabel: 'Bills', icon: IndianRupee, count: activityData?.transactions?.length || 0 },
+              ].map(({ id, label, shortLabel, icon: Icon, count }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setActiveTab(id)}
-                  className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
+                  className={`flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-4 py-2.5 border-b-2 text-center transition-all ${
                     activeTab === id
                       ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
                       : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                  <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-300">{count}</span>
+                  <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="hidden sm:inline truncate">{label}</span>
+                  <span className="inline sm:hidden truncate">{shortLabel}</span>
+                  <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 text-[10px] font-extrabold text-slate-700 dark:text-slate-300 shrink-0">{count}</span>
                 </button>
               ))}
             </div>
@@ -1140,7 +1141,7 @@ export const WorkersPage = () => {
               <div className="p-8 text-center text-sm text-slate-500">No activity data available.</div>
             ) : (
               <div>
-                {/* TAB 1: ATTENDANCE HISTORY */}
+                {/* TAB 1: ATTENDANCE HISTORY — Fluid layout with no horizontal side scroll */}
                 {activeTab === 'attendance' && (
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1170,29 +1171,29 @@ export const WorkersPage = () => {
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Attendance recorded from worker cards or dashboard will be tracked here.</p>
                       </div>
                     ) : (
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                        <table className="min-w-[480px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
+                      <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
                           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
                             <tr>
-                              <th className="px-4 py-3">Date</th>
-                              <th className="px-4 py-3">Code & Weight</th>
-                              <th className="px-4 py-3">Earned</th>
-                              <th className="px-4 py-3 text-right">Action</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3">Date</th>
+                              <th className="px-2 sm:px-4 py-2.5 sm:py-3">Code</th>
+                              <th className="px-2 sm:px-4 py-2.5 sm:py-3">Earned</th>
+                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">Action</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                             {activityData.attendanceHistory.map((att) => (
                               <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                <td className="px-4 py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                <td className="px-3 sm:px-4 py-2.5 font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
                                   {att.date || formatDate(att.createdAt)}
                                 </td>
-                                <td className="px-4 py-3">
+                                <td className="px-2 sm:px-4 py-2.5">
                                   <Badge variant={att.code} size="sm">{att.code}</Badge>
                                 </td>
-                                <td className="px-4 py-3 font-bold text-amber-900 dark:text-amber-300">
+                                <td className="px-2 sm:px-4 py-2.5 font-bold text-amber-900 dark:text-amber-300 whitespace-nowrap text-xs">
                                   ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
                                 </td>
-                                <td className="px-4 py-3 text-right">
+                                <td className="px-3 sm:px-4 py-2.5 text-right whitespace-nowrap">
                                   {att.isPayrollProcessed ? (
                                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                                       <CheckCircle2 className="h-3.5 w-3.5" /> Paid (locked)
@@ -1212,9 +1213,9 @@ export const WorkersPage = () => {
                   </div>
                 )}
 
-                {/* TAB 2: ADVANCES TAKEN */}
+                {/* TAB 2: ADVANCES TAKEN — Single View Responsive Cards, Zero Side Scroll */}
                 {activeTab === 'advances' && (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {/* Outstanding advance + give a new one */}
                     <div className="flex flex-col gap-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
@@ -1230,7 +1231,7 @@ export const WorkersPage = () => {
                     </div>
 
                     {/* Section: Advance Requests */}
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                           <Receipt className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
@@ -1246,102 +1247,99 @@ export const WorkersPage = () => {
                           No advance requests submitted by this worker.
                         </p>
                       ) : (
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-[650px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                              <tr>
-                                <th className="px-4 py-2.5">Requested Date</th>
-                                <th className="px-4 py-2.5">Amount</th>
-                                <th className="px-4 py-2.5">Reason</th>
-                                <th className="px-4 py-2.5">Status</th>
-                                <th className="px-4 py-2.5">Reviewer Note</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                              {activityData.advanceRequests.map((adv) => (
-                                <tr key={adv._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                  <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">
-                                    {formatDate(adv.createdAt)}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-bold text-rose-700 dark:text-rose-400">
-                                    ₹{adv.amount}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400 max-w-xs truncate">
+                        <div className="space-y-3">
+                          {activityData.advanceRequests.map((adv) => {
+                            const currentAdvance = activityWorker?.outstandingAdvanceBalance || 0;
+                            const exceedsLimit = currentAdvance >= 10000 || (currentAdvance + (adv.amount || 0)) > 10000;
+                            return (
+                              <div
+                                key={adv._id}
+                                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 p-3.5 shadow-xs space-y-2.5"
+                              >
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                      {formatDate(adv.createdAt)}
+                                    </span>
+                                    <Badge variant={adv.status} size="sm">{adv.status}</Badge>
+                                  </div>
+                                  <div className="text-sm font-black text-rose-700 dark:text-rose-400">
+                                    ₹{(adv.amount || 0).toLocaleString('en-IN')}
+                                  </div>
+                                </div>
+
+                                {adv.reason && (
+                                  <div className="text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 break-words">
+                                    <span className="font-semibold text-slate-500 dark:text-slate-400">Reason: </span>
                                     {adv.reason}
-                                  </td>
-                                  <td className="px-4 py-2.5">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <Badge variant={adv.status} size="sm">{adv.status}</Badge>
-                                      {(isThekedar || isOwner) && adv.status === 'PENDING' && (() => {
-                                        const currentAdvance = activityWorker?.outstandingAdvanceBalance || 0;
-                                        const exceedsLimit = currentAdvance >= 10000 || (currentAdvance + (adv.amount || 0)) > 10000;
-                                        return (
-                                          <div className="flex items-center gap-1.5">
-                                            <button
-                                              type="button"
-                                              disabled={reviewLoadingId === adv._id || exceedsLimit}
-                                              onClick={() => handleReviewAdvanceFromActivity(adv._id, 'APPROVED')}
-                                              title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit - Cannot Approve" : "Approve advance request"}
-                                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
-                                                exceedsLimit
-                                                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
-                                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600'
-                                              }`}
-                                            >
-                                              {reviewLoadingId === adv._id ? (
-                                                <RefreshCw className="h-3 w-3 animate-spin" />
-                                              ) : (
-                                                <Check className="h-3 w-3" />
-                                              )}
-                                              <span>Approve</span>
-                                            </button>
-                                            <button
-                                              type="button"
-                                              disabled={reviewLoadingId === adv._id}
-                                              onClick={() => handleReviewAdvanceFromActivity(adv._id, 'REJECTED')}
-                                              title="Deny / Reject advance request"
-                                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 transition shadow-xs cursor-pointer disabled:opacity-50"
-                                            >
-                                              <X className="h-3 w-3" />
-                                              <span>Deny</span>
-                                            </button>
-                                          </div>
-                                        );
-                                      })()}
-                                      {(isThekedar || isOwner) && adv.status === 'APPROVED' && (() => {
-                                        const currentAdvance = activityWorker?.outstandingAdvanceBalance || 0;
-                                        const exceedsLimit = currentAdvance >= 10000 || (currentAdvance + (adv.amount || 0)) > 10000;
-                                        return (
-                                          <button
-                                            type="button"
-                                            disabled={exceedsLimit}
-                                            onClick={() => {
-                                              if (!exceedsLimit) {
-                                                setSelectedAdvanceForDisburse(adv);
-                                                setDisburseModalOpen(true);
-                                              }
-                                            }}
-                                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
-                                              exceedsLimit
-                                                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                                                : 'bg-amber-600 hover:bg-amber-700 text-white'
-                                            }`}
-                                            title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit" : "Disburse approved advance amount"}
-                                          >
-                                            <IndianRupee className="h-3 w-3" />
-                                            <span>Disburse</span>
-                                          </button>
-                                        );
-                                      })()}
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-500 dark:text-slate-400 text-[11px]">
-                                    {adv.reviewNotes || (adv.reviewedBy?.name ? `Reviewed by ${adv.reviewedBy.name}` : '-')}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                  </div>
+                                )}
+
+                                {adv.reviewNotes && (
+                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                                    Note: {adv.reviewNotes} {adv.reviewedBy?.name ? `(by ${adv.reviewedBy.name})` : ''}
+                                  </div>
+                                )}
+
+                                {(isThekedar || isOwner) && adv.status === 'PENDING' && (
+                                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+                                    <button
+                                      type="button"
+                                      disabled={reviewLoadingId === adv._id || exceedsLimit}
+                                      onClick={() => handleReviewAdvanceFromActivity(adv._id, 'APPROVED')}
+                                      title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit - Cannot Approve" : "Approve advance request"}
+                                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
+                                        exceedsLimit
+                                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
+                                          : 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600'
+                                      }`}
+                                    >
+                                      {reviewLoadingId === adv._id ? (
+                                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                                      ) : (
+                                        <Check className="h-3.5 w-3.5" />
+                                      )}
+                                      <span>Approve</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={reviewLoadingId === adv._id}
+                                      onClick={() => handleReviewAdvanceFromActivity(adv._id, 'REJECTED')}
+                                      title="Deny / Reject advance request"
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800 transition shadow-xs cursor-pointer disabled:opacity-50"
+                                    >
+                                      <X className="h-3.5 w-3.5" />
+                                      <span>Deny</span>
+                                    </button>
+                                  </div>
+                                )}
+
+                                {(isThekedar || isOwner) && adv.status === 'APPROVED' && (
+                                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                                    <button
+                                      type="button"
+                                      disabled={exceedsLimit}
+                                      onClick={() => {
+                                        if (!exceedsLimit) {
+                                          setSelectedAdvanceForDisburse(adv);
+                                          setDisburseModalOpen(true);
+                                        }
+                                      }}
+                                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
+                                        exceedsLimit
+                                          ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                          : 'bg-amber-600 hover:bg-amber-700 text-white'
+                                      }`}
+                                      title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit" : "Disburse approved advance amount"}
+                                    >
+                                      <IndianRupee className="h-3.5 w-3.5" />
+                                      <span>Disburse Advance</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -1349,11 +1347,11 @@ export const WorkersPage = () => {
                   </div>
                 )}
 
-                {/* TAB 3: PAYMENT BILLS */}
+                {/* TAB 3: PAYMENT BILLS — Single View Responsive Cards, Zero Side Scroll */}
                 {activeTab === 'bills' && (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {/* Section: Payment Transactions */}
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                           <IndianRupee className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
@@ -1369,60 +1367,53 @@ export const WorkersPage = () => {
                           No payment transactions recorded for this worker.
                         </p>
                       ) : (
-                        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-[720px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                              <tr>
-                                <th className="px-4 py-2.5">Date</th>
-                                <th className="px-4 py-2.5">Tx ID</th>
-                                <th className="px-4 py-2.5">Category</th>
-                                <th className="px-4 py-2.5">Amount</th>
-                                <th className="px-4 py-2.5">Payment Method</th>
-                                <th className="px-4 py-2.5">Reference No</th>
-                                <th className="px-4 py-2.5">Recorded By</th>
-                                <th className="px-4 py-2.5 text-right">Bill / Voucher</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                              {activityData.transactions.map((tx) => (
-                                <tr key={tx._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                  <td className="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                        <div className="space-y-3">
+                          {activityData.transactions.map((tx) => (
+                            <div
+                              key={tx._id}
+                              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/70 p-3.5 shadow-xs space-y-2.5"
+                            >
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <div>
+                                  <div className="text-xs font-bold text-slate-900 dark:text-white">
                                     {formatDate(tx.transactionDate || tx.createdAt)}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-mono text-[11px] text-amber-800 dark:text-amber-400">
+                                  </div>
+                                  <div className="text-[11px] font-mono text-amber-800 dark:text-amber-400">
                                     {tx.transactionId}
-                                  </td>
-                                  <td className="px-4 py-2.5">
-                                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:text-slate-300">
-                                      {tx.category?.replace('_', ' ')}
-                                    </span>
-                                  </td>
-                                  <td className="px-4 py-2.5 font-bold text-slate-900 dark:text-white">
-                                    ₹{tx.amount}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-700 dark:text-slate-300">
-                                    {tx.paymentMethod}
-                                  </td>
-                                  <td className="px-4 py-2.5 font-mono text-[10px] text-slate-500 dark:text-slate-400">
-                                    {tx.receiptReference || '-'}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">
-                                    {tx.recordedBy?.name || 'Thekedar'}
-                                  </td>
-                                  <td className="px-4 py-2.5 text-right">
-                                    <button
-                                      type="button"
-                                      onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
-                                      className="inline-flex items-center gap-1 rounded bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 px-2 py-1 text-[10px] font-bold transition-colors shadow-xs cursor-pointer"
-                                      title="Download Payment Bill (PDF)"
-                                    >
-                                      <FileText className="h-3 w-3 text-amber-700 dark:text-amber-400" /> {t('dashboard.billPdf') || 'Bill PDF'}
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm font-black text-emerald-700 dark:text-emerald-400">
+                                    ₹{(tx.amount || 0).toLocaleString('en-IN')}
+                                  </div>
+                                  <span className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 dark:text-slate-300">
+                                    {tx.category?.replace('_', ' ')}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+                                <div className="text-[11px]">
+                                  <span>Method: <strong className="text-slate-800 dark:text-slate-200">{tx.paymentMethod}</strong></span>
+                                  {tx.receiptReference && (
+                                    <span className="ml-2 font-mono text-slate-500">({tx.receiptReference})</span>
+                                  )}
+                                  {tx.recordedBy?.name && (
+                                    <span className="ml-2 text-slate-500">by {tx.recordedBy.name}</span>
+                                  )}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 px-2.5 py-1.5 text-xs font-bold transition shadow-xs cursor-pointer"
+                                  title="Download Payment Bill (PDF)"
+                                >
+                                  <FileText className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
+                                  <span>{t('dashboard.billPdf') || 'Bill PDF'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
