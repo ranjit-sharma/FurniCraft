@@ -21,6 +21,7 @@ import expenseRoutes from './routes/expenseRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import auditRoutes from './routes/auditRoutes.js';
 import systemRoutes from './routes/systemRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
 
 export const createApp = () => {
   const app = express();
@@ -95,6 +96,7 @@ export const createApp = () => {
   apiRouter.use('/reports', reportRoutes);
   apiRouter.use('/audit', auditRoutes);
   apiRouter.use('/system', systemRoutes);
+  apiRouter.use('/support', supportRoutes);
 
   // Mount primary API router under both /api/v1 and /api for backward and session compatibility
   app.use('/api/v1', apiRouter);

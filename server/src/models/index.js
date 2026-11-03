@@ -15,3 +15,4 @@ export { AuditLog } from './AuditLog.js';
 export { Notification } from './Notification.js';
 export { RevokedToken } from './RevokedToken.js';
 export { OtpRecord } from './OtpRecord.js';
+export { SupportTicket } from './SupportTicket.js';

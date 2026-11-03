@@ -3,9 +3,10 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { HelpCenterModal } from '../common/HelpCenterModal';
 
 const LogoLinkWithRouter = ({ children }) => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ export const Navbar = () => {
   const { language, t } = useLanguage();
   const { isDark } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const profileRef = useRef(null);
 
   // Close profile dropdown when clicking outside
@@ -197,13 +199,29 @@ export const Navbar = () => {
               </div>
 
               {/* Menu Actions */}
-              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                {/* Help & Support Center */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setHelpModalOpen(true);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <LifeBuoy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <span>{t('profile.helpCenter', 'Help & Support Center')}</span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                </button>
+
                 <button
                   onClick={() => {
                     setProfileOpen(false);
                     logout();
                   }}
-                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-800 dark:hover:text-rose-300"
+                  className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-rose-700 dark:text-rose-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/50 hover:text-rose-800 dark:hover:text-rose-300 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                   <span>{t('nav.logout', 'Sign Out')}</span>
@@ -213,6 +231,8 @@ export const Navbar = () => {
           )}
         </div>
       )}
+      {/* Help & Support Center Modal */}
+      <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
     </header>
   );
 };
