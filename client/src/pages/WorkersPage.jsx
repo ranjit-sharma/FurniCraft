@@ -367,17 +367,19 @@ export const WorkersPage = () => {
     }
   };
 
-  // Attendance PDFs are per month: open the month picker (worker = null means all workers).
+  // Attendance PDFs are per month for a specific craftsman only (from worker card).
   const handleExportWorkerAttendancePDF = (worker) => {
-    setPdfTarget({ worker: worker || null });
+    if (!worker) return;
+    setPdfTarget({ worker });
     setPdfMonth(localToday().slice(0, 7));
   };
 
   const handleDownloadMonthPdf = () => {
+    if (!pdfTarget?.worker) return;
+    const workerUserId = pdfTarget.worker.userId?._id || pdfTarget.worker._id;
+    if (!workerUserId) return;
     const [year, month] = pdfMonth.split('-');
-    const workerUserId = pdfTarget?.worker?.userId?._id || pdfTarget?.worker?._id;
-    const params = new URLSearchParams({ year, month: String(Number(month)), lang: language });
-    if (workerUserId) params.set('workerId', workerUserId);
+    const params = new URLSearchParams({ year, month: String(Number(month)), lang: language, workerId: workerUserId });
     window.open(`/api/v1/reports/export/attendance?${params}`, '_blank');
     setPdfTarget(null);
   };
@@ -664,14 +666,11 @@ export const WorkersPage = () => {
           </p>
         </div>
 
-        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
-          <Button variant="outline" className="justify-center" icon={FileText} onClick={() => handleExportWorkerAttendancePDF(null)}>
-            {t('workers.monthlyPdf', 'Monthly PDF')}
-          </Button>
+        <div className="flex w-full sm:w-auto flex-wrap items-center gap-2">
           {isThekedar && (
             <Button
               variant="outline"
-              className="justify-center text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-400 font-bold"
+              className="flex-1 sm:flex-initial justify-center text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-400 font-bold"
               onClick={handleOpenSelectDeleteModal}
               icon={Trash2}
             >
@@ -679,7 +678,7 @@ export const WorkersPage = () => {
             </Button>
           )}
           {(isOwner || isThekedar) && (
-            <Button variant="primary" onClick={() => setRegisterModalOpen(true)} icon={UserPlus} className="col-span-2 justify-center sm:col-span-1">
+            <Button variant="primary" onClick={() => setRegisterModalOpen(true)} icon={UserPlus} className="flex-1 sm:flex-initial justify-center">
               {t('workers.registerWorker', 'Register Worker')}
             </Button>
           )}
@@ -1509,11 +1508,11 @@ export const WorkersPage = () => {
         )}
       </Modal>
 
-      {/* Modal: Monthly attendance PDF */}
+      {/* Modal: Craftsman attendance statement PDF */}
       <Modal
-        isOpen={!!pdfTarget}
+        isOpen={Boolean(pdfTarget?.worker)}
         onClose={() => setPdfTarget(null)}
-        title={pdfTarget?.worker ? `Attendance PDF — ${pdfTarget.worker.userId?.name || 'Worker'}` : 'Monthly Attendance PDF — All Workers'}
+        title={`Attendance Statement PDF — ${pdfTarget?.worker?.userId?.name || pdfTarget?.worker?.name || 'Craftsman'}`}
       >
         {pdfTarget && (() => {
           const thisMonth = localToday().slice(0, 7);

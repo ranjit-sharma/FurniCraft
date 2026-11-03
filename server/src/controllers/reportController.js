@@ -56,6 +56,11 @@ export const exportAttendance = async (req, res, next) => {
       throw new BadRequestError('Choose a valid month (year=YYYY&month=1-12) or date range (YYYY-MM-DD).');
     }
 
+    // Bulk attendance PDF export is disabled. An individual worker must be specified.
+    if (!workerId && req.user.role !== ROLES.WORKER) {
+      throw new BadRequestError('A specific worker must be selected for attendance statement export. Bulk attendance export has been disabled.');
+    }
+
     // Role scoping
     if (req.user.role === ROLES.WORKER) {
       filter.workerId = req.user._id;
@@ -66,9 +71,9 @@ export const exportAttendance = async (req, res, next) => {
     const selectedLang = req.query.lang || req.headers['x-custom-lang'] || req.user?.preferredLanguage || 'en';
     const pdfBuffer = await exportService.generateAttendancePDF(filter, { reqUser: req.user, lang: selectedLang, period });
 
-    const safeWorkerName = targetWorkerDoc?.name ? targetWorkerDoc.name.replace(/\s+/g, '_') : '';
+    const safeWorkerName = targetWorkerDoc?.name ? targetWorkerDoc.name.replace(/\s+/g, '_') : 'craftsman';
     const periodPart = period?.year ? `${period.year}-${String(period.month).padStart(2, '0')}` : period ? `${period.startDate}_${period.endDate}` : 'all';
-    const filename = `attendance-${safeWorkerName || 'all-workers'}-${periodPart}.pdf`;
+    const filename = `attendance-${safeWorkerName}-${periodPart}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);

@@ -259,14 +259,24 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
     await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: originalBal });
   });
 
-  it('RULE: Attendance export endpoint returns styled PDF with contractor details', async () => {
+  it('RULE: Bulk attendance export without workerId is rejected (individual craftsman statement only)', async () => {
     const res = await request(app)
       .get('/api/v1/reports/export/attendance')
+      .set('Authorization', `Bearer ${thekedarToken}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toContain('A specific worker must be selected');
+  });
+
+  it('RULE: Attendance export endpoint returns styled PDF for individual craftsman with contractor details', async () => {
+    const res = await request(app)
+      .get(`/api/v1/reports/export/attendance?workerId=${workerUser._id}`)
       .set('Authorization', `Bearer ${thekedarToken}`);
 
     expect(res.status).toBe(200);
     expect(res.header['content-type']).toBe('application/pdf');
     expect(res.header['content-disposition']).toContain('.pdf');
+    expect(res.header['content-disposition']).toContain(workerUser.name.replace(/\s+/g, '_'));
     expect(res.body.toString('utf8', 0, 4)).toBe('%PDF');
   });
 
