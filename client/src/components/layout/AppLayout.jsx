@@ -42,38 +42,14 @@ export const AppLayout = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  // Copy each column header onto its cells so tables can stack as labelled cards on phones (index.css).
-  useEffect(() => {
-    const labelTables = () => {
-      document.querySelectorAll('.overflow-x-auto > table').forEach((table) => {
-        const heads = [...table.querySelectorAll(':scope > thead th')].map((th) => th.textContent.trim());
-        table.querySelectorAll(':scope > tbody > tr').forEach((tr) => {
-          [...tr.children].forEach((td, i) => {
-            if (heads[i] && !td.hasAttribute('colspan') && td.dataset.label !== heads[i]) td.dataset.label = heads[i];
-          });
-        });
-      });
-    };
-    let timer = 0;
-    const observer = new MutationObserver(() => {
-      if (!timer) timer = setTimeout(() => { timer = 0; labelTables(); }, 50);
-    });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-    labelTables();
-    return () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
-  }, []);
-
   return (
     <div className="flex min-h-[100dvh] flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <Navbar />
       <OfflineBanner />
       <div className="flex flex-1 items-start">
         <Sidebar />
-        <main className="flex-1 min-w-0 px-4 pt-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-6 md:px-8 md:pb-8 overflow-x-clip">
-          <div key={pathname} className="mx-auto max-w-7xl animate-page-in">
+        <main className="flex-1 min-w-0 px-3 py-4 sm:px-5 sm:py-5 lg:px-8 lg:py-6 pb-24 lg:pb-8 overflow-x-clip">
+          <div key={pathname} className="mx-auto max-w-7xl 2xl:max-w-[1536px] w-full animate-page-in">
             <ErrorBoundary>
               {/* Keeps the header and tab bar on screen while a page chunk loads */}
               <Suspense fallback={<PageLoader />}>

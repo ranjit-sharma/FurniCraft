@@ -274,7 +274,7 @@ export const ThekedarsPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="min-w-[750px] w-full text-left text-sm">
               <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="px-5 py-3.5">Thekedar Name</th>

@@ -37,13 +37,13 @@ export const useNavLinks = () => {
   ];
 };
 
-// Desktop / tablet only; phones use BottomNav.
+// Desktop only (>= 1024px); tablets & phones use Drawer + BottomNav.
 export const Sidebar = () => {
   const { t } = useLanguage();
   const links = useNavLinks();
 
   return (
-    <aside className="hidden md:flex sticky top-16 z-30 h-[calc(100dvh-4rem)] w-64 shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+    <aside className="hidden lg:flex sticky top-16 z-30 h-[calc(100dvh-4rem)] w-64 shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
       <div className="flex flex-col flex-1 overflow-y-auto px-4 py-5">
         <div className="mb-3 px-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">

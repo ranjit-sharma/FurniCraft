@@ -235,7 +235,7 @@ export const ThekedarDashboard = () => {
                           title={title}
                           disabled={saving || locked}
                           onClick={() => handleMark(w, code)}
-                          className={`min-h-10 rounded-xl border text-xs font-black transition disabled:opacity-60 ${
+                          className={`min-h-10 px-1 truncate rounded-xl border text-[11px] sm:text-xs font-black transition disabled:opacity-60 ${
                             active
                               ? code === 'ABSENT'
                                 ? 'border-rose-500 bg-rose-500 text-white'

@@ -671,7 +671,7 @@ export const WorkersPage = () => {
           <p className="text-xs text-slate-700 dark:text-slate-400 italic">{t('workers.noWorkersRegistered', 'No workers currently registered.')}</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {workers.map((w) => {
             const wid = w.userId?._id || w._id;
             return (
@@ -1183,7 +1183,7 @@ export const WorkersPage = () => {
                       </div>
                     ) : (
                       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
+                        <table className="min-w-[480px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
                           <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
                             <tr>
                               <th className="px-4 py-3">Date</th>
@@ -1259,7 +1259,7 @@ export const WorkersPage = () => {
                         </p>
                       ) : (
                         <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
+                          <table className="min-w-[650px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
                             <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
                               <tr>
                                 <th className="px-4 py-2.5">Requested Date</th>
@@ -1382,7 +1382,7 @@ export const WorkersPage = () => {
                         </p>
                       ) : (
                         <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
+                          <table className="min-w-[720px] w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
                             <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
                               <tr>
                                 <th className="px-4 py-2.5">Date</th>

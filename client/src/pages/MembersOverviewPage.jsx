@@ -341,7 +341,7 @@ export const MembersOverviewPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+            <table className="min-w-[700px] w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
               <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="px-4 py-3">{t('profile.accountDetails', 'Member Details')}</th>

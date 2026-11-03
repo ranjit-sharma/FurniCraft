@@ -342,8 +342,8 @@ export const ProjectsPage = () => {
           })}
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
-          <div className="relative col-span-2 sm:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="relative sm:col-span-2 lg:col-span-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
@@ -436,7 +436,7 @@ export const ProjectsPage = () => {
                   )}
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredActiveProjects.map((p) => (
                     <Link
                       key={p._id}
@@ -508,7 +508,7 @@ export const ProjectsPage = () => {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredArchivedProjects.map((p) => (
                     <Link
                       key={p._id}

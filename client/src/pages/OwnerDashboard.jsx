@@ -157,7 +157,7 @@ export const OwnerDashboard = () => {
       </div>
 
       {/* Counts */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatTile to="/thekedars" icon={HardHat} label={t('navShort.thekedars', 'Thekedars')} value={m.totalThekedars || 0} sub={`${m.activeThekedars || 0} active`} />
         <StatTile to="/members" icon={Users} label={t('navShort.workers', 'Workers')} value={m.totalWorkers || 0} />
         <StatTile to="/projects" icon={FolderKanban} label={t('navShort.projects', 'Projects')} value={m.totalProjects || 0} sub={`${m.activeProjects || 0} active`} />

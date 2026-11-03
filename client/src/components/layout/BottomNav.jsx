@@ -24,7 +24,7 @@ export const BottomNav = () => {
     <>
       <nav
         aria-label={t('nav.navigation', 'Navigation')}
-        className="md:hidden fixed inset-x-0 bottom-0 z-40 flex border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+        className="lg:hidden fixed inset-x-0 bottom-0 z-40 flex border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
       >
         {tabs.map(({ to, short, icon: Icon }) => (
           <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => tabClass(isActive)}>
