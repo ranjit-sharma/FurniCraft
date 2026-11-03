@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/client';
 import { LoadError } from '../components/common/LoadError';
 import { localToday } from '../utils/date';
+import { downloadPdf } from '../utils/download';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
@@ -356,7 +357,7 @@ export const WorkersPage = () => {
     if (!workerUserId) return;
     const [year, month] = pdfMonth.split('-');
     const params = new URLSearchParams({ year, month: String(Number(month)), lang: language, workerId: workerUserId });
-    window.open(`/api/v1/reports/export/attendance?${params}`, '_blank');
+    downloadPdf(`/api/v1/reports/export/attendance?${params}`, `Attendance_${pdfMonth}_${pdfTarget.worker.userId?.name || 'Worker'}.pdf`);
     setPdfTarget(null);
   };
 
@@ -467,7 +468,7 @@ export const WorkersPage = () => {
         receiptReference: payReference,
         notes: payNotes,
         date: new Date().toLocaleString('en-IN'),
-        billUrl: res.data?.billUrl ? `${res.data.billUrl}&lang=${language}` : `/api/v1/finance/transactions/${res.data?.transaction?._id}/bill?lang=${language}`,
+        billUrl: `/api/v1/finance/transactions/${res.data?.transaction?._id || res.data?.transaction?.transactionId}/bill?lang=${language}`,
       });
       setBillModalOpen(true);
       fetchWorkers();
@@ -1404,7 +1405,7 @@ export const WorkersPage = () => {
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                                  onClick={() => downloadPdf(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, `Bill_${tx.transactionId || tx._id}.pdf`)}
                                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800 px-2.5 py-1.5 text-xs font-bold transition shadow-xs cursor-pointer"
                                   title="Download Payment Bill (PDF)"
                                 >
@@ -1794,11 +1795,15 @@ export const WorkersPage = () => {
                 icon={FileText}
                 className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
                 onClick={() => {
-                  let url = generatedBillData.billUrl || `/api/v1/finance/transactions/${generatedBillData.transaction?._id}/bill`;
-                  if (!url.includes('lang=')) {
+                  const txId = generatedBillData.transaction?._id || generatedBillData.transaction?.transactionId;
+                  const billCode = generatedBillData.transaction?.transactionId || txId || 'payment';
+                  let url = generatedBillData.billUrl;
+                  if (!url) {
+                    url = `/api/v1/finance/transactions/${txId}/bill?lang=${language}`;
+                  } else if (!url.includes('lang=')) {
                     url += (url.includes('?') ? '&' : '?') + `lang=${language}`;
                   }
-                  window.open(url, '_blank');
+                  downloadPdf(url, `Bill_${billCode}.pdf`);
                 }}
               >
                 {t('dashboard.billPdf') ? `${t('dashboard.billPdf')} (PDF)` : 'Download / Print Bill (PDF)'}

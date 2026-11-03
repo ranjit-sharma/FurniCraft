@@ -5,6 +5,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { LoadError } from '../components/common/LoadError';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import {
@@ -302,7 +303,7 @@ export const TransactionSearchPage = () => {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => window.open(`/api/v1/finance/transactions/${selectedTx._id}/bill?lang=${language}`, '_blank')}
+                    onClick={() => downloadPdf(`/api/v1/finance/transactions/${selectedTx._id}/bill?lang=${language}`, `Bill_${selectedTx.transactionId || selectedTx._id}.pdf`)}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold px-3.5 py-2 text-xs transition-colors shadow-sm cursor-pointer"
                   >
                     <FileText className="h-3.5 w-3.5" />

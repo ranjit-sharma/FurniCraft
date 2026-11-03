@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
+import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import {
@@ -225,7 +226,7 @@ export const OwnerDashboard = () => {
                       <span className={`text-sm font-black ${isAdvance ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{inr(tx.amount)}</span>
                       <button
                         type="button"
-                        onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                        onClick={() => downloadPdf(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, `Bill_${tx.transactionId || tx._id}.pdf`)}
                         aria-label={`Download bill ${tx.transactionId}`}
                         className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >

@@ -8,6 +8,7 @@ import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { localToday } from '../utils/date';
+import { downloadPdf } from '../utils/download';
 import {
   UserPlus,
   IndianRupee,
@@ -323,7 +324,7 @@ export const ThekedarDashboard = () => {
                     <span className={`text-sm font-black ${isAdvance ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>{inr(tx.amount)}</span>
                     <button
                       type="button"
-                      onClick={() => window.open(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, '_blank')}
+                      onClick={() => downloadPdf(`/api/v1/finance/transactions/${tx._id}/bill?lang=${language}`, `Bill_${tx.transactionId || tx._id}.pdf`)}
                       aria-label={`Download bill ${tx.transactionId}`}
                       className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
