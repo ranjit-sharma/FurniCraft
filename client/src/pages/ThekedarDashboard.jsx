@@ -199,8 +199,8 @@ export const ThekedarDashboard = () => {
         <div
           className={`flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
             message.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-rose-50 text-rose-800 border border-rose-200'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+              : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
           }`}
         >
           <span>{message.text}</span>
@@ -250,44 +250,44 @@ export const ThekedarDashboard = () => {
 
       {/* Primary Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700">{t('dashboard.activeProjects') || 'Active Projects'}</span>
-            <FolderKanban className="h-4 w-4 text-amber-700" />
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('dashboard.activeProjects') || 'Active Projects'}</span>
+            <FolderKanban className="h-4 w-4 text-amber-700 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 mt-2">{metrics.activeProjectsCount || 0}</div>
-          <span className="text-[11px] text-slate-700">{t('projects.furnitureScope') || 'Kitchens, wardrobes & panels'}</span>
+          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{metrics.activeProjectsCount || 0}</div>
+          <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('projects.furnitureScope') || 'Kitchens, wardrobes & panels'}</span>
         </Card>
 
-        <Card className="border-slate-200">
+        <Card className="border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700">{t('thekedar.managedWorkers') || 'Managed Workers'}</span>
-            <Users className="h-4 w-4 text-amber-700" />
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedar.managedWorkers') || 'Managed Workers'}</span>
+            <Users className="h-4 w-4 text-amber-700 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-black text-slate-900 mt-2">{metrics.managedWorkersCount || 0}</div>
-          <span className="text-[11px] text-slate-700">{t('dashboard.totalWorkforce') || 'Carpenters, fitters, polishers'}</span>
+          <div className="text-2xl font-black text-slate-900 dark:text-white mt-2">{metrics.managedWorkersCount || 0}</div>
+          <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('dashboard.totalWorkforce') || 'Carpenters, fitters, polishers'}</span>
         </Card>
 
-        <Card className="border-amber-200 bg-amber-50/30">
+        <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-900">{t('dashboard.pendingAttendance') || 'Pending Approvals'}</span>
-            <CheckCircle className="h-4 w-4 text-amber-700" />
+            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('dashboard.pendingAttendance') || 'Pending Approvals'}</span>
+            <CheckCircle className="h-4 w-4 text-amber-700 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-black text-amber-950 mt-2">
+          <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-2">
             {pendingAttendance.length + pendingTasks.length}
           </div>
-          <span className="text-[11px] text-amber-800">
+          <span className="text-[11px] text-amber-800 dark:text-amber-400">
             {pendingAttendance.length} {t('nav.attendance') || 'Attendance'} • {pendingTasks.length} {t('nav.tasks') || 'Tasks'}
           </span>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-800/60 bg-blue-50/30 dark:bg-blue-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-blue-900">{t('dashboard.netBalance') || 'Total Unpaid Salary'}</span>
-            <IndianRupee className="h-4 w-4 text-blue-700" />
+            <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">{t('dashboard.netBalance') || 'Total Unpaid Salary'}</span>
+            <IndianRupee className="h-4 w-4 text-blue-700 dark:text-blue-400" />
           </div>
-          <div className="text-2xl font-black text-blue-950 mt-2">₹{metrics.totalOutstandingSalary?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-blue-800">{t('dashboard.outstandingAdvance') || 'Advances'}: ₹{metrics.totalOutstandingAdvances?.toLocaleString('en-IN') || 0}</span>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-200 mt-2">₹{metrics.totalOutstandingSalary?.toLocaleString('en-IN') || 0}</div>
+          <span className="text-[11px] text-blue-800 dark:text-blue-400">{t('dashboard.outstandingAdvance') || 'Advances'}: ₹{metrics.totalOutstandingAdvances?.toLocaleString('en-IN') || 0}</span>
         </Card>
       </div>
 
@@ -297,13 +297,13 @@ export const ThekedarDashboard = () => {
         subtitle={t('thekedarDashboard.pendingApprovalsSubtitle') || 'Review worker shift submissions and correction requests'}
       >
         {pendingAttendance.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-700 italic">
+          <div className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">
             {t('thekedarDashboard.allReviewed') || 'All attendance submissions and corrections are currently reviewed!'}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="p-3">{t('thekedarDashboard.tableWorker') || 'Worker'}</th>
                   <th className="p-3">{t('thekedarDashboard.tableProject') || 'Project'}</th>
@@ -314,15 +314,15 @@ export const ThekedarDashboard = () => {
                   <th className="p-3 text-right">{t('thekedarDashboard.tableActions') || 'Actions'}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {pendingAttendance.map((att) => (
-                  <tr key={att._id} className="hover:bg-slate-50">
+                  <tr key={att._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td className="p-3">
-                      <span className="font-bold text-slate-900 block">{att.workerId?.name}</span>
-                      <span className="text-[11px] text-slate-500">{att.workerId?.phone}</span>
+                      <span className="font-bold text-slate-900 dark:text-white block">{att.workerId?.name}</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{att.workerId?.phone}</span>
                     </td>
-                    <td className="p-3 text-slate-700">{att.projectId?.name}</td>
-                    <td className="p-3 font-medium text-slate-800">{att.date}</td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">{att.projectId?.name}</td>
+                    <td className="p-3 font-medium text-slate-800 dark:text-slate-200">{att.date}</td>
                     <td className="p-3">
                       {(() => {
                         const currentCode = approvalCodes[att._id] || att.code;
@@ -331,7 +331,7 @@ export const ThekedarDashboard = () => {
                             <select
                               value={currentCode}
                               onChange={(e) => setApprovalCodes((prev) => ({ ...prev, [att._id]: e.target.value }))}
-                              className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-800 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                             >
                               <option value="P">P (1.0x Full Day)</option>
                               <option value="HALF">HALF (0.5x Half Day)</option>
@@ -341,7 +341,7 @@ export const ThekedarDashboard = () => {
                               <option value="LEAVE">LEAVE (0x)</option>
                             </select>
                             {att.code !== currentCode && (
-                              <span className="text-[10px] text-amber-700 font-semibold">
+                              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
                                 Submitted: {att.code}
                               </span>
                             )}
@@ -349,7 +349,7 @@ export const ThekedarDashboard = () => {
                         );
                       })()}
                     </td>
-                    <td className="p-3 font-semibold text-slate-900">
+                    <td className="p-3 font-semibold text-slate-900 dark:text-white">
                       {(() => {
                         const MULTIPLIERS = { P: 1.0, HALF: 0.5, 'P1/5': 1.5, PP: 2.0, ABSENT: 0, LEAVE: 0 };
                         const currentCode = approvalCodes[att._id] || att.code;
@@ -358,8 +358,8 @@ export const ThekedarDashboard = () => {
                         const computed = Math.round(wage * mult);
                         return (
                           <div>
-                            <span className="font-bold text-emerald-800">₹{computed}</span>
-                            <span className="block text-[10px] text-slate-500">₹{wage}/d ({mult}x)</span>
+                            <span className="font-bold text-emerald-800 dark:text-emerald-400">₹{computed}</span>
+                            <span className="block text-[10px] text-slate-500 dark:text-slate-400">₹{wage}/d ({mult}x)</span>
                           </div>
                         );
                       })()}
@@ -400,13 +400,13 @@ export const ThekedarDashboard = () => {
         subtitle={t('projects.awaitingApproval') || 'Review finished furniture craft tasks submitted by workers for supervisor inspection and approval'}
       >
         {pendingTasks.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-700 italic">
+          <div className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">
             {t('projects.noTasks') || 'No completed tasks awaiting approval. All worker task submissions are verified!'}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="p-3">{t('thekedarDashboard.tableWorker') || 'Worker Craftsman'}</th>
                   <th className="p-3">{t('projectDetail.tasks') || 'Furniture Item / Task'}</th>
@@ -417,25 +417,25 @@ export const ThekedarDashboard = () => {
                   <th className="p-3 text-right">{t('thekedarDashboard.tableActions') || 'Inspection & Approval'}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {pendingTasks.map((task) => (
-                  <tr key={task._id} className="hover:bg-slate-50">
+                  <tr key={task._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td className="p-3">
-                      <span className="font-bold text-slate-900 block">{task.assignedWorkerId?.name || (t('thekedarDashboard.tableWorker') || 'Assigned Worker')}</span>
-                      <span className="text-[11px] text-slate-500">{task.assignedWorkerId?.phone}</span>
+                      <span className="font-bold text-slate-900 dark:text-white block">{task.assignedWorkerId?.name || (t('thekedarDashboard.tableWorker') || 'Assigned Worker')}</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{task.assignedWorkerId?.phone}</span>
                     </td>
                     <td className="p-3">
-                      <strong className="text-slate-900 block font-semibold">{task.furnitureItemName}</strong>
-                      {task.notes && <span className="text-[10px] text-slate-500 italic block">{task.notes}</span>}
+                      <strong className="text-slate-900 dark:text-white block font-semibold">{task.furnitureItemName}</strong>
+                      {task.notes && <span className="text-[10px] text-slate-500 dark:text-slate-400 italic block">{task.notes}</span>}
                     </td>
-                    <td className="p-3 text-slate-700">
-                      <span className="font-bold text-amber-800 block text-[11px]">{task.projectId?.projectCode}</span>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">
+                      <span className="font-bold text-amber-800 dark:text-amber-400 block text-[11px]">{task.projectId?.projectCode}</span>
                       <span>{task.projectId?.name}</span>
                     </td>
                     <td className="p-3">
                       <Badge variant="default" size="sm">{task.taskType}</Badge>
                     </td>
-                    <td className="p-3 font-semibold text-slate-900">
+                    <td className="p-3 font-semibold text-slate-900 dark:text-white">
                       {task.completedUnits || task.plannedUnits} / {task.plannedUnits} {task.unitMetric || 'pcs'}
                     </td>
                     <td className="p-3">
@@ -476,37 +476,39 @@ export const ThekedarDashboard = () => {
           subtitle={t('workerModals.advanceModalTitle') || 'Cash or UPI advance requests from site workers'}
         >
           {pendingAdvances.length === 0 ? (
-            <p className="text-xs text-slate-700 py-4 italic">{t('dashboard.pendingAdvance')}: 0</p>
+            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('dashboard.pendingAdvance')}: 0</p>
           ) : (
             <div className="space-y-3">
               {pendingAdvances.map((adv) => (
                 <div key={adv._id} className={`flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl border p-3.5 transition-all ${
-                  adv.exceedsLimit ? 'border-rose-300 bg-rose-50/40' : 'border-slate-200'
+                  adv.exceedsLimit
+                    ? 'border-rose-300 dark:border-rose-800 bg-rose-50/40 dark:bg-rose-950/40'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60'
                 }`}>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-slate-900 text-sm">{adv.workerId?.name}</span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300">
-                        <IndianRupee className="h-3 w-3 text-amber-700" />
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{adv.workerId?.name}</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                        <IndianRupee className="h-3 w-3 text-amber-700 dark:text-amber-400" />
                         <span>{t('worker.reqAdvBadge') || 'Req Adv'}: ₹{adv.amount?.toLocaleString('en-IN')}</span>
                       </span>
                     </div>
-                    <p className="text-xs text-slate-700 mt-1">{t('common.reason') || 'Reason'}: {adv.reason}</p>
-                    <span className="text-[11px] text-slate-700">{t('thekedarDashboard.tableProject') || 'Project'}: {adv.projectId?.name || 'General Workshop'}</span>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">{t('common.reason') || 'Reason'}: {adv.reason}</p>
+                    <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('thekedarDashboard.tableProject') || 'Project'}: {adv.projectId?.name || 'General Workshop'}</span>
 
                     {/* Flashing Alert if worker has reached/exceeded ₹10,000 advance limit */}
                     {adv.exceedsLimit ? (
-                      <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-rose-300 bg-rose-100/80 px-2.5 py-1.5 text-xs font-bold text-rose-800 animate-pulse">
-                        <AlertTriangle className="h-4 w-4 text-rose-600 flex-shrink-0 mt-0.5 animate-bounce" />
+                      <div className="mt-2 flex items-start gap-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-100/80 dark:bg-rose-950/60 px-2.5 py-1.5 text-xs font-bold text-rose-800 dark:text-rose-200 animate-pulse">
+                        <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5 animate-bounce" />
                         <div>
                           <span>{t('workerModals.advanceLimitReached') || '⚠️ Max Advance Limit Exceeded (₹10,000)!'}</span>
-                          <p className="text-[11px] font-medium text-rose-700 mt-0.5">
+                          <p className="text-[11px] font-medium text-rose-700 dark:text-rose-300 mt-0.5">
                             {t('worker.maxAdvanceNote') || 'Worker cannot take more than ₹10,000 advance'}.
                           </p>
                         </div>
                       </div>
                     ) : (
-                      <div className="mt-1 text-[11px] text-slate-500 font-medium">
+                      <div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                         {t('workerModals.currentAdvance') || 'Current Advance'}: ₹{(adv.currentAdvanceBalance || 0).toLocaleString('en-IN')} ({t('worker.remainingLimit') || 'Under ₹10,000 limit'})
                       </div>
                     )}
@@ -520,7 +522,7 @@ export const ThekedarDashboard = () => {
                           variant="success"
                           disabled={adv.exceedsLimit}
                           title={adv.exceedsLimit ? "Worker advance exceeds ₹10,000 limit - Cannot Approve" : "Approve advance request"}
-                          className={adv.exceedsLimit ? "opacity-40 cursor-not-allowed bg-slate-300 text-slate-500 hover:bg-slate-300" : ""}
+                          className={adv.exceedsLimit ? "opacity-40 cursor-not-allowed bg-slate-300 dark:bg-slate-700 text-slate-500 hover:bg-slate-300" : ""}
                           onClick={() => !adv.exceedsLimit && handleReviewAdvance(adv._id, 'APPROVED')}
                         >
                           {t('common.approve') || 'Approve'}
@@ -556,11 +558,11 @@ export const ThekedarDashboard = () => {
         <Card title={t('projects.allProjects') || 'Active Furniture Projects'} subtitle={t('projects.furnitureScope') || 'Modular kitchens, wardrobes, and paneling sites'}>
           <div className="space-y-3">
             {activeProjects.map((p) => (
-              <div key={p._id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 hover:border-amber-300">
+              <div key={p._id} className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3 hover:border-amber-300 dark:hover:border-amber-600 transition-colors">
                 <div>
-                  <span className="text-[11px] font-bold text-amber-800">{p.projectCode}</span>
-                  <h4 className="text-sm font-bold text-slate-900">{p.name}</h4>
-                  <p className="text-xs text-slate-700">{p.projectType.replace('_', ' ')} • {p.clientName}</p>
+                  <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400">{p.projectCode}</span>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">{p.name}</h4>
+                  <p className="text-xs text-slate-700 dark:text-slate-400">{p.projectType.replace('_', ' ')} • {p.clientName}</p>
                 </div>
                 <Link to={`/projects/${p._id}`}>
                   <Button size="sm" variant="outline">
@@ -577,17 +579,17 @@ export const ThekedarDashboard = () => {
       <Modal isOpen={disburseModalOpen} onClose={() => setDisburseModalOpen(false)} title={t('thekedarDashboard.disburseModalTitle') || 'Record Advance Disbursement'}>
         {selectedRequest && (
           <form onSubmit={handleDisburseAdvance} className="space-y-4">
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
-              <div>{t('thekedarDashboard.tableWorker') || 'Worker'}: <span className="font-bold">{selectedRequest.workerId?.name}</span></div>
-              <div>{t('common.amount') || 'Amount'}: <span className="font-bold text-base">₹{selectedRequest.amount}</span></div>
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 p-3 text-xs text-amber-900 dark:text-amber-300">
+              <div>{t('thekedarDashboard.tableWorker') || 'Worker'}: <span className="font-bold text-slate-900 dark:text-white">{selectedRequest.workerId?.name}</span></div>
+              <div>{t('common.amount') || 'Amount'}: <span className="font-bold text-base text-slate-900 dark:text-white">₹{selectedRequest.amount}</span></div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('expenses.paymentMethod') || 'Disbursement Payment Method'}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.paymentMethod') || 'Disbursement Payment Method'}</label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               >
                 <option value="UPI">UPI</option>
                 <option value="CASH">Cash</option>
@@ -596,17 +598,17 @@ export const ThekedarDashboard = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('expenses.receiptRef') || 'UTR / Receipt Reference Number'}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.receiptRef') || 'UTR / Receipt Reference Number'}</label>
               <input
                 type="text"
                 value={receiptReference}
                 onChange={(e) => setReceiptReference(e.target.value)}
                 placeholder="e.g. UPI-UTR-298382910"
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
               <Button variant="secondary" onClick={() => setDisburseModalOpen(false)}>{t('common.cancel') || 'Cancel'}</Button>
               <Button type="submit">{t('thekedarDashboard.confirmDisburse') || 'Confirm Disbursement'}</Button>
             </div>
@@ -618,18 +620,18 @@ export const ThekedarDashboard = () => {
       <Modal isOpen={rejectModalOpen} onClose={() => setRejectModalOpen(false)} title={t('thekedarDashboard.rejectionModalTitle') || 'Reject Attendance Submission'}>
         <form onSubmit={handleRejectAttendance} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('thekedarDashboard.rejectionReason') || 'Reason for Rejection'}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedarDashboard.rejectionReason') || 'Reason for Rejection'}</label>
             <textarea
               required
               rows={3}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="e.g. Worker was absent from site on afternoon shift, or overtime not authorized..."
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setRejectModalOpen(false)}>{t('common.cancel') || 'Cancel'}</Button>
             <Button type="submit" variant="danger">{t('thekedarDashboard.confirmReject') || 'Confirm Rejection'}</Button>
           </div>
@@ -648,14 +650,14 @@ export const ThekedarDashboard = () => {
       >
         {selectedTaskToRework && (
           <form onSubmit={handleSubmitTaskRework} className="space-y-4">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 space-y-1">
-              <div>{t('projectDetail.tasks') || 'Furniture Item'}: <strong className="text-slate-900">{selectedTaskToRework.furnitureItemName}</strong></div>
-              <div>{t('thekedarDashboard.tableWorker') || 'Craftsman'}: <strong className="text-slate-900">{selectedTaskToRework.assignedWorkerId?.name}</strong></div>
-              <div>{t('thekedarDashboard.tableProject') || 'Project Site'}: <strong className="text-slate-900">{selectedTaskToRework.projectId?.name} ({selectedTaskToRework.projectId?.projectCode})</strong></div>
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/50 p-3.5 text-xs text-amber-900 dark:text-amber-300 space-y-1">
+              <div>{t('projectDetail.tasks') || 'Furniture Item'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.furnitureItemName}</strong></div>
+              <div>{t('thekedarDashboard.tableWorker') || 'Craftsman'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.assignedWorkerId?.name}</strong></div>
+              <div>{t('thekedarDashboard.tableProject') || 'Project Site'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.projectId?.name} ({selectedTaskToRework.projectId?.projectCode})</strong></div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {t('thekedarDashboard.reworkNotesLabel') || 'Correction / Rework Instructions for Worker'}
               </label>
               <textarea
@@ -664,11 +666,11 @@ export const ThekedarDashboard = () => {
                 value={taskReworkNotes}
                 onChange={(e) => setTaskReworkNotes(e.target.value)}
                 placeholder="Describe what needs to be fixed or adjusted before this task can be approved (e.g. edge alignment gap, screw tightening, finish polishing)..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="secondary"
                 onClick={() => {

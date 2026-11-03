@@ -153,52 +153,52 @@ export const OwnerDashboard = () => {
       {/* Primary Metrics Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
         {/* Total App Visits */}
-        <Card className="col-span-2 sm:col-span-1 border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-purple-50/30">
+        <Card className="col-span-2 sm:col-span-1 border-indigo-200 dark:border-indigo-800 bg-gradient-to-br from-indigo-50/50 to-purple-50/30 dark:from-indigo-950/40 dark:to-purple-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-900 uppercase tracking-wider">{t('ownerDashboard.appVisits') || 'App Visits'}</span>
-            <Activity className="h-4 w-4 text-indigo-700" />
+            <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t('ownerDashboard.appVisits') || 'App Visits'}</span>
+            <Activity className="h-4 w-4 text-indigo-700 dark:text-indigo-300" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-indigo-950 mt-2">
+          <div className="text-2xl sm:text-3xl font-black text-indigo-950 dark:text-indigo-100 mt-2">
             {(metrics.totalVisits || 0).toLocaleString('en-IN')}
           </div>
-          <span className="text-[11px] text-indigo-800 font-semibold flex items-center gap-1 mt-1">
+          <span className="text-[11px] text-indigo-800 dark:text-indigo-400 font-semibold flex items-center gap-1 mt-1">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             {metrics.todayVisits || 0} {t('ownerDashboard.today') || t('calendar.today') || 'today'}
           </span>
         </Card>
 
         {/* Workforce & Members */}
-        <Card className="border-blue-200 bg-blue-50/20">
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">{t('dashboard.totalWorkforce') || 'Total Members'}</span>
-            <Users className="h-4 w-4 text-blue-700" />
+            <span className="text-xs font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">{t('dashboard.totalWorkforce') || 'Total Members'}</span>
+            <Users className="h-4 w-4 text-blue-700 dark:text-blue-300" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-blue-950 mt-2">{metrics.totalMembers || 0}</div>
-          <span className="text-[11px] text-blue-800 font-semibold mt-1 block truncate">
+          <div className="text-2xl sm:text-3xl font-black text-blue-950 dark:text-blue-100 mt-2">{metrics.totalMembers || 0}</div>
+          <span className="text-[11px] text-blue-800 dark:text-blue-400 font-semibold mt-1 block truncate">
             {metrics.totalThekedars || 0} {t('ownerDashboard.thekedarsFilter') || 'Thekedars'} • {metrics.totalWorkers || 0} {t('ownerDashboard.workersFilter') || 'Workers'}
           </span>
         </Card>
 
         {/* Total Projects */}
-        <Card className="border-purple-200 bg-purple-50/20">
+        <Card className="border-purple-200 dark:border-purple-800 bg-purple-50/20 dark:bg-purple-950/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-purple-900 uppercase tracking-wider">{t('dashboard.systemProjects') || 'Total Projects'}</span>
-            <Building2 className="h-4 w-4 text-purple-700" />
+            <span className="text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider">{t('dashboard.systemProjects') || 'Total Projects'}</span>
+            <Building2 className="h-4 w-4 text-purple-700 dark:text-purple-300" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-purple-950 mt-2">{metrics.totalProjects || 0}</div>
-          <span className="text-[11px] text-purple-800 font-semibold mt-1 block">
+          <div className="text-2xl sm:text-3xl font-black text-purple-950 dark:text-purple-100 mt-2">{metrics.totalProjects || 0}</div>
+          <span className="text-[11px] text-purple-800 dark:text-purple-400 font-semibold mt-1 block">
             {metrics.activeProjects || 0} {t('projects.active') || 'active'}
           </span>
         </Card>
 
         {/* Financial Liabilities */}
-        <Card className="border-rose-200 bg-rose-50/20">
+        <Card className="border-rose-200 dark:border-rose-800 bg-rose-50/20 dark:bg-rose-950/20">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-rose-900 uppercase tracking-wider">{t('dashboard.financialTurnover') || 'Liabilities'}</span>
-            <IndianRupee className="h-4 w-4 text-rose-700" />
+            <span className="text-xs font-bold text-rose-900 dark:text-rose-300 uppercase tracking-wider">{t('dashboard.financialTurnover') || 'Liabilities'}</span>
+            <IndianRupee className="h-4 w-4 text-rose-700 dark:text-rose-300" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-950 mt-2">₹{metrics.totalLiabilities?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-rose-800 font-semibold mt-1 block truncate">
+          <div className="text-2xl sm:text-3xl font-black text-rose-950 dark:text-rose-100 mt-2">₹{metrics.totalLiabilities?.toLocaleString('en-IN') || 0}</div>
+          <span className="text-[11px] text-rose-800 dark:text-rose-400 font-semibold mt-1 block truncate">
             {t('dashboard.approvedWages')}: ₹{metrics.totalSalaryLiability?.toLocaleString('en-IN')} | Adv: ₹{metrics.totalAdvanceLiability?.toLocaleString('en-IN')}
           </span>
         </Card>
@@ -225,7 +225,7 @@ export const OwnerDashboard = () => {
               value={memberSearch}
               onChange={(e) => setMemberSearch(e.target.value)}
               placeholder={t('ownerDashboard.searchMembersPlaceholder') || 'Filter members by name, email, or worker code...'}
-              className="w-full rounded-xl border border-slate-300 pl-8 pr-3 py-1.5 text-xs focus:border-purple-600 focus:outline-none"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white pl-8 pr-3 py-1.5 text-xs focus:border-purple-600 focus:outline-none"
             />
           </div>
 
@@ -243,7 +243,7 @@ export const OwnerDashboard = () => {
                 className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                   memberRoleFilter === tab.id
                     ? 'bg-purple-900 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {tab.label}
@@ -254,11 +254,11 @@ export const OwnerDashboard = () => {
 
         {/* Member Table */}
         {filteredMembers.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-4 text-center">{t('ownerDashboard.noMembersMatch') || 'No members found matching your search.'}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-4 text-center">{t('ownerDashboard.noMembersMatch') || 'No members found matching your search.'}</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="px-3.5 py-2.5">{t('ownerDashboard.tableMember') || 'Member'}</th>
                   <th className="px-3.5 py-2.5">{t('ownerDashboard.tableRole') || 'Role'}</th>
@@ -269,27 +269,27 @@ export const OwnerDashboard = () => {
                   <th className="px-3.5 py-2.5 text-right">{t('ownerDashboard.tableStatus') || 'Status'}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {filteredMembers.slice(0, 8).map((m) => (
-                  <tr key={m._id} className="hover:bg-slate-50/70">
+                  <tr key={m._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
                     <td className="px-3.5 py-2.5">
                       <div className="flex items-center gap-2">
                         <div
                           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-black text-[11px] ${
                             m.role === 'OWNER'
-                              ? 'bg-purple-100 text-purple-900'
+                              ? 'bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-300'
                               : m.role === 'THEKEDAR'
-                              ? 'bg-amber-100 text-amber-900'
-                              : 'bg-blue-100 text-blue-900'
+                              ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300'
+                              : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300'
                           }`}
                         >
                           {m.name?.charAt(0)?.toUpperCase()}
                         </div>
                         <div>
-                          <span className="font-bold text-slate-900 block truncate max-w-[140px] sm:max-w-[200px]">
+                          <span className="font-bold text-slate-900 dark:text-white block truncate max-w-[140px] sm:max-w-[200px]">
                             {m.name}
                           </span>
-                          <span className="text-[10px] text-slate-500 block truncate max-w-[140px] sm:max-w-[200px]">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate max-w-[140px] sm:max-w-[200px]">
                             {m.email}
                           </span>
                         </div>
@@ -300,10 +300,10 @@ export const OwnerDashboard = () => {
                         {m.role === 'OWNER' ? 'Owner' : m.role === 'THEKEDAR' ? 'Thekedar' : 'Worker'}
                       </Badge>
                     </td>
-                    <td className="px-3.5 py-2.5 text-slate-700">
+                    <td className="px-3.5 py-2.5 text-slate-700 dark:text-slate-300">
                       {m.role === 'WORKER' ? (
                         m.assignedThekedar ? (
-                          <span className="font-semibold text-slate-800">{m.assignedThekedar.name}</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{m.assignedThekedar.name}</span>
                         ) : (
                           <span className="text-slate-400 italic">Unassigned</span>
                         )
@@ -311,14 +311,14 @@ export const OwnerDashboard = () => {
                         <span className="text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-3.5 py-2.5 font-mono text-slate-700">{m.phone}</td>
+                    <td className="px-3.5 py-2.5 font-mono text-slate-700 dark:text-slate-300">{m.phone}</td>
                     <td className="px-3.5 py-2.5 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-black text-indigo-900 border border-indigo-200">
-                        <Eye className="h-3 w-3 text-indigo-600" />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 text-xs font-black text-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                         {m.visitCount || 0}
                       </span>
                     </td>
-                    <td className="px-3.5 py-2.5 text-slate-600 text-[11px]">{formatDateTime(m.lastLoginAt)}</td>
+                    <td className="px-3.5 py-2.5 text-slate-600 dark:text-slate-400 text-[11px]">{formatDateTime(m.lastLoginAt)}</td>
                     <td className="px-3.5 py-2.5 text-right">
                       <Badge variant={m.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
                         {m.status}
@@ -332,9 +332,9 @@ export const OwnerDashboard = () => {
         )}
 
         {filteredMembers.length > 8 && (
-          <div className="pt-3 flex items-center justify-between border-t border-slate-100 text-xs text-slate-500">
+          <div className="pt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
             <span>{(t('ownerDashboard.showingMembers') || 'Showing top 8 of {count} filtered members').replace('{count}', filteredMembers.length)}</span>
-            <Link to="/members" className="font-bold text-purple-700 hover:text-purple-900 inline-flex items-center gap-1">
+            <Link to="/members" className="font-bold text-purple-700 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 inline-flex items-center gap-1">
               {(t('ownerDashboard.viewAllMembers') || 'View all {count} members & full details').replace('{count}', allMembers.length)} <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
@@ -349,21 +349,21 @@ export const OwnerDashboard = () => {
           subtitle={t('audit.subtitle') || 'All security, wage, payroll finalization, and attendance events'}
         >
           {recentAudits.length === 0 ? (
-            <p className="text-xs text-slate-700 py-4 italic">{t('audit.noAudits') || 'No audit records found.'}</p>
+            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('audit.noAudits') || 'No audit records found.'}</p>
           ) : (
             <div className="space-y-3">
               {recentAudits.map((log) => (
-                <div key={log._id} className="flex items-start gap-3 rounded-xl border border-slate-200 p-3 text-xs">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                <div key={log._id} className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-xs">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                     <Activity className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">{log.action}</span>
-                      <span className="text-[10px] text-slate-700">{new Date(log.createdAt).toLocaleTimeString()}</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{log.action}</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-400">{new Date(log.createdAt).toLocaleTimeString()}</span>
                     </div>
-                    <p className="text-slate-700 mt-0.5 truncate">
-                      By <span className="font-semibold">{log.actorName}</span> ({log.actorRole}) • Target: {log.targetType}
+                    <p className="text-slate-700 dark:text-slate-400 mt-0.5 truncate">
+                      By <span className="font-semibold text-slate-800 dark:text-slate-200">{log.actorName}</span> ({log.actorRole}) • Target: {log.targetType}
                     </p>
                   </div>
                 </div>
@@ -378,19 +378,19 @@ export const OwnerDashboard = () => {
           subtitle={t('transactionSearch.subtitle') || 'Real disbursements, payroll allocations, and recoveries'}
         >
           {recentTransactions.length === 0 ? (
-            <p className="text-xs text-slate-700 py-4 italic">{t('transactionSearch.noFound') || 'No transactions recorded.'}</p>
+            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('transactionSearch.noFound') || 'No transactions recorded.'}</p>
           ) : (
             <div className="space-y-3">
               {recentTransactions.map((tx) => (
-                <div key={tx._id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3 text-xs">
+                <div key={tx._id} className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 p-3 text-xs">
                   <div>
-                    <span className="font-bold text-slate-900">{tx.transactionId}</span>
-                    <p className="text-slate-700">{tx.category.replace('_', ' ')} • {tx.paymentMethod}</p>
-                    <span className="text-[11px] text-slate-700">{t('thekedarDashboard.tableWorker') || 'Worker'}: {tx.workerId?.name || 'N/A'}</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{tx.transactionId}</span>
+                    <p className="text-slate-700 dark:text-slate-400">{tx.category.replace('_', ' ')} • {tx.paymentMethod}</p>
+                    <span className="text-[11px] text-slate-700 dark:text-slate-400">{t('thekedarDashboard.tableWorker') || 'Worker'}: {tx.workerId?.name || 'N/A'}</span>
                   </div>
                   <div className="text-right">
-                    <div className="font-black text-sm text-slate-950">₹{tx.amount.toLocaleString('en-IN')}</div>
-                    <span className="text-[10px] text-slate-700">{new Date(tx.transactionDate).toLocaleDateString()}</span>
+                    <div className="font-black text-sm text-slate-950 dark:text-slate-100">₹{tx.amount.toLocaleString('en-IN')}</div>
+                    <span className="text-[10px] text-slate-700 dark:text-slate-400">{new Date(tx.transactionDate).toLocaleDateString()}</span>
                   </div>
                 </div>
               ))}

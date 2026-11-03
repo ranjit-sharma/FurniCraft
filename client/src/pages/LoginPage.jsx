@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '../components/common/BrandLogo';
 import { LanguageSelector } from '../components/common/LanguageSelector';
@@ -26,6 +27,7 @@ import {
 export const LoginPage = () => {
   const { login } = useAuth();
   const { t } = useLanguage();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -199,17 +201,17 @@ export const LoginPage = () => {
 
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-center bg-slate-50 text-slate-800 font-sans selection:bg-blue-600 selection:text-white py-6 sm:py-10 md:py-12 px-3.5 sm:px-6 lg:px-8 overflow-x-hidden overflow-y-auto">
+    <div className="relative min-h-screen flex flex-col justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-blue-600 selection:text-white py-6 sm:py-10 md:py-12 px-3.5 sm:px-6 lg:px-8 overflow-x-hidden overflow-y-auto transition-colors">
       {/* Ambient Background Gradients */}
-      <div className="pointer-events-none absolute -top-32 -left-32 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -right-32 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-amber-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] sm:h-[600px] w-[450px] sm:w-[600px] rounded-full bg-indigo-500/5 blur-3xl" />
+      <div className="pointer-events-none absolute -top-32 -left-32 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-blue-500/10 dark:bg-blue-600/10 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-72 sm:h-96 w-72 sm:w-96 rounded-full bg-amber-500/10 dark:bg-amber-600/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[450px] sm:h-[600px] w-[450px] sm:w-[600px] rounded-full bg-indigo-500/5 dark:bg-indigo-600/5 blur-3xl" />
 
       {/* Subtle Dot Pattern */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        className="pointer-events-none absolute inset-0 opacity-[0.025] dark:opacity-[0.04]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #1e293b 1px, transparent 0)`,
+          backgroundImage: `radial-gradient(circle at 1px 1px, #94a3b8 1px, transparent 0)`,
           backgroundSize: '24px 24px',
         }}
       />
@@ -217,52 +219,52 @@ export const LoginPage = () => {
       <div className="relative z-10 mx-auto w-full max-w-md sm:max-w-lg">
         {/* Language Selection Header (Visible during login time) */}
         <div className="mb-3.5 flex items-center justify-between px-2">
-          <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-amber-500" />
             {t('common.selectLanguage', 'Select Language / भाषा')}
           </span>
           <LanguageSelector variant="pill" />
         </div>
 
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/60">
+        <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/60 dark:shadow-2xl">
               
               {/* Brand Logo Header */}
               <div className="mb-5 sm:mb-6">
                 <div className="hidden sm:block">
-                  <BrandLogo size="lg" variant="light" />
+                  <BrandLogo size="lg" variant={isDark ? 'dark' : 'light'} />
                 </div>
                 <div className="sm:hidden">
-                  <BrandLogo size="md" variant="light" />
+                  <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-blue-700">
-                    <Sparkles className="h-3 w-3 text-blue-600" /> {t('login.contractorBadge', 'Contractor & Site ERP')}
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-blue-700 dark:text-blue-300">
+                    <Sparkles className="h-3 w-3 text-blue-600 dark:text-blue-400" /> {t('login.contractorBadge', 'Contractor & Site ERP')}
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500">{t('login.version', 'v2.4 Production')}</span>
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400">{t('login.version', 'v2.4 Production')}</span>
                 </div>
               </div>
 
               <div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                   {t('login.title', 'Sign in to your account')}
                 </h1>
-                <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-normal">
+                <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
                   {t('login.subtitle', 'Enter your email or registered mobile number to manage furniture sites and ledgers.')}
                 </p>
               </div>
 
               {/* Success Alert */}
               {successMessage && (
-                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 sm:p-3.5 text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in duration-200">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                <div className="mt-4 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 p-3 sm:p-3.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in duration-200">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <div className="font-semibold">{successMessage}</div>
                 </div>
               )}
 
               {/* Error Alert */}
               {error && (
-                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 sm:p-3.5 text-xs text-rose-800 animate-in fade-in duration-200">
-                  <div className="font-bold text-rose-900 mb-0.5">Authentication Issue</div>
+                <div className="mt-4 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 p-3 sm:p-3.5 text-xs text-rose-800 dark:text-rose-300 animate-in fade-in duration-200">
+                  <div className="font-bold text-rose-900 dark:text-rose-200 mb-0.5">Authentication Issue</div>
                   <div>{error}</div>
                 </div>
               )}
@@ -270,11 +272,11 @@ export const LoginPage = () => {
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="mt-5 sm:mt-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     {t('login.emailLabel', 'Email Address or Mobile Number')}
                   </label>
                   <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500">
                       <Mail className="h-4 w-4" />
                     </div>
                     <input
@@ -283,26 +285,26 @@ export const LoginPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t('login.emailPlaceholder', 'name@furnicraft.com')}
-                      className="block w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 sm:py-3 pl-10 pr-3.5 text-base sm:text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:bg-white focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      className="block w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 py-2.5 sm:py-3 pl-10 pr-3.5 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-xs focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-slate-700">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       {t('login.passwordLabel', 'Password')}
                     </label>
                     <button
                       type="button"
                       onClick={openForgotModal}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer py-0.5"
+                      className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer py-0.5"
                     >
                       {t('login.forgotPassword', 'Forgot password?')}
                     </button>
                   </div>
                   <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500">
                       <Lock className="h-4 w-4" />
                     </div>
                     <input
@@ -311,20 +313,20 @@ export const LoginPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="block w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 sm:py-3 pl-10 pr-11 text-base sm:text-sm text-slate-900 placeholder-slate-400 shadow-xs focus:bg-white focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-sans"
+                      className="block w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 py-2.5 sm:py-3 pl-10 pr-11 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-xs focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-sans"
                     />
                     {/* Show/Hide Password Toggle Button */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                      className="absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus:outline-none cursor-pointer"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                       title={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-slate-600" />
+                        <EyeOff className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                       ) : (
-                        <Eye className="h-4 w-4 text-slate-400" />
+                        <Eye className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                       )}
                     </button>
                   </div>
@@ -349,12 +351,12 @@ export const LoginPage = () => {
               </form>
 
               {/* Thekedar Registration Link (The ONLY registration option on public login page) */}
-              <div className="mt-5 pt-4 border-t border-slate-200/80 text-center">
-                <p className="text-xs text-slate-600">
+              <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-slate-800 text-center">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   {t('login.noAccount', 'Are you a contractor?')}{' '}
                   <Link
                     to="/register-thekedar"
-                    className="font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
                     <span>{t('login.registerThekedar', 'Register as Thekedar')}</span>
                     <ArrowRight className="h-3 w-3" />
@@ -374,7 +376,7 @@ export const LoginPage = () => {
       >
         <div className="space-y-4">
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-900 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
               {otpStep === 'EMAIL_INPUT' ? '1' : otpStep === 'OTP_VERIFY' ? '2' : '3'}
             </span>
@@ -386,8 +388,8 @@ export const LoginPage = () => {
           </div>
 
           {modalNotice && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800 flex items-start gap-2 animate-in fade-in">
-              <AlertCircle className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+            <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 p-3 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2 animate-in fade-in">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
               <div>{modalNotice}</div>
             </div>
           )}
@@ -396,19 +398,19 @@ export const LoginPage = () => {
             <div
               className={`rounded-xl border p-3.5 text-xs animate-in fade-in flex items-start gap-2.5 ${
                 otpStep === 'EMAIL_INPUT'
-                  ? 'border-amber-300 bg-amber-50 text-amber-900 shadow-sm'
-                  : 'border-rose-200 bg-rose-50 text-rose-800'
+                  ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-sm'
+                  : 'border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200'
               }`}
             >
               {otpStep === 'EMAIL_INPUT' ? (
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
               )}
               <div className="flex-1">
                 <div
                   className={`font-bold mb-0.5 ${
-                    otpStep === 'EMAIL_INPUT' ? 'text-amber-950' : 'text-rose-900'
+                    otpStep === 'EMAIL_INPUT' ? 'text-amber-950 dark:text-amber-200' : 'text-rose-900 dark:text-rose-200'
                   }`}
                 >
                   {otpStep === 'EMAIL_INPUT' ? t('login.unregisteredWarning', 'Unregistered Email Warning') : 'Recovery Issue'}
@@ -421,16 +423,16 @@ export const LoginPage = () => {
           {/* Step 1: Email Input */}
           {otpStep === 'EMAIL_INPUT' && (
             <form onSubmit={handleRequestOtp} className="space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 {t('login.recoverySubtitle', 'Enter your registered email address to receive a secure 6-digit OTP.')}
               </p>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {t('login.emailLabel', 'Registered Email Address')}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
                     <Mail className="h-4 w-4" />
                   </div>
                   <input
@@ -442,10 +444,10 @@ export const LoginPage = () => {
                       if (modalError) setModalError(null);
                     }}
                     placeholder="e.g. craftsman@furnicraft.com"
-                    className={`block w-full min-h-[44px] rounded-xl border py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none transition ${
+                    className={`block w-full min-h-[44px] rounded-xl border py-2.5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition ${
                       modalError && otpStep === 'EMAIL_INPUT'
-                        ? 'border-amber-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-amber-50/20'
-                        : 'border-slate-300 focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
+                        ? 'border-amber-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
+                        : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-blue-600 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-600'
                     }`}
                   />
                 </div>
@@ -455,7 +457,7 @@ export const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setForgotModalOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer text-center"
+                  className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-center"
                 >
                   {t('common.cancel', 'Cancel')}
                 </button>
@@ -480,13 +482,13 @@ export const LoginPage = () => {
           {/* Step 2: OTP Verification */}
           {otpStep === 'OTP_VERIFY' && (
             <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 {t('login.otpSentTo', 'Verification code sent to')}{' '}
-                <strong className="text-slate-900 font-semibold">{resetEmail}</strong>.
+                <strong className="text-slate-900 dark:text-white font-semibold">{resetEmail}</strong>.
               </p>
 
-              <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-900 flex items-start gap-2.5">
-                <Mail className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/60 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                <Mail className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div className="leading-relaxed">
                   <span className="font-semibold">{t('login.checkSpamTitle', 'Check Spam Folder:')} </span>
                   {t('login.checkSpamNotice', 'If you do not see the email in your inbox within 1–2 minutes, please check your Spam or Promotions folder.')}
@@ -494,11 +496,11 @@ export const LoginPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {t('login.enterOtp', '6-Digit Email OTP')}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
                     <KeyRound className="h-4 w-4" />
                   </div>
                   <input
@@ -508,7 +510,7 @@ export const LoginPage = () => {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
                     placeholder="••••••"
-                    className="block w-full min-h-[44px] rounded-xl border border-slate-300 py-2.5 pl-10 pr-3 text-base font-mono tracking-widest text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 text-center sm:text-left"
+                    className="block w-full min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-10 pr-3 text-base font-mono tracking-widest text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-600 text-center sm:text-left"
                   />
                 </div>
               </div>
@@ -518,7 +520,7 @@ export const LoginPage = () => {
                   type="button"
                   disabled={resendCooldown > 0 || modalLoading}
                   onClick={handleRequestOtp}
-                  className="font-semibold text-blue-700 hover:text-blue-800 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+                  className="font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
                 >
                   <RotateCcw className="h-3 w-3" />
                   {resendCooldown > 0 ? t('login.resendIn', `Resend in ${resendCooldown}s`, { s: resendCooldown }) : t('login.resendOtp', 'Resend 6-Digit OTP')}
@@ -527,7 +529,7 @@ export const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setOtpStep('EMAIL_INPUT')}
-                  className="text-slate-500 hover:text-slate-700 underline text-[11px]"
+                  className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline text-[11px]"
                 >
                   {t('common.edit', 'Change Email Address')}
                 </button>
@@ -537,7 +539,7 @@ export const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setForgotModalOpen(false)}
-                  className="rounded-xl border border-slate-300 px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer text-center"
+                  className="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer text-center"
                 >
                   {t('common.cancel', 'Cancel')}
                 </button>
@@ -562,16 +564,16 @@ export const LoginPage = () => {
           {/* Step 3: New Password */}
           {otpStep === 'NEW_PASSWORD' && (
             <form onSubmit={handleResetPasswordWithOtp} className="space-y-4">
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                 Your email verification code was confirmed. Create your new permanent password below.
               </p>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {t('login.newPassword', 'New Permanent Password')}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
                     <Lock className="h-4 w-4" />
                   </div>
                   <input
@@ -581,12 +583,12 @@ export const LoginPage = () => {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="At least 6 characters"
-                    className="block w-full min-h-[42px] rounded-xl border border-slate-300 py-2 pl-10 pr-10 text-xs text-slate-900 focus:border-blue-600 focus:outline-none"
+                    className="block w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 pl-10 pr-10 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     {showNewPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
@@ -594,11 +596,11 @@ export const LoginPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   {t('login.confirmPassword', 'Confirm Permanent Password')}
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-slate-500">
                     <ShieldCheck className="h-4 w-4" />
                   </div>
                   <input
@@ -608,12 +610,12 @@ export const LoginPage = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-type new password"
-                    className="block w-full min-h-[42px] rounded-xl border border-slate-300 py-2 pl-10 pr-10 text-xs text-slate-900 focus:border-blue-600 focus:outline-none"
+                    className="block w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2 pl-10 pr-10 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                   >
                     {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>

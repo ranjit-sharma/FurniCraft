@@ -100,7 +100,7 @@ export const AttendanceCalendar = ({
     dayCells.push(
       <div
         key={`empty-${i}`}
-        className="min-h-[54px] sm:min-h-[90px] border border-slate-100 bg-slate-50/40 rounded-lg sm:rounded-xl"
+        className="min-h-[54px] sm:min-h-[90px] border border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-900/40 rounded-lg sm:rounded-xl"
       />
     );
   }
@@ -144,12 +144,12 @@ export const AttendanceCalendar = ({
         onClick={() => handleCellClick(dateStr, dayRecords)}
         className={`group relative flex flex-col justify-between min-h-[54px] sm:min-h-[95px] p-1 sm:p-2 rounded-lg sm:rounded-xl border transition-all cursor-pointer overflow-hidden ${
           isSelected
-            ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-50/40 shadow-sm'
+            ? 'ring-2 ring-amber-500 border-amber-500 bg-amber-50/40 dark:bg-amber-950/40 shadow-sm'
             : isToday
-            ? 'border-amber-400 bg-amber-50/30 shadow-sm'
+            ? 'border-amber-400 dark:border-amber-500 bg-amber-50/30 dark:bg-amber-950/30 shadow-sm'
             : pendingRecords.length > 0
-            ? 'border-amber-300 bg-amber-50/15 hover:border-amber-400 hover:shadow-md'
-            : 'border-slate-200/80 bg-white hover:border-amber-300 hover:shadow-md'
+            ? 'border-amber-300 dark:border-amber-800/80 bg-amber-50/15 dark:bg-amber-950/20 hover:border-amber-400 dark:hover:border-amber-600 hover:shadow-md'
+            : 'border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-amber-300 dark:hover:border-amber-600 hover:shadow-md'
         }`}
       >
         {/* Day Number & Header Badges */}
@@ -158,7 +158,7 @@ export const AttendanceCalendar = ({
             className={`text-[10px] sm:text-xs font-bold leading-none ${
               isToday
                 ? 'h-4 w-4 sm:h-6 sm:w-6 rounded-full bg-amber-600 text-white flex items-center justify-center shadow-xs'
-                : 'text-slate-800'
+                : 'text-slate-800 dark:text-slate-200'
             }`}
           >
             {d}
@@ -180,11 +180,11 @@ export const AttendanceCalendar = ({
           ) : dayRecords.length > 1 ? (
             <>
               {/* Desktop Badge */}
-              <span className="hidden sm:inline-block rounded-full bg-slate-100 text-slate-800 px-1.5 py-0.5 text-[10px] font-bold border border-slate-200">
+              <span className="hidden sm:inline-block rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
                 {dayRecords.length} Workers
               </span>
               {/* Mobile Badge */}
-              <span className="sm:hidden rounded bg-slate-100 text-slate-800 px-1 py-0.2 text-[8px] font-bold border border-slate-200 leading-tight">
+              <span className="sm:hidden rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-1 py-0.2 text-[8px] font-bold border border-slate-200 dark:border-slate-700 leading-tight">
                 {dayRecords.length}w
               </span>
             </>
@@ -195,9 +195,9 @@ export const AttendanceCalendar = ({
         <div className="my-0.5 sm:my-1 flex-1 flex flex-col justify-center overflow-hidden">
           {singleRecord ? (
             <div className="space-y-0.5">
-              <div className="text-[9px] sm:text-[11px] font-bold text-slate-900 truncate">
+              <div className="text-[9px] sm:text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
                 ₹{singleRecord.calculatedEarnings}
-                <span className="hidden sm:inline text-[10px] text-slate-700 font-normal ml-1">
+                <span className="hidden sm:inline text-[10px] text-slate-700 dark:text-slate-400 font-normal ml-1">
                   ({singleRecord.wageMultiplier}x)
                 </span>
               </div>
@@ -222,7 +222,7 @@ export const AttendanceCalendar = ({
                       : 'bg-amber-500'
                   }`}
                 />
-                <span className="text-[7.5px] font-semibold text-slate-600 truncate">
+                <span className="text-[7.5px] font-semibold text-slate-600 dark:text-slate-400 truncate">
                   {singleRecord.approvalStatus === 'APPROVED'
                     ? 'Appr'
                     : singleRecord.approvalStatus === 'REJECTED'
@@ -235,9 +235,9 @@ export const AttendanceCalendar = ({
             </div>
           ) : dayRecords.length > 1 ? (
             <div className="space-y-0.5">
-              <div className="text-[9px] sm:text-[11px] font-bold text-slate-900 truncate">
+              <div className="text-[9px] sm:text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
                 ₹{dayEarnings}
-                <span className="hidden sm:inline text-[10px] text-slate-700 font-normal ml-1">tot</span>
+                <span className="hidden sm:inline text-[10px] text-slate-700 dark:text-slate-400 font-normal ml-1">tot</span>
               </div>
 
               {/* Desktop Status Badge */}
@@ -267,7 +267,7 @@ export const AttendanceCalendar = ({
               </div>
             </div>
           ) : (
-            <span className="hidden sm:inline text-[10px] text-slate-700 italic group-hover:text-amber-700">
+            <span className="hidden sm:inline text-[10px] text-slate-700 dark:text-slate-400 italic group-hover:text-amber-700 dark:group-hover:text-amber-400">
               No entry
             </span>
           )}
@@ -275,10 +275,10 @@ export const AttendanceCalendar = ({
 
         {/* Bottom: Advance Taken & Salary Payments */}
         {(totalAdvanceOnDay > 0 || totalSalaryOnDay > 0 || pendingAdvancesOnDay.length > 0) && (
-          <div className="mt-0.5 pt-0.5 border-t border-slate-100/90 space-y-0.5">
+          <div className="mt-0.5 pt-0.5 border-t border-slate-100/90 dark:border-slate-800 space-y-0.5">
             {totalAdvanceOnDay > 0 && (
               <div
-                className="flex items-center justify-between text-[7.5px] sm:text-[9.5px] font-bold text-rose-700 bg-rose-50/90 px-1 py-0.5 rounded border border-rose-200/80 leading-tight truncate shadow-2xs"
+                className="flex items-center justify-between text-[7.5px] sm:text-[9.5px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50/90 dark:bg-rose-950/70 px-1 py-0.5 rounded border border-rose-200/80 dark:border-rose-900 leading-tight truncate shadow-2xs"
                 title={`Advance Taken: ₹${totalAdvanceOnDay.toLocaleString('en-IN')}`}
               >
                 <span className="truncate flex items-center gap-0.5">
@@ -291,7 +291,7 @@ export const AttendanceCalendar = ({
 
             {pendingAdvancesOnDay.length > 0 && totalAdvanceOnDay === 0 && (
               <div
-                className="flex items-center justify-between text-[7px] sm:text-[9px] font-bold text-amber-700 bg-amber-50 px-1 py-0.5 rounded border border-amber-200 leading-tight truncate"
+                className="flex items-center justify-between text-[7px] sm:text-[9px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/70 px-1 py-0.5 rounded border border-amber-200 dark:border-amber-900 leading-tight truncate"
                 title={`Advance Request Pending: ₹${pendingAdvancesOnDay.reduce((a, b) => a + b.amount, 0)}`}
               >
                 <span className="truncate">Adv Req:</span>
@@ -301,7 +301,7 @@ export const AttendanceCalendar = ({
 
             {totalSalaryOnDay > 0 && (
               <div
-                className="flex items-center justify-between text-[7.5px] sm:text-[9.5px] text-emerald-700 font-bold bg-emerald-50/80 px-1 py-0.5 rounded border border-emerald-200 leading-tight truncate"
+                className="flex items-center justify-between text-[7.5px] sm:text-[9.5px] text-emerald-700 dark:text-emerald-300 font-bold bg-emerald-50/80 dark:bg-emerald-950/70 px-1 py-0.5 rounded border border-emerald-200 dark:border-emerald-900 leading-tight truncate"
                 title={`Salary Paid: ₹${totalSalaryOnDay.toLocaleString('en-IN')}`}
               >
                 <span className="hidden sm:inline truncate">Paid:</span>
@@ -340,28 +340,28 @@ export const AttendanceCalendar = ({
   return (
     <div className="space-y-4">
       {/* Calendar Navigation Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 sm:p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-amber-700 shrink-0" />
-          <h2 className="text-base sm:text-lg font-bold text-slate-900">
+          <Calendar className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0" />
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
             {monthNames[month - 1]} {year}
           </h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Toggle: Grid vs List */}
-          <div className="flex items-center rounded-xl bg-slate-100 p-0.5 sm:p-1 border border-slate-200">
+          <div className="flex items-center rounded-xl bg-slate-100 dark:bg-slate-800 p-0.5 sm:p-1 border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
               className={`flex items-center gap-1 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'grid'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
               title="Calendar Grid View"
             >
-              <LayoutGrid className="h-3.5 w-3.5 text-amber-700" />
+              <LayoutGrid className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
               <span className="text-xs">{t('calendar.grid') || 'Grid'}</span>
             </button>
             <button
@@ -369,12 +369,12 @@ export const AttendanceCalendar = ({
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'list'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
               title="Agenda / List View"
             >
-              <List className="h-3.5 w-3.5 text-amber-700" />
+              <List className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
               <span className="text-xs">{t('calendar.agenda') || 'Agenda'}</span>
             </button>
           </div>
@@ -406,7 +406,7 @@ export const AttendanceCalendar = ({
                 loading={exportingPdf}
                 onClick={onExportPDF}
                 icon={Download}
-                className="sm:text-xs font-bold text-amber-950 border-amber-300 hover:bg-amber-50 shadow-2xs ml-1"
+                className="sm:text-xs font-bold text-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40 shadow-2xs ml-1"
                 title={`Export ${monthNames[month - 1]} ${year} Attendance (PDF)`}
               >
                 <span className="hidden sm:inline">{t('calendar.exportPdf') || 'Export PDF'}</span>
@@ -420,15 +420,15 @@ export const AttendanceCalendar = ({
       {/* Monthly Summary Statistics */}
       {summary && (
         <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
-          <div className="rounded-xl border border-slate-200 bg-white p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-slate-700 font-medium truncate">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3.5 shadow-sm">
+            <div className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-400 font-medium truncate">
               {summary.totalDehadi !== undefined ? (t('calendar.totalDehadiTitle', 'Total Shifts')) : (t('calendar.approvedDays', 'Approved Present Days'))}
             </div>
-            <div className="text-base sm:text-xl font-bold text-slate-900 mt-0.5">
+            <div className="text-base sm:text-xl font-bold text-slate-900 dark:text-white mt-0.5">
               {summary.totalDehadi !== undefined ? (
                 <>
                   {summary.totalDehadi} {t('calendar.dehadiUnit', 'Shifts')}
-                  <span className="text-[10px] text-slate-500 font-normal block sm:inline sm:ml-1">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal block sm:inline sm:ml-1">
                     ({summary.approvedDaysCount} {t('calendar.shiftsWorked', 'shifts')})
                   </span>
                 </>
@@ -438,30 +438,30 @@ export const AttendanceCalendar = ({
             </div>
           </div>
 
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-emerald-700 font-medium truncate">{t('dashboard.approvedWages', 'Approved Gross Wages')}</div>
-            <div className="text-base sm:text-xl font-bold text-emerald-800 mt-0.5">
+          <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/40 p-2.5 sm:p-3.5 shadow-sm">
+            <div className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate">{t('dashboard.approvedWages', 'Approved Gross Wages')}</div>
+            <div className="text-base sm:text-xl font-bold text-emerald-800 dark:text-emerald-300 mt-0.5">
               ₹{summary.totalApprovedEarnings?.toLocaleString('en-IN')}
             </div>
           </div>
 
-          <div className="rounded-xl border border-rose-200 bg-rose-50/60 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-rose-700 font-medium truncate">{t('calendar.totalAdvanceTaken', 'Total Advance Taken')}</div>
-            <div className="text-base sm:text-xl font-bold text-rose-800 mt-0.5">
+          <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/40 p-2.5 sm:p-3.5 shadow-sm">
+            <div className="text-[11px] sm:text-xs text-rose-700 dark:text-rose-400 font-medium truncate">{t('calendar.totalAdvanceTaken', 'Total Advance Taken')}</div>
+            <div className="text-base sm:text-xl font-bold text-rose-800 dark:text-rose-300 mt-0.5">
               ₹{(summary.totalAdvancesTaken || 0).toLocaleString('en-IN')}
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-slate-700 font-medium truncate">Full (P) / Half (HALF)</div>
-            <div className="text-xs sm:text-sm font-bold text-slate-800 mt-1 truncate">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3.5 shadow-sm">
+            <div className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-400 font-medium truncate">Full (P) / Half (HALF)</div>
+            <div className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 truncate">
               {summary.codeCounts?.P || 0} Full / {summary.codeCounts?.HALF || 0} Half
             </div>
           </div>
 
-          <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-blue-700 font-medium truncate">Overtime & Double Shift</div>
-            <div className="text-xs sm:text-sm font-bold text-blue-900 mt-1 truncate">
+          <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/40 p-2.5 sm:p-3.5 shadow-sm">
+            <div className="text-[11px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium truncate">Overtime & Double Shift</div>
+            <div className="text-xs sm:text-sm font-bold text-blue-900 dark:text-blue-300 mt-1 truncate">
               {summary.codeCounts?.['P1/5'] || 0} OT / {summary.codeCounts?.PP || 0} Double
             </div>
           </div>
@@ -472,7 +472,7 @@ export const AttendanceCalendar = ({
       {viewMode === 'grid' && (
         <>
           {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-bold text-slate-700 py-1">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-400 py-1">
             {weekDays.map((day, idx) => (
               <div key={idx}>
                 <span className="sm:hidden">{day.slice(0, 1)}</span>
@@ -486,16 +486,16 @@ export const AttendanceCalendar = ({
 
           {/* Mobile Tap Quick Details Banner */}
           {selectedDate && (recordMap[selectedDate]?.length > 0 || paymentMap[selectedDate]?.length > 0 || advanceMap[selectedDate]?.length > 0) && (
-            <div className="sm:hidden rounded-xl border border-amber-300 bg-amber-50/60 p-3 shadow-xs space-y-2">
+            <div className="sm:hidden rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/40 p-3 shadow-xs space-y-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
-                  <Calendar className="h-3.5 w-3.5 text-amber-700" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950 dark:text-amber-200">
+                  <Calendar className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400" />
                   <span>Selected: {selectedDate}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCellClick(selectedDate, recordMap[selectedDate] || [])}
-                  className="text-[11px] font-bold text-amber-800 underline flex items-center gap-0.5 cursor-pointer"
+                  className="text-[11px] font-bold text-amber-800 dark:text-amber-300 underline flex items-center gap-0.5 cursor-pointer"
                 >
                   {t('thekedar.viewDetails') || t('common.view') || 'View Details'} <ArrowRight className="h-3 w-3" />
                 </button>
@@ -503,13 +503,13 @@ export const AttendanceCalendar = ({
 
               <div className="space-y-1">
                 {(recordMap[selectedDate] || []).map((r) => (
-                  <div key={r._id} className="flex items-center justify-between bg-white px-2 py-1.5 rounded-lg border border-amber-200/60 text-xs">
+                  <div key={r._id} className="flex items-center justify-between bg-white dark:bg-slate-800 px-2 py-1.5 rounded-lg border border-amber-200/60 dark:border-slate-700 text-xs">
                     <div className="truncate pr-2">
-                      <span className="font-bold text-slate-900">{r.workerId?.name || (isWorker ? (t('nav.myDashboard') || 'My Shift') : (t('thekedarDashboard.tableWorker') || 'Worker'))}</span>
-                      <span className="text-[10px] text-slate-700 ml-1.5">({r.code} • {r.wageMultiplier}x)</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100">{r.workerId?.name || (isWorker ? (t('nav.myDashboard') || 'My Shift') : (t('thekedarDashboard.tableWorker') || 'Worker'))}</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-400 ml-1.5">({r.code} • {r.wageMultiplier}x)</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="font-bold text-slate-900 text-xs">₹{r.calculatedEarnings}</span>
+                      <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">₹{r.calculatedEarnings}</span>
                       <Badge variant={r.approvalStatus} size="sm" className="text-[8px] px-1 py-0">{r.approvalStatus}</Badge>
                     </div>
                   </div>
@@ -522,8 +522,8 @@ export const AttendanceCalendar = ({
                       key={p._id}
                       className={`flex items-center justify-between px-2 py-1.5 rounded-lg border text-xs font-semibold ${
                         isAdv
-                          ? 'bg-rose-50 text-rose-900 border-rose-200'
-                          : 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                          ? 'bg-rose-50 dark:bg-rose-950/70 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-900'
+                          : 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-900'
                       }`}
                     >
                       <div className="flex items-center gap-1.5 truncate">
@@ -534,14 +534,14 @@ export const AttendanceCalendar = ({
                         </span>
                       </div>
                       <span className="font-black shrink-0">
-                        {isAdv ? '-' : ''}₹{p.amount} <span className="text-[10px] font-normal text-slate-500">({p.paymentMethod})</span>
+                        {isAdv ? '-' : ''}₹{p.amount} <span className="text-[10px] font-normal text-slate-500 dark:text-slate-400">({p.paymentMethod})</span>
                       </span>
                     </div>
                   );
                 })}
 
                 {(advanceMap[selectedDate] || []).filter((a) => a.status !== 'DISBURSED').map((adv) => (
-                  <div key={adv._id} className="flex items-center justify-between bg-amber-50 px-2 py-1.5 rounded-lg border border-amber-200 text-xs text-amber-900 font-semibold">
+                  <div key={adv._id} className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/70 px-2 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900 text-xs text-amber-900 dark:text-amber-200 font-semibold">
                     <span>{t('worker.requestAdvance') || 'Advance Request'} ({adv.status}): {adv.workerId?.name ? `(${adv.workerId.name})` : ''}</span>
                     <span className="font-black shrink-0">₹{adv.amount}</span>
                   </div>
@@ -556,7 +556,7 @@ export const AttendanceCalendar = ({
       {viewMode === 'list' && (
         <div className="space-y-3">
           {activeDaysList.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-xs text-slate-700 italic">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">
               No attendance logs or disbursements recorded for {monthNames[month - 1]} {year}.
             </div>
           ) : (
@@ -566,42 +566,42 @@ export const AttendanceCalendar = ({
                 onClick={() => handleCellClick(item.dateStr, item.records)}
                 className={`rounded-xl border p-3.5 transition-all cursor-pointer hover:shadow-md ${
                   item.isToday
-                    ? 'border-amber-400 bg-amber-50/20'
-                    : 'border-slate-200 bg-white hover:border-amber-300'
+                    ? 'border-amber-400 dark:border-amber-500 bg-amber-50/20 dark:bg-amber-950/20'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-amber-300 dark:hover:border-amber-600'
                 }`}
               >
                 {/* Header: Date + Day Name + Quick Totals */}
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex items-center gap-2">
                     <span
                       className={`h-7 w-7 rounded-lg text-xs font-black flex items-center justify-center ${
                         item.isToday
                           ? 'bg-amber-600 text-white'
-                          : 'bg-slate-100 text-slate-900 border border-slate-200'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700'
                       }`}
                     >
                       {item.dayNumber}
                     </span>
                     <div>
-                      <h4 className="font-bold text-sm text-slate-900">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
                         {`${monthNames[month - 1].slice(0, 3)} ${item.dayNumber}, ${year}`}
                       </h4>
-                      <span className="text-[11px] font-medium text-slate-700">{item.dayName}</span>
+                      <span className="text-[11px] font-medium text-slate-700 dark:text-slate-400">{item.dayName}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 text-right">
                     <div>
-                      <div className="text-xs font-bold text-slate-900">
+                      <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
                         ₹{item.records.reduce((acc, r) => acc + (r.calculatedEarnings || 0), 0)} earned
                       </div>
                       {item.payments.filter((p) => p.category === 'ADVANCE_DISBURSEMENT' || p.category === 'ADVANCE_REQUEST').length > 0 && (
-                        <div className="text-[10px] font-bold text-rose-700">
+                        <div className="text-[10px] font-bold text-rose-700 dark:text-rose-400">
                           ₹{item.payments.filter((p) => p.category === 'ADVANCE_DISBURSEMENT' || p.category === 'ADVANCE_REQUEST').reduce((acc, p) => acc + p.amount, 0)} adv taken
                         </div>
                       )}
                       {item.payments.filter((p) => p.category !== 'ADVANCE_DISBURSEMENT' && p.category !== 'ADVANCE_REQUEST').length > 0 && (
-                        <span className="text-[10px] font-semibold text-emerald-700 block">
+                        <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 block">
                           ₹{item.payments.filter((p) => p.category !== 'ADVANCE_DISBURSEMENT' && p.category !== 'ADVANCE_REQUEST').reduce((acc, p) => acc + p.amount, 0)} paid
                         </span>
                       )}
@@ -617,22 +617,22 @@ export const AttendanceCalendar = ({
                   {item.records.map((r) => (
                     <div
                       key={r._id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50/80 p-2 text-xs border border-slate-100"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50/80 dark:bg-slate-800/80 p-2 text-xs border border-slate-100 dark:border-slate-700"
                     >
                       <div className="flex items-center gap-2">
                         <Badge variant={r.code} size="sm">
                           {r.code} ({r.wageMultiplier}x)
                         </Badge>
                         <div>
-                          <span className="font-bold text-slate-900">{r.workerId?.name || (isWorker ? 'My Shift' : 'Worker')}</span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100">{r.workerId?.name || (isWorker ? 'My Shift' : 'Worker')}</span>
                           {r.projectId?.name && (
-                            <span className="text-[11px] text-slate-700 ml-1.5">• {r.projectId.name}</span>
+                            <span className="text-[11px] text-slate-700 dark:text-slate-400 ml-1.5">• {r.projectId.name}</span>
                           )}
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-slate-900 text-xs">₹{r.calculatedEarnings}</span>
+                        <span className="font-black text-slate-900 dark:text-slate-100 text-xs">₹{r.calculatedEarnings}</span>
                         <Badge variant={r.approvalStatus} size="sm">
                           {r.approvalStatus}
                         </Badge>
@@ -648,8 +648,8 @@ export const AttendanceCalendar = ({
                         key={p._id}
                         className={`flex items-center justify-between rounded-lg p-2 text-xs border font-semibold ${
                           isAdv
-                            ? 'bg-rose-50/90 border-rose-200 text-rose-950'
-                            : 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                            ? 'bg-rose-50/90 dark:bg-rose-950/70 border-rose-200 dark:border-rose-900 text-rose-950 dark:text-rose-200'
+                            : 'bg-emerald-50/80 dark:bg-emerald-950/70 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200'
                         }`}
                       >
                         <div>
@@ -658,9 +658,9 @@ export const AttendanceCalendar = ({
                             {p.workerId?.name && ` to ${p.workerId.name}`}
                             {p.receiptReference || p.referenceNumber ? ` (Ref: ${p.receiptReference || p.referenceNumber})` : ''}
                           </span>
-                          {p.notes && <div className="text-[10px] text-slate-600 font-normal">{p.notes}</div>}
+                          {p.notes && <div className="text-[10px] text-slate-600 dark:text-slate-400 font-normal">{p.notes}</div>}
                         </div>
-                        <span className={`font-black shrink-0 ${isAdv ? 'text-rose-700' : 'text-emerald-950'}`}>
+                        <span className={`font-black shrink-0 ${isAdv ? 'text-rose-700 dark:text-rose-300' : 'text-emerald-950 dark:text-emerald-300'}`}>
                           {isAdv ? '-' : ''}₹{p.amount}
                         </span>
                       </div>
@@ -671,14 +671,14 @@ export const AttendanceCalendar = ({
                   {(item.advances || []).filter((a) => a.status !== 'DISBURSED').map((adv) => (
                     <div
                       key={adv._id}
-                      className="flex items-center justify-between rounded-lg bg-amber-50/80 p-2 text-xs border border-amber-200 text-amber-900 font-semibold"
+                      className="flex items-center justify-between rounded-lg bg-amber-50/80 dark:bg-amber-950/70 p-2 text-xs border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 font-semibold"
                     >
                       <span>
                         {t('worker.requestAdvance') || 'Advance Request'} ({adv.status})
                         {adv.workerId?.name ? ` for ${adv.workerId.name}` : ''}
                         {adv.reason ? `: "${adv.reason}"` : ''}
                       </span>
-                      <span className="font-black text-amber-950">₹{adv.amount}</span>
+                      <span className="font-black text-amber-950 dark:text-amber-200">₹{adv.amount}</span>
                     </div>
                   ))}
                 </div>
@@ -689,8 +689,8 @@ export const AttendanceCalendar = ({
       )}
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 text-[10px] sm:text-xs text-slate-700">
-        <span className="font-bold text-slate-700">{t('calendar.legend') || 'Multiplier Legend:'}</span>
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 text-[10px] sm:text-xs text-slate-700 dark:text-slate-400">
+        <span className="font-bold text-slate-700 dark:text-slate-300">{t('calendar.legend') || 'Multiplier Legend:'}</span>
         <span className="flex items-center gap-1">
           <Badge variant="P" size="sm">P</Badge> Full (1.0x)
         </span>
@@ -703,7 +703,7 @@ export const AttendanceCalendar = ({
         <span className="flex items-center gap-1">
           <Badge variant="PP" size="sm">PP</Badge> Midnight (2.0x)
         </span>
-        <div className="flex items-center gap-2 sm:border-l sm:border-slate-300 sm:pl-3">
+        <div className="flex items-center gap-2 sm:border-l sm:border-slate-300 dark:sm:border-slate-700 sm:pl-3">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-emerald-600" /> {t('common.approved') || 'Approved'}
           </span>
@@ -713,7 +713,7 @@ export const AttendanceCalendar = ({
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-rose-600" /> {t('common.rejected') || 'Rejected'}
           </span>
-          <span className="flex items-center gap-1 border-l border-slate-300 pl-2">
+          <span className="flex items-center gap-1 border-l border-slate-300 dark:border-slate-700 pl-2">
             <span className="h-2 w-2 rounded-full bg-rose-700" /> {t('calendar.advanceTaken') || 'Advance Taken'}
           </span>
           <span className="flex items-center gap-1">

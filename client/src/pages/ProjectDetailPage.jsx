@@ -289,19 +289,19 @@ export const ProjectDetailPage = () => {
       )}
 
       {/* Project Banner */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-amber-800">{project?.projectCode}</span>
+              <span className="text-xs font-bold text-amber-800 dark:text-amber-400">{project?.projectCode}</span>
               {isThekedar ? (
                 <>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold text-slate-700">{t('common.status', 'Status')}:</span>
+                    <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">{t('common.status', 'Status')}:</span>
                     <select
                       value={project?.status}
                       onChange={(e) => handleProjectStatusChange(e.target.value)}
-                      className="text-xs font-bold rounded-lg border border-slate-300 bg-white px-2 py-0.5 text-slate-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                      className="text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-900 dark:text-white shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer"
                     >
                       <option value="PLANNED">PLANNED</option>
                       <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -312,11 +312,11 @@ export const ProjectDetailPage = () => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-semibold text-slate-700">Priority:</span>
+                    <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">Priority:</span>
                     <select
                       value={project?.priority || 'MEDIUM'}
                       onChange={(e) => handleProjectPriorityChange(e.target.value)}
-                      className="text-xs font-black rounded-lg border border-slate-300 bg-white px-2 py-0.5 text-slate-900 shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                      className="text-xs font-black rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-900 dark:text-white shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 cursor-pointer"
                     >
                       <option value="CRITICAL">🔥 CRITICAL</option>
                       <option value="HIGH">⚡ HIGH</option>
@@ -337,8 +337,8 @@ export const ProjectDetailPage = () => {
               )}
               <Badge variant="default" size="sm">{project?.projectType ? project.projectType.replace('_', ' ') : ''}</Badge>
             </div>
-            <h1 className="text-2xl font-black text-slate-900 mt-2">{project?.name}</h1>
-            <p className="text-xs text-slate-700 mt-1">{project?.siteAddress}</p>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white mt-2">{project?.name}</h1>
+            <p className="text-xs text-slate-700 dark:text-slate-400 mt-1">{project?.siteAddress}</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0">
@@ -356,7 +356,7 @@ export const ProjectDetailPage = () => {
               </>
             )}
             {isOwner && (
-              <span className="inline-flex items-center rounded-lg bg-purple-50 px-3 py-1.5 border border-purple-200 text-xs font-semibold text-purple-900">
+              <span className="inline-flex items-center rounded-lg bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 border border-purple-200 dark:border-purple-800 text-xs font-semibold text-purple-900 dark:text-purple-300">
                 {t('projectDetail.readOnlyInspection', 'Read-Only Executive Inspection')}
               </span>
             )}
@@ -365,30 +365,30 @@ export const ProjectDetailPage = () => {
 
         {/* Financial Summary Strip */}
         {!isWorker && summary && (
-          <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-3">
             <div>
-              <span className="text-[11px] font-semibold text-slate-700">{t('projectDetail.projectMoneyReceived', 'Project Money Received')}</span>
-              <div className="text-xl font-black text-emerald-900 mt-0.5">₹{summary.totalMoneyReceived?.toLocaleString('en-IN') || 0}</div>
-              <span className="text-[10px] text-emerald-700 font-medium">{t('projectDetail.inflowsFromClient', 'Inflows from client')}</span>
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">{t('projectDetail.projectMoneyReceived', 'Project Money Received')}</span>
+              <div className="text-xl font-black text-emerald-900 dark:text-emerald-300 mt-0.5">₹{summary.totalMoneyReceived?.toLocaleString('en-IN') || 0}</div>
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">{t('projectDetail.inflowsFromClient', 'Inflows from client')}</span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-700">{t('projectDetail.actualLaborCost', 'Actual Labor Cost')}</span>
-              <div className="text-xl font-black text-amber-900 mt-0.5">₹{summary.totalLaborCost?.toLocaleString('en-IN') || 0}</div>
-              <span className="text-[10px] text-amber-700 font-medium">{t('projectDetail.earnedByWorkforce', 'Earned by assigned workforce')}</span>
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">{t('projectDetail.actualLaborCost', 'Actual Labor Cost')}</span>
+              <div className="text-xl font-black text-amber-900 dark:text-amber-300 mt-0.5">₹{summary.totalLaborCost?.toLocaleString('en-IN') || 0}</div>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">{t('projectDetail.earnedByWorkforce', 'Earned by assigned workforce')}</span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-700">{t('projectDetail.netOperatingSurplus', 'Net Operating Surplus')}</span>
-              <div className={`text-xl font-black mt-0.5 ${(summary.netOperatingSurplus || 0) >= 0 ? 'text-blue-900' : 'text-rose-700'}`}>
+              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">{t('projectDetail.netOperatingSurplus', 'Net Operating Surplus')}</span>
+              <div className={`text-xl font-black mt-0.5 ${(summary.netOperatingSurplus || 0) >= 0 ? 'text-blue-900 dark:text-blue-300' : 'text-rose-700 dark:text-rose-400'}`}>
                 ₹{summary.netOperatingSurplus?.toLocaleString('en-IN') || 0}
               </div>
-              <span className="text-[10px] text-slate-700 font-medium">{t('projectDetail.moneyMinusLabor', 'Money Received - Labor Cost')}</span>
+              <span className="text-[10px] text-slate-700 dark:text-slate-400 font-medium">{t('projectDetail.moneyMinusLabor', 'Money Received - Labor Cost')}</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar scrollbar-none pb-0.5">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar scrollbar-none pb-0.5">
         {[
           { id: 'tasks', label: `${t('projectDetail.tasks', 'Furniture Tasks')} (${tasks.length})` },
           { id: 'workers', label: `${t('projectDetail.workforce', 'Assigned Workers')} (${assignments.length})` },
@@ -400,8 +400,8 @@ export const ProjectDetailPage = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`whitespace-nowrap px-4 py-2.5 text-xs font-bold transition-all border-b-2 shrink-0 ${
               activeTab === tab.id
-                ? 'border-amber-600 text-amber-900'
-                : 'border-transparent text-slate-700 hover:text-slate-900'
+                ? 'border-amber-600 text-amber-900 dark:text-amber-400'
+                : 'border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {tab.label}
@@ -413,18 +413,18 @@ export const ProjectDetailPage = () => {
       {activeTab === 'tasks' && (
         <Card>
           {tasks.length === 0 ? (
-            <p className="py-6 text-center text-xs text-slate-700 italic">{t('projectDetail.noTasksCreated', 'No tasks created yet.')}</p>
+            <p className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('projectDetail.noTasksCreated', 'No tasks created yet.')}</p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {tasks.map((taskItem) => (
                 <div key={taskItem._id} className="py-3.5 flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
                       <Badge variant="default" size="sm">{taskItem.taskType}</Badge>
-                      <span className="font-bold text-slate-900 text-sm">{taskItem.furnitureItemName}</span>
+                      <span className="font-bold text-slate-900 dark:text-white text-sm">{taskItem.furnitureItemName}</span>
                     </div>
-                    <p className="text-xs text-slate-700 mt-1">
-                      {t('projectDetail.assignedCraftsman', 'Assigned:')} <strong className="text-slate-800">{taskItem.assignedWorkerId?.name || t('projectDetail.unassigned', 'Unassigned')}</strong> • {t('projectDetail.progressUnits', 'Progress: {completed} / {planned} {unit}').replace('{completed}', taskItem.completedUnits).replace('{planned}', taskItem.plannedUnits).replace('{unit}', taskItem.unitMetric || '')}
+                    <p className="text-xs text-slate-700 dark:text-slate-400 mt-1">
+                      {t('projectDetail.assignedCraftsman', 'Assigned:')} <strong className="text-slate-800 dark:text-slate-200">{taskItem.assignedWorkerId?.name || t('projectDetail.unassigned', 'Unassigned')}</strong> • {t('projectDetail.progressUnits', 'Progress: {completed} / {planned} {unit}').replace('{completed}', taskItem.completedUnits).replace('{planned}', taskItem.plannedUnits).replace('{unit}', taskItem.unitMetric || '')}
                     </p>
                   </div>
 
@@ -456,10 +456,10 @@ export const ProjectDetailPage = () => {
       {/* Tab 2: Workers */}
       {activeTab === 'workers' && (
         <Card>
-          <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">{t('projectDetail.assignedWorkforceTitle', 'Assigned Craftsmen & Site Workforce')}</h3>
-              <p className="text-xs text-slate-700">{t('projectDetail.assignedWorkforceSub', 'Deployments, project roles, and wage agreements for this furniture site.')}</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('projectDetail.assignedWorkforceTitle', 'Assigned Craftsmen & Site Workforce')}</h3>
+              <p className="text-xs text-slate-700 dark:text-slate-400">{t('projectDetail.assignedWorkforceSub', 'Deployments, project roles, and wage agreements for this furniture site.')}</p>
             </div>
             {isThekedar && (
               <Button size="sm" variant="primary" onClick={() => setAssignModalOpen(true)} icon={Users}>
@@ -468,17 +468,17 @@ export const ProjectDetailPage = () => {
             )}
           </div>
           {assignments.length === 0 ? (
-            <p className="py-6 text-center text-xs text-slate-700 italic">{t('projectDetail.noWorkersAssigned', 'No workers currently assigned to this project.')}</p>
+            <p className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('projectDetail.noWorkersAssigned', 'No workers currently assigned to this project.')}</p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {assignments.map((a) => (
                 <div key={a._id} className="py-3.5 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">{a.workerId?.name}</h4>
-                    <p className="text-xs text-slate-700">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">{a.workerId?.name}</h4>
+                    <p className="text-xs text-slate-700 dark:text-slate-400">
                       {a.roleInProject} • Phone: {a.workerId?.phone}
                     </p>
-                    <span className="text-[11px] font-semibold text-amber-800">
+                    <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-400">
                       {a.wageOverride ? t('projectDetail.wageOverrideLabel', 'Wage Override: ₹{rate} / day').replace('{rate}', a.wageOverride) : t('projectDetail.standardBaseWage', 'Standard Base Wage')}
                     </span>
                   </div>
@@ -527,10 +527,10 @@ export const ProjectDetailPage = () => {
       {/* Tab 3: Money Received */}
       {activeTab === 'moneyReceived' && !isWorker && (
         <Card>
-          <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100">
+          <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">{t('projectDetail.moneyReceivedTitle', 'Project Money Received')}</h3>
-              <p className="text-xs text-slate-700">{t('projectDetail.moneyReceivedSub', 'Client milestone disbursements, booking advances, and progress payments.')}</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('projectDetail.moneyReceivedTitle', 'Project Money Received')}</h3>
+              <p className="text-xs text-slate-700 dark:text-slate-400">{t('projectDetail.moneyReceivedSub', 'Client milestone disbursements, booking advances, and progress payments.')}</p>
             </div>
             {isThekedar && (
               <Button size="xs" variant="primary" onClick={() => setMoneyModalOpen(true)} icon={Plus}>
@@ -539,9 +539,9 @@ export const ProjectDetailPage = () => {
             )}
           </div>
           {moneyReceived.length === 0 ? (
-            <p className="py-6 text-center text-xs text-slate-700 italic">{t('projectDetail.noPaymentsRecorded', 'No payments recorded from client yet.')}</p>
+            <p className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('projectDetail.noPaymentsRecorded', 'No payments recorded from client yet.')}</p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {moneyReceived.map((rec) => (
                 <div key={rec._id} className="py-3.5 flex items-center justify-between">
                   <div>
@@ -549,15 +549,15 @@ export const ProjectDetailPage = () => {
                       <span className="text-[11px] font-bold text-emerald-800">{rec.receiptCode}</span>
                       <Badge variant="success" size="sm">{rec.stage || 'Payment'}</Badge>
                     </div>
-                    <h4 className="font-bold text-slate-900 text-sm mt-0.5">{rec.payerName || project?.clientName}</h4>
-                    <p className="text-xs text-slate-700">
+                    <h4 className="font-bold text-slate-900 dark:text-white text-sm mt-0.5">{rec.payerName || project?.clientName}</h4>
+                    <p className="text-xs text-slate-700 dark:text-slate-300">
                       Method: <strong>{rec.paymentMethod}</strong> {rec.receiptReference ? `• Ref: ${rec.receiptReference}` : ''} • Date: {new Date(rec.receivedDate).toLocaleDateString()}
                     </p>
-                    {rec.notes && <p className="text-[11px] text-slate-700 mt-0.5 italic">{rec.notes}</p>}
+                    {rec.notes && <p className="text-[11px] text-slate-700 dark:text-slate-400 mt-0.5 italic">{rec.notes}</p>}
                   </div>
                   <div className="text-right">
-                    <div className="font-black text-emerald-950 text-base">₹{rec.amount.toLocaleString('en-IN')}</div>
-                    <span className="text-[10px] text-emerald-800 font-semibold">{t('projectDetail.receivedInflow', 'Received Inflow')}</span>
+                    <div className="font-black text-emerald-950 dark:text-emerald-200 text-base">₹{rec.amount.toLocaleString('en-IN')}</div>
+                    <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold">{t('projectDetail.receivedInflow', 'Received Inflow')}</span>
                   </div>
                 </div>
               ))}
@@ -570,16 +570,16 @@ export const ProjectDetailPage = () => {
       {activeTab === 'tools' && (
         <Card>
           {tools.length === 0 ? (
-            <p className="py-6 text-center text-xs text-slate-700 italic">{t('projectDetail.noToolsDeployed', 'No tools deployed at this project site.')}</p>
+            <p className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('projectDetail.noToolsDeployed', 'No tools deployed at this project site.')}</p>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {tools.map((toolItem) => (
                 <div key={toolItem._id} className="py-3.5 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Wrench className="h-5 w-5 text-amber-700" />
+                    <Wrench className="h-5 w-5 text-amber-700 dark:text-amber-400" />
                     <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{toolItem.name}</h4>
-                      <p className="text-xs text-slate-700">Code: {toolItem.toolCode} • Category: {toolItem.category}</p>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">{toolItem.name}</h4>
+                      <p className="text-xs text-slate-700 dark:text-slate-300">Code: {toolItem.toolCode} • Category: {toolItem.category}</p>
                     </div>
                   </div>
                   <Badge variant={toolItem.status} size="sm">{toolItem.status}</Badge>

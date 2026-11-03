@@ -87,6 +87,11 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// Compound indexes for fast lookups under high concurrent load
+userSchema.index({ phone: 1 });
+userSchema.index({ role: 1, status: 1 });
+userSchema.index({ assignedThekedar: 1, role: 1 });
+
 // Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);

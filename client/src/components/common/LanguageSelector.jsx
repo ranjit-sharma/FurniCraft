@@ -74,7 +74,7 @@ export const LanguageSelector = ({ variant = 'pill', className = '' }) => {
       <select
         value={language}
         onChange={(e) => changeLanguage(e.target.value)}
-        className="appearance-none pl-8 pr-7 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+        className="appearance-none pl-8 pr-7 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
         aria-label="Select Language"
       >
         {availableLanguages.map((lang) => (

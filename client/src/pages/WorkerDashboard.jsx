@@ -284,8 +284,8 @@ export const WorkerDashboard = () => {
         <div
           className={`flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
             message.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-rose-50 text-rose-800 border border-rose-200'
+              ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+              : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
           }`}
         >
           <span>{message.text}</span>
@@ -296,7 +296,7 @@ export const WorkerDashboard = () => {
       )}
 
       {/* Worker Header Card */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-gradient-to-r from-amber-900 to-amber-950 p-4 sm:p-6 text-white shadow-md">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-amber-900/40 bg-gradient-to-r from-amber-900 to-amber-950 p-4 sm:p-6 text-white shadow-md">
         <div className="flex items-center gap-3.5">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xl shadow-inner">
             <i className="fa-solid fa-user"></i>
@@ -342,35 +342,35 @@ export const WorkerDashboard = () => {
 
       {/* Financial Snapshot Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Card className="border-emerald-200 bg-emerald-50/40">
-          <div className="text-xs text-emerald-800 font-semibold">{t('worker.standardDailyWage') || 'Standard Daily Wage'}</div>
-          <div className="text-2xl font-black text-emerald-950 mt-1">₹{profile?.defaultDailyWage || 0}</div>
-          <span className="text-[11px] text-emerald-700">{t('worker.fullDay') || 'Per full day (P = 1.0x)'}</span>
+        <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/30">
+          <div className="text-xs text-emerald-800 dark:text-emerald-300 font-semibold">{t('worker.standardDailyWage') || 'Standard Daily Wage'}</div>
+          <div className="text-2xl font-black text-emerald-950 dark:text-emerald-200 mt-1">₹{profile?.defaultDailyWage || 0}</div>
+          <span className="text-[11px] text-emerald-700 dark:text-emerald-400">{t('worker.fullDay') || 'Per full day (P = 1.0x)'}</span>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/40">
-          <div className="text-xs text-blue-800 font-semibold">{t('worker.outstandingSalaryBalance') || 'Outstanding Salary Balance'}</div>
-          <div className="text-2xl font-black text-blue-950 mt-1">₹{profile?.outstandingSalaryBalance?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-blue-700">{t('worker.accumulatedUnpaid') || 'Accumulated unpaid finalized salary'}</span>
+        <Card className="border-blue-200 dark:border-blue-800/60 bg-blue-50/40 dark:bg-blue-950/30">
+          <div className="text-xs text-blue-800 dark:text-blue-300 font-semibold">{t('worker.outstandingSalaryBalance') || 'Outstanding Salary Balance'}</div>
+          <div className="text-2xl font-black text-blue-950 dark:text-blue-200 mt-1">₹{profile?.outstandingSalaryBalance?.toLocaleString('en-IN') || 0}</div>
+          <span className="text-[11px] text-blue-700 dark:text-blue-400">{t('worker.accumulatedUnpaid') || 'Accumulated unpaid finalized salary'}</span>
         </Card>
 
-        <Card className="border-amber-200 bg-amber-50/40">
+        <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-amber-800 font-semibold">{t('worker.outstandingAdvance') || 'Outstanding Advance Balance'}</span>
+            <span className="text-xs text-amber-800 dark:text-amber-300 font-semibold">{t('worker.outstandingAdvance') || 'Outstanding Advance Balance'}</span>
             {(profile?.outstandingAdvanceBalance || 0) >= 10000 && (
               <span className="rounded bg-rose-600 px-1.5 py-0.5 text-[10px] font-black text-white animate-pulse">
                 {t('worker.maxCapBadge') || 'MAX 10K CAP'}
               </span>
             )}
           </div>
-          <div className="text-2xl font-black text-amber-950 mt-1">₹{profile?.outstandingAdvanceBalance?.toLocaleString('en-IN') || 0}</div>
-          <span className="text-[11px] text-amber-700">
+          <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-1">₹{profile?.outstandingAdvanceBalance?.toLocaleString('en-IN') || 0}</div>
+          <span className="text-[11px] text-amber-700 dark:text-amber-400">
             {(profile?.outstandingAdvanceBalance || 0) >= 10000 ? (t('worker.maxAdvanceNote') || 'Limit reached') : (t('worker.remainingLimit') || 'Total unrecovered advance balance')}
           </span>
         </Card>
 
-        <Card className="border-purple-200 bg-purple-50/40">
-          <div className="text-xs text-purple-800 font-semibold">{t('worker.todaysAttendance') || "Today's Attendance"}</div>
+        <Card className="border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/30">
+          <div className="text-xs text-purple-800 dark:text-purple-300 font-semibold">{t('worker.todaysAttendance') || "Today's Attendance"}</div>
           <div className="mt-1 flex items-center gap-2">
             {todayAttendance ? (
               <Badge variant={todayAttendance.approvalStatus} size="md">
@@ -380,7 +380,7 @@ export const WorkerDashboard = () => {
               <Badge variant="warning" size="md">{t('worker.notMarked') || 'Not Marked'}</Badge>
             )}
           </div>
-          <span className="text-[11px] text-purple-700">
+          <span className="text-[11px] text-purple-700 dark:text-purple-400">
             {todayAttendance ? (t('worker.earningsPrefix') || 'Earnings: ₹{amt}').replace('{amt}', todayAttendance.calculatedEarnings) : (t('worker.submitShiftAttendance') || 'Please submit shift attendance')}
           </span>
         </Card>
@@ -395,41 +395,41 @@ export const WorkerDashboard = () => {
           {/* Monthly Attendance & Unpaid Balance Indicator Bar (Above Calendar) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {/* Present Days Indicator */}
-            <div className="flex items-center gap-3.5 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50/50 p-4 shadow-xs">
+            <div className="flex items-center gap-3.5 rounded-2xl border border-amber-200 dark:border-amber-800/60 bg-gradient-to-r from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/30 p-4 shadow-xs">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm font-black text-lg">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider block">
                   {t('calendar.presentDaysThisMonth', 'Current Month Shifts / Attendance')}
                 </span>
                 <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="text-2xl font-black text-amber-950">
+                  <span className="text-2xl font-black text-amber-950 dark:text-amber-200">
                     {calendarData.summary?.totalDehadi ?? calendarData.summary?.approvedDaysCount ?? 0}
                   </span>
-                  <span className="text-sm font-bold text-slate-700">
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     {t('calendar.dehadiUnit', 'Shifts')} ({calendarData.summary?.approvedDaysCount || 0} {t('calendar.shiftsWorkedCount', 'Shifts Worked')})
                   </span>
                 </div>
-                <span className="text-[11px] text-amber-800 font-medium">
+                <span className="text-[11px] text-amber-800 dark:text-amber-400 font-medium">
                   {calendarData.summary?.totalDehadi || 0} {t('calendar.totalShiftsCount', 'Total Shifts')} in {new Date(calYear, calMonth - 1).toLocaleString('default', { month: 'long' })} {calYear}
                 </span>
               </div>
             </div>
 
             {/* Current Month Gross Earnings */}
-            <div className="flex items-center gap-3.5 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50/50 p-4 shadow-xs">
+            <div className="flex items-center gap-3.5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 bg-gradient-to-r from-emerald-50 to-teal-50/50 dark:from-emerald-950/40 dark:to-teal-950/30 p-4 shadow-xs">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm font-black text-lg">
                 <IndianRupee className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider block">
                   {t('calendar.thisMonthEarned', 'Current Month Earnings')}
                 </span>
-                <div className="text-2xl font-black text-emerald-950 mt-0.5">
+                <div className="text-2xl font-black text-emerald-950 dark:text-emerald-200 mt-0.5">
                   ₹{(calendarData.summary?.totalApprovedEarnings || 0).toLocaleString('en-IN')}
                 </div>
-                <span className="text-[11px] text-emerald-800 font-medium">
+                <span className="text-[11px] text-emerald-800 dark:text-emerald-400 font-medium">
                   {calendarData.summary?.totalDehadi || 0} {t('calendar.dehadiUnit', 'Shifts')} × ₹{profile?.defaultDailyWage || 800}/day = ₹{(calendarData.summary?.totalApprovedEarnings || 0).toLocaleString('en-IN')}
                 </span>
               </div>
@@ -438,8 +438,8 @@ export const WorkerDashboard = () => {
             {/* Past Month Unpaid Earnings (Beside) */}
             <div className={`flex items-center gap-3.5 rounded-2xl border p-4 shadow-xs sm:col-span-2 lg:col-span-1 ${
               (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0
-                ? 'border-rose-200 bg-gradient-to-r from-rose-50 to-amber-50/50'
-                : 'border-slate-200 bg-white'
+                ? 'border-rose-200 dark:border-rose-800/60 bg-gradient-to-r from-rose-50 to-amber-50/50 dark:from-rose-950/40 dark:to-amber-950/30'
+                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60'
             }`}>
               <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm font-black text-lg ${
                 (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0 ? 'bg-rose-600' : 'bg-slate-400'
@@ -447,16 +447,16 @@ export const WorkerDashboard = () => {
                 <Clock className="h-6 w-6 text-white" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider block">
                   {t('calendar.pastMonthUnpaid', 'Past Month Unpaid Earnings')}
                 </span>
                 <div className={`text-2xl font-black mt-0.5 ${
-                  (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0 ? 'text-rose-950' : 'text-slate-800'
+                  (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0 ? 'text-rose-950 dark:text-rose-200' : 'text-slate-800 dark:text-slate-200'
                 }`}>
                   ₹{(calendarData.summary?.pastMonthUnpaidEarnings || 0).toLocaleString('en-IN')}
                 </div>
                 <span className={`text-[11px] font-medium ${
-                  (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0 ? 'text-rose-700 font-bold' : 'text-slate-500'
+                  (calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0 ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400'
                 }`}>
                   {(calendarData.summary?.pastMonthUnpaidEarnings || 0) > 0
                     ? `Pending settlement from previous months (${calendarData.summary?.pastMonthUnpaidDaysCount || 0} shifts)`
@@ -485,16 +485,16 @@ export const WorkerDashboard = () => {
         {/* Active Projects */}
         <Card title={t('worker.myActiveProjects') || 'My Active Furniture Projects'} subtitle={t('worker.myActiveProjectsSub') || 'Modern furniture sites where you are actively assigned'}>
           {allAssignments.length === 0 ? (
-            <p className="text-xs text-slate-700 py-4 italic">{t('worker.noProjectAssignments') || 'No project assignments.'}</p>
+            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('worker.noProjectAssignments') || 'No project assignments.'}</p>
           ) : (
             <div className="space-y-3">
               {allAssignments.map((a) => (
-                <div key={a._id} className="flex items-start justify-between rounded-xl border border-slate-200 p-3 hover:border-amber-300">
+                <div key={a._id} className="flex items-start justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3 hover:border-amber-300 dark:hover:border-amber-600 transition-colors">
                   <div>
-                    <span className="text-[11px] font-bold text-amber-800">{a.projectId?.projectCode}</span>
-                    <h4 className="text-sm font-bold text-slate-900">{a.projectId?.name}</h4>
-                    <p className="text-xs text-slate-700 mt-0.5">{a.projectId?.siteAddress}</p>
-                    <span className="inline-block mt-1 text-[11px] font-semibold text-slate-700">
+                    <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400">{a.projectId?.projectCode}</span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{a.projectId?.name}</h4>
+                    <p className="text-xs text-slate-700 dark:text-slate-400 mt-0.5">{a.projectId?.siteAddress}</p>
+                    <span className="inline-block mt-1 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
                       {t('profile.role') || 'Role'}: {a.roleInProject} {a.wageOverride ? `(Special Wage: ₹${a.wageOverride})` : ''}
                     </span>
                   </div>
@@ -524,18 +524,18 @@ export const WorkerDashboard = () => {
         {/* Assigned Tools */}
         <Card title={t('worker.toolsMachineryAssigned') || 'Tools & Machinery Assigned to Me'} subtitle={t('worker.toolsMachinerySub') || 'Drills, cutters, routers, sanders, and precision measuring tools'}>
           {issuedTools.length === 0 ? (
-            <p className="text-xs text-slate-700 py-4 italic">{t('worker.noToolsAssigned') || 'No tools currently assigned to your account.'}</p>
+            <p className="text-xs text-slate-700 dark:text-slate-400 py-4 italic">{t('worker.noToolsAssigned') || 'No tools currently assigned to your account.'}</p>
           ) : (
             <div className="space-y-3">
               {issuedTools.map((tItem) => (
-                <div key={tItem._id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                <div key={tItem._id} className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-800">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                       <Wrench className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900">{tItem.name}</h4>
-                      <p className="text-xs text-slate-700">Code: {tItem.toolCode} | Condition: {tItem.condition}</p>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{tItem.name}</h4>
+                      <p className="text-xs text-slate-700 dark:text-slate-400">Code: {tItem.toolCode} | Condition: {tItem.condition}</p>
                     </div>
                   </div>
 
@@ -543,7 +543,7 @@ export const WorkerDashboard = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-rose-300 text-rose-700 hover:bg-rose-50"
+                      className="border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                       onClick={() => {
                         setSelectedToolId(tItem._id);
                         setDamageModalOpen(true);
@@ -568,17 +568,17 @@ export const WorkerDashboard = () => {
                 key={task._id}
                 className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border p-3.5 transition-all ${
                   task.status === 'REWORK_NEEDED'
-                    ? 'border-rose-300 bg-rose-50/30'
+                    ? 'border-rose-300 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/30'
                     : task.status === 'COMPLETED'
-                    ? 'border-amber-300 bg-amber-50/20'
+                    ? 'border-amber-300 dark:border-amber-800 bg-amber-50/20 dark:bg-amber-950/30'
                     : task.status === 'VERIFIED'
-                    ? 'border-emerald-300 bg-emerald-50/20'
-                    : 'border-slate-200 hover:border-amber-300'
+                    ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/30'
+                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-amber-300 dark:hover:border-amber-600'
                 }`}
               >
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[11px] font-bold text-amber-800">
+                    <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400">
                       {task.projectId?.projectCode} • {task.projectId?.name}
                     </span>
                     {task.status === 'COMPLETED' && (
@@ -602,18 +602,18 @@ export const WorkerDashboard = () => {
                       </Badge>
                     )}
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900 mt-1">{task.furnitureItemName}</h4>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    {t('worker.stage') || 'Stage:'} <span className="font-semibold text-slate-800">{task.taskType}</span> • {t('worker.progress') || 'Progress:'}{' '}
-                    <strong className="text-slate-900">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{task.furnitureItemName}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                    {t('worker.stage') || 'Stage:'} <span className="font-semibold text-slate-800 dark:text-slate-200">{task.taskType}</span> • {t('worker.progress') || 'Progress:'}{' '}
+                    <strong className="text-slate-900 dark:text-white">
                       {task.completedUnits || 0}/{task.plannedUnits} {task.unitMetric || 'pcs'}
                     </strong>
                   </p>
-                  {task.notes && <p className="text-[11px] text-slate-500 italic mt-0.5">{task.notes}</p>}
+                  {task.notes && <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-0.5">{task.notes}</p>}
 
                   {/* If supervisor requested rework, show defect inspection instructions */}
                   {task.status === 'REWORK_NEEDED' && task.defectReport?.description && (
-                    <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2 text-xs text-rose-800">
+                    <div className="mt-2 rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 p-2 text-xs text-rose-800 dark:text-rose-300">
                       <span className="font-bold block">{t('worker.supervisorFeedback') || 'Supervisor Inspection Feedback:'}</span>
                       <p className="mt-0.5">{task.defectReport.description}</p>
                     </div>
@@ -621,7 +621,7 @@ export const WorkerDashboard = () => {
 
                   {/* If verified, show confirmation text */}
                   {task.status === 'VERIFIED' && (
-                    <p className="text-[11px] text-emerald-800 font-medium mt-1">
+                    <p className="text-[11px] text-emerald-800 dark:text-emerald-400 font-medium mt-1">
                       {t('worker.qualityCheckPassed') || 'Quality check passed and approved by Thekedar.'}
                     </p>
                   )}
@@ -629,13 +629,13 @@ export const WorkerDashboard = () => {
 
                 <div className="shrink-0 flex items-center justify-end">
                   {task.status === 'COMPLETED' ? (
-                    <div className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900">
-                      <Clock className="h-4 w-4 text-amber-600 animate-spin" />
+                    <div className="flex items-center gap-1.5 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 px-3 py-1.5 text-xs font-bold text-amber-900 dark:text-amber-300">
+                      <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 animate-spin" />
                       <span>{t('worker.pendingApproval') || 'Pending Approval'}</span>
                     </div>
                   ) : task.status === 'VERIFIED' ? (
-                    <div className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-900">
-                      <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    <div className="flex items-center gap-1.5 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 px-3 py-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-300">
+                      <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       <span>{t('worker.approved') || 'Approved ✓'}</span>
                     </div>
                   ) : task.status === 'REWORK_NEEDED' ? (
@@ -672,12 +672,12 @@ export const WorkerDashboard = () => {
       <Modal isOpen={submitModalOpen} onClose={() => setSubmitModalOpen(false)} title={t('workerModals.submitAttendanceTitle') || "Mark Today's Attendance"}>
         <form onSubmit={handleSubmitAttendance} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('worker.selectProject') || 'Select Furniture Project'}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('worker.selectProject') || 'Select Furniture Project'}</label>
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
               required
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             >
               {activeAssignments.map((a) => (
                 <option key={a.projectId?._id} value={a.projectId?._id}>
@@ -688,7 +688,7 @@ export const WorkerDashboard = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('worker.shiftCode') || 'Attendance Shift Code'}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('worker.shiftCode') || 'Attendance Shift Code'}</label>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {[
                 { code: 'P', label: `P (${t('worker.fullDay') || '1.0x Full Day'})` },
@@ -702,8 +702,8 @@ export const WorkerDashboard = () => {
                   onClick={() => setSelectedCode(opt.code)}
                   className={`rounded-lg border p-2 text-xs font-bold text-left transition-all ${
                     selectedCode === opt.code
-                      ? 'border-amber-600 bg-amber-50 text-amber-900 ring-1 ring-amber-500'
-                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                      ? 'border-amber-600 dark:border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   }`}
                 >
                   {opt.label}
@@ -714,73 +714,72 @@ export const WorkerDashboard = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('worker.checkInTime') || 'Check-in Time'}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('worker.checkInTime') || 'Check-in Time'}</label>
               <input
                 type="time"
                 value={checkInTime}
                 onChange={(e) => setCheckInTime(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('worker.checkOutTime') || 'Check-out Time'}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('worker.checkOutTime') || 'Check-out Time'}</label>
               <input
                 type="time"
                 value={checkOutTime}
                 onChange={(e) => setCheckOutTime(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
           </div>
 
           {(selectedCode === 'P1/5' || selectedCode === 'PP') && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('worker.extendedWorkReason') || 'Extended Work Reason / Note'}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('worker.extendedWorkReason') || 'Extended Work Reason / Note'}</label>
               <input
                 type="text"
                 value={extraWorkCategory}
                 onChange={(e) => setExtraWorkCategory(e.target.value)}
                 placeholder={t('worker.extendedWorkPlaceholder') || 'e.g. Urgent modular wardrobe carcass assembly for site handover'}
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>
           )}
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setSubmitModalOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
             <Button type="submit" loading={submitting}>{t('common.submit', 'Submit Attendance')}</Button>
           </div>
         </form>
       </Modal>
 
-
       {/* Modal 2: Request Advance */}
       <Modal isOpen={advanceModalOpen} onClose={() => setAdvanceModalOpen(false)} title={t('workerModals.advanceModalTitle', 'Request Cash / UPI Advance')}>
         <form onSubmit={handleRequestAdvance} className="space-y-4">
           {/* Flashing Warning if Current Advance is at or over ₹10,000 */}
           {(profile?.outstandingAdvanceBalance || 0) >= 10000 ? (
-            <div className="rounded-xl border-2 border-rose-500 bg-rose-50 p-4 text-rose-900 animate-pulse shadow-sm flex items-start gap-3">
-              <AlertTriangle className="h-6 w-6 text-rose-600 flex-shrink-0 mt-0.5 animate-bounce" />
+            <div className="rounded-xl border-2 border-rose-500 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/50 p-4 text-rose-900 dark:text-rose-200 animate-pulse shadow-sm flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5 animate-bounce" />
               <div>
-                <h4 className="font-black text-sm text-rose-800 tracking-wide uppercase">
+                <h4 className="font-black text-sm text-rose-800 dark:text-rose-200 tracking-wide uppercase">
                   {t('workerModals.advanceLimitReached', '⚠️ Advance Limit Reached (Max ₹10,000)')}
                 </h4>
-                <p className="text-xs text-rose-700 mt-1 font-medium leading-relaxed">
+                <p className="text-xs text-rose-700 dark:text-rose-300 mt-1 font-medium leading-relaxed">
                   {t('worker.maxAdvanceNote', 'Worker cannot take more than ₹10,000 advance')}.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900 flex items-center justify-between">
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/50 p-3 text-xs text-amber-900 dark:text-amber-300 flex items-center justify-between">
               <div>
-                <span className="font-semibold text-slate-700">{t('workerModals.currentAdvance', 'Current Advance')}: </span>
-                <span className="font-bold text-amber-900">₹{(profile?.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{t('workerModals.currentAdvance', 'Current Advance')}: </span>
+                <span className="font-bold text-amber-900 dark:text-amber-200">₹{(profile?.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</span>
               </div>
               <div className="text-right">
-                <span className="font-semibold text-slate-700">{t('workerModals.remainingAllowance', 'Remaining Allowance')}: </span>
-                <span className="font-black text-emerald-700">₹{Math.max(0, 10000 - (profile?.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}</span>
-                <span className="text-[10px] text-slate-500 block">(Max: ₹10,000)</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-300">{t('workerModals.remainingAllowance', 'Remaining Allowance')}: </span>
+                <span className="font-black text-emerald-700 dark:text-emerald-400">₹{Math.max(0, 10000 - (profile?.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">(Max: ₹10,000)</span>
               </div>
             </div>
           )}
@@ -789,11 +788,11 @@ export const WorkerDashboard = () => {
           {(profile?.outstandingAdvanceBalance || 0) < 10000 &&
             parseFloat(advanceAmount) > 0 &&
             ((profile?.outstandingAdvanceBalance || 0) + parseFloat(advanceAmount)) > 10000 && (
-              <div className="rounded-lg border-2 border-rose-400 bg-rose-50 p-3 text-rose-800 animate-pulse flex items-start gap-2.5 text-xs">
-                <AlertTriangle className="h-5 w-5 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div className="rounded-lg border-2 border-rose-400 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/50 p-3 text-rose-800 dark:text-rose-200 animate-pulse flex items-start gap-2.5 text-xs">
+                <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold">{t('workerModals.advanceLimitExceeded', 'Requested amount exceeds ₹10,000 total limit!')}</span>
-                  <p className="mt-0.5 text-rose-700 font-medium">
+                  <p className="mt-0.5 text-rose-700 dark:text-rose-300 font-medium">
                     {t('worker.remainingLimit', 'Remaining allowable advance limit')}: <strong>₹{Math.max(0, 10000 - (profile?.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}</strong>.
                   </p>
                 </div>
@@ -801,7 +800,7 @@ export const WorkerDashboard = () => {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('workerModals.advanceAmount', 'Advance Amount (INR ₹)')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('workerModals.advanceAmount', 'Advance Amount (INR ₹)')}</label>
             <input
               type="number"
               min="100"
@@ -811,12 +810,12 @@ export const WorkerDashboard = () => {
               value={advanceAmount}
               onChange={(e) => setAdvanceAmount(e.target.value)}
               placeholder="e.g. 2000"
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm disabled:bg-slate-100 dark:disabled:bg-slate-800/50 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('workerModals.advanceReason', 'Reason for Advance')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('workerModals.advanceReason', 'Reason for Advance')}</label>
             <textarea
               required
               rows={3}
@@ -824,11 +823,11 @@ export const WorkerDashboard = () => {
               value={advanceReason}
               onChange={(e) => setAdvanceReason(e.target.value)}
               placeholder="e.g. Site travel expenses, family emergency, festive support"
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm disabled:bg-slate-100 dark:disabled:bg-slate-800/50 disabled:text-slate-400 dark:disabled:text-slate-600 disabled:cursor-not-allowed focus:border-amber-500 focus:outline-none"
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setAdvanceModalOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
             <Button
               type="submit"
@@ -859,31 +858,31 @@ export const WorkerDashboard = () => {
       >
         <div className="space-y-4">
           {selectedDayRecords.length === 0 && selectedDayPayments.length === 0 && selectedDayAdvances.length === 0 ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center text-xs text-slate-500 italic">
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-6 text-center text-xs text-slate-500 dark:text-slate-400 italic">
               {t('calendar.noRecordsOnDate', 'No attendance shift or payment recorded on this date.')}
             </div>
           ) : (
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
               {selectedDayRecords.length > 0 && (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 border-b border-slate-100 pb-1.5">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-800 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-1.5">
                     <span>{t('nav.attendance', 'Attendance Shift Details')}</span>
-                    <span className="text-[11px] font-normal text-slate-500">{selectedDayRecords.length} shift(s)</span>
+                    <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{selectedDayRecords.length} shift(s)</span>
                   </div>
 
                   {selectedDayRecords.map((rec) => (
                     <div
                       key={rec._id}
-                      className="rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 space-y-2.5 shadow-2xs"
+                      className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/60 p-3.5 space-y-2.5 shadow-2xs"
                     >
                       {/* Top Header: Project & Code */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-700 pb-2">
                         <div>
-                          <div className="font-bold text-slate-900 text-sm">
+                          <div className="font-bold text-slate-900 dark:text-white text-sm">
                             {rec.projectId?.name || 'Assigned Furniture Project'}
                           </div>
                           {rec.projectId?.projectCode && (
-                            <div className="text-[11px] text-slate-500 font-mono">
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                               Code: {rec.projectId.projectCode}
                             </div>
                           )}
@@ -900,47 +899,47 @@ export const WorkerDashboard = () => {
 
                       {/* Wage & Hours Breakdown */}
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="rounded-lg bg-white p-2 border border-slate-200/60">
-                          <span className="text-slate-500 block text-[10px] uppercase font-semibold">Standard Wage Rate</span>
-                          <span className="font-bold text-slate-800 text-xs">
+                        <div className="rounded-lg bg-white dark:bg-slate-800/80 p-2 border border-slate-200/60 dark:border-slate-700">
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Standard Wage Rate</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
                             ₹{rec.applicableDailyWage || profile?.defaultDailyWage || 800} / day
                           </span>
                         </div>
-                        <div className="rounded-lg bg-white p-2 border border-slate-200/60">
-                          <span className="text-slate-500 block text-[10px] uppercase font-semibold">Shift Multiplier</span>
-                          <span className="font-bold text-amber-900 text-xs">
+                        <div className="rounded-lg bg-white dark:bg-slate-800/80 p-2 border border-slate-200/60 dark:border-slate-700">
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Shift Multiplier</span>
+                          <span className="font-bold text-amber-900 dark:text-amber-300 text-xs">
                             {rec.wageMultiplier}x ({rec.code})
                           </span>
                         </div>
-                        <div className="rounded-lg bg-emerald-50/70 p-2 border border-emerald-200/60">
-                          <span className="text-emerald-700 block text-[10px] uppercase font-semibold">Earned for Shift</span>
-                          <span className="font-black text-emerald-900 text-sm">
+                        <div className="rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 p-2 border border-emerald-200/60 dark:border-emerald-800">
+                          <span className="text-emerald-700 dark:text-emerald-400 block text-[10px] uppercase font-semibold">Earned for Shift</span>
+                          <span className="font-black text-emerald-900 dark:text-emerald-200 text-sm">
                             ₹{rec.calculatedEarnings || 0}
                           </span>
                         </div>
-                        <div className="rounded-lg bg-white p-2 border border-slate-200/60">
-                          <span className="text-slate-500 block text-[10px] uppercase font-semibold">Shift Timings</span>
-                          <span className="font-semibold text-slate-800 text-xs">
+                        <div className="rounded-lg bg-white dark:bg-slate-800/80 p-2 border border-slate-200/60 dark:border-slate-700">
+                          <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Shift Timings</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
                             {rec.checkInTime || '09:00'} - {rec.checkOutTime || '18:00'}
                           </span>
                         </div>
                       </div>
 
                       {/* Supervisor and Status Footer */}
-                      <div className="text-[11px] text-slate-600 pt-1 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1">
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700 flex flex-wrap items-center justify-between gap-1">
                         <span>
-                          Supervisor: <strong className="text-slate-800 font-semibold">{rec.thekedarId?.name || profile?.thekedarId?.name || 'Assigned Thekedar'}</strong>
+                          Supervisor: <strong className="text-slate-800 dark:text-slate-200 font-semibold">{rec.thekedarId?.name || profile?.thekedarId?.name || 'Assigned Thekedar'}</strong>
                         </span>
                         {rec.approvalStatus === 'APPROVED' ? (
-                          <span className="text-emerald-700 font-bold flex items-center gap-1">
+                          <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
                             ✓ Approved shift
                           </span>
                         ) : rec.approvalStatus === 'REJECTED' ? (
-                          <span className="text-rose-700 font-bold">
+                          <span className="text-rose-700 dark:text-rose-400 font-bold">
                             ✗ Rejected {rec.rejectionReason ? `(${rec.rejectionReason})` : ''}
                           </span>
                         ) : (
-                          <span className="text-amber-700 font-bold">
+                          <span className="text-amber-700 dark:text-amber-400 font-bold">
                             ⏳ Submitted for Supervisor Approval
                           </span>
                         )}
@@ -952,8 +951,8 @@ export const WorkerDashboard = () => {
 
               {/* Transactions on this date */}
               {(selectedDayPayments.length > 0 || selectedDayAdvances.length > 0) && (
-                <div className="space-y-2 pt-2 border-t border-slate-200">
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
                     Financial Activity on this Date
                   </span>
                   {selectedDayPayments.map((p) => {
@@ -963,15 +962,15 @@ export const WorkerDashboard = () => {
                         key={p._id}
                         className={`flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold border ${
                           isAdv
-                            ? 'bg-rose-50 text-rose-900 border-rose-200'
-                            : 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 border-rose-200 dark:border-rose-800'
+                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-emerald-200 dark:border-emerald-800'
                         }`}
                       >
                         <div>
                           <span className="block font-bold">
                             {isAdv ? 'Advance Payment Disbursed' : 'Salary Payout Received'}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-normal">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
                             Mode: {p.paymentMethod || 'UPI'}
                           </span>
                         </div>
@@ -986,7 +985,7 @@ export const WorkerDashboard = () => {
             </div>
           )}
 
-          <div className="pt-2 flex justify-end border-t border-slate-100">
+          <div className="pt-2 flex justify-end border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setDayDetailsModalOpen(false)}>
               {t('common.close', 'Close')}
             </Button>
@@ -1005,24 +1004,24 @@ export const WorkerDashboard = () => {
               onChange={(e) => setIsMissing(e.target.checked)}
               className="h-4 w-4 rounded text-rose-600 focus:ring-rose-500"
             />
-            <label htmlFor="isMissing" className="text-xs font-bold text-rose-700">
+            <label htmlFor="isMissing" className="text-xs font-bold text-rose-700 dark:text-rose-400">
               {t('workerModals.toolMissing', 'Tool is Missing / Lost')}
             </label>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('workerModals.damageDescription', 'Damage or Incident Description')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('workerModals.damageDescription', 'Damage or Incident Description')}</label>
             <textarea
               required
               rows={3}
               value={damageNotes}
               onChange={(e) => setDamageNotes(e.target.value)}
               placeholder="e.g. Router blade burned while cutting hardwood, or impact drill switch broken..."
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setDamageModalOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
             <Button type="submit" variant="danger">{t('common.submit', 'Submit Incident Report')}</Button>
           </div>
@@ -1033,11 +1032,11 @@ export const WorkerDashboard = () => {
       <Modal isOpen={disputeModalOpen} onClose={() => setDisputeModalOpen(false)} title={t('workerModals.disputeModalTitle', 'File Worker Grievance / Dispute')}>
         <form onSubmit={handleSubmitDispute} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.category', 'Grievance Category')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.category', 'Grievance Category')}</label>
             <select
               value={disputeCategory}
               onChange={(e) => setDisputeCategory(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             >
               <option value="ATTENDANCE">Attendance Correction</option>
               <option value="PAYROLL">Payroll & Wage Dispute</option>
@@ -1048,30 +1047,30 @@ export const WorkerDashboard = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.subject', 'Subject')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.subject', 'Subject')}</label>
             <input
               type="text"
               required
               value={disputeSubject}
               onChange={(e) => setDisputeSubject(e.target.value)}
               placeholder="Brief summary of your grievance"
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.description', 'Detailed Description')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.description', 'Detailed Description')}</label>
             <textarea
               required
               rows={3}
               value={disputeDescription}
               onChange={(e) => setDisputeDescription(e.target.value)}
               placeholder="Provide complete facts for the review..."
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setDisputeModalOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
             <Button type="submit">{t('disputes.submitGrievance', 'Submit Grievance')}</Button>
           </div>

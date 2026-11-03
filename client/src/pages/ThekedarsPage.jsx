@@ -167,8 +167,8 @@ export const ThekedarsPage = () => {
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">{t('thekedars.title', 'Thekedar Account Management')}</h1>
-          <p className="text-xs sm:text-sm text-slate-700">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">{t('thekedars.title', 'Thekedar Account Management')}</h1>
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
             {t('thekedars.subtitle', 'Owner Command: Activate, suspend, onboard, and oversee contractor accounts and workforce scope.')}
           </p>
         </div>
@@ -187,8 +187,8 @@ export const ThekedarsPage = () => {
         <div
           className={`flex items-center justify-between rounded-xl p-4 text-sm font-medium ${
             message.type === 'success'
-              ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
-              : 'border border-rose-200 bg-rose-50 text-rose-900'
+              ? 'border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300'
+              : 'border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 text-rose-900 dark:text-rose-300'
           }`}
         >
           <span>{message.text}</span>
@@ -202,27 +202,27 @@ export const ThekedarsPage = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300">
               <Building2 className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.totalThekedars', 'Total Thekedars')}</p>
-              <p className="text-2xl font-black text-slate-900">{totalThekedars}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400">{t('thekedars.totalThekedars', 'Total Thekedars')}</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{totalThekedars}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300">
               <CheckCircle className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.activeContractors', 'Active Contractors')}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400">{t('thekedars.activeContractors', 'Active Contractors')}</p>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-black text-slate-900">{activeThekedars}</p>
+                <p className="text-2xl font-black text-slate-900 dark:text-white">{activeThekedars}</p>
                 {suspendedThekedars > 0 && (
-                  <span className="text-xs font-bold text-rose-600">
+                  <span className="text-xs font-bold text-rose-600 dark:text-rose-400">
                     {t('thekedars.suspendedNotice', '({count} suspended)').replace('{count}', suspendedThekedars)}
                   </span>
                 )}
@@ -233,24 +233,24 @@ export const ThekedarsPage = () => {
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
               <FolderKanban className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.assignedProjects', 'Assigned Projects')}</p>
-              <p className="text-2xl font-black text-slate-900">{totalProjectsManaged}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400">{t('thekedars.assignedProjects', 'Assigned Projects')}</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{totalProjectsManaged}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-700">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700">{t('thekedars.supervisedWorkers', 'Supervised Workers')}</p>
-              <p className="text-2xl font-black text-slate-900">{totalWorkersSupervised}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-400">{t('thekedars.supervisedWorkers', 'Supervised Workers')}</p>
+              <p className="text-2xl font-black text-slate-900 dark:text-white">{totalWorkersSupervised}</p>
             </div>
           </div>
         </Card>
@@ -258,15 +258,15 @@ export const ThekedarsPage = () => {
 
       {/* Thekedar Records Table */}
       <Card className="overflow-hidden">
-        <div className="border-b border-slate-200 bg-slate-50/75 px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/80 px-6 py-4 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Contractor Accounts & Status Controls</h2>
-            <p className="text-xs text-slate-700">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Contractor Accounts & Status Controls</h2>
+            <p className="text-xs text-slate-700 dark:text-slate-300">
               As the Owner, you have exclusive control to activate or suspend Thekedar accounts.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-3 py-1 text-xs font-bold text-purple-900">
-            <ShieldCheck className="h-3.5 w-3.5 text-purple-700" /> Owner Authorization Enforced
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/60 px-3 py-1 text-xs font-bold text-purple-900 dark:text-purple-300">
+            <ShieldCheck className="h-3.5 w-3.5 text-purple-700 dark:text-purple-400" /> Owner Authorization Enforced
           </span>
         </div>
 
@@ -276,9 +276,9 @@ export const ThekedarsPage = () => {
           </div>
         ) : thekedars.length === 0 ? (
           <div className="p-12 text-center">
-            <Building2 className="mx-auto h-12 w-12 text-slate-300" />
-            <h3 className="mt-3 text-base font-bold text-slate-800">No Thekedars Registered</h3>
-            <p className="mt-1 text-sm text-slate-700">Get started by onboarding the first furniture contractor.</p>
+            <Building2 className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" />
+            <h3 className="mt-3 text-base font-bold text-slate-800 dark:text-slate-200">No Thekedars Registered</h3>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-400">Get started by onboarding the first furniture contractor.</p>
             <Button size="sm" className="mt-4" onClick={() => setRegisterModalOpen(true)}>
               <UserPlus className="mr-1.5 h-4 w-4" /> Onboard Thekedar
             </Button>
@@ -286,7 +286,7 @@ export const ThekedarsPage = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-700">
+              <thead className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 <tr>
                   <th className="px-5 py-3.5">Thekedar Name</th>
                   <th className="px-5 py-3.5">Contact Details</th>
@@ -296,18 +296,18 @@ export const ThekedarsPage = () => {
                   <th className="px-5 py-3.5 text-right">Account Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {thekedars.map((th) => (
-                  <tr key={th._id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={th._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                     {/* Thekedar Name */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 text-xs shadow-xs">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 text-xs shadow-xs">
                           <i className="fa-solid fa-user"></i>
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900">{th.name}</div>
-                          <div className="text-xs text-slate-500">
+                          <div className="font-bold text-slate-900 dark:text-white">{th.name}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">
                             Joined: {new Date(th.createdAt).toLocaleDateString()}
                           </div>
                         </div>
@@ -316,12 +316,12 @@ export const ThekedarsPage = () => {
 
                     {/* Contact Details */}
                     <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-800">
-                        <Mail className="h-3.5 w-3.5 text-slate-500" />
+                      <div className="flex items-center gap-1.5 text-xs text-slate-800 dark:text-slate-200">
+                        <Mail className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
                         <span>{th.email}</span>
                       </div>
-                      <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-800">
-                        <Phone className="h-3.5 w-3.5 text-slate-500" />
+                      <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-800 dark:text-slate-200">
+                        <Phone className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
                         <span>{th.phone || 'Not provided'}</span>
                       </div>
                     </td>
@@ -329,15 +329,15 @@ export const ThekedarsPage = () => {
                     {/* Assigned Projects */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900">{th.totalProjects || 0}</span>
-                        <span className="text-xs text-slate-500">projects</span>
+                        <span className="font-bold text-slate-900 dark:text-white">{th.totalProjects || 0}</span>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">projects</span>
                       </div>
                       {th.assignedProjects && th.assignedProjects.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1">
                           {th.assignedProjects.slice(0, 2).map((p) => (
                             <span
                               key={p._id}
-                              className="inline-block rounded bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-200"
+                              className="inline-block rounded bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60"
                             >
                               {p.name}
                             </span>
@@ -348,7 +348,7 @@ export const ThekedarsPage = () => {
                                 setSelectedThekedar(th);
                                 setDetailsModalOpen(true);
                               }}
-                              className="text-[10px] font-bold text-amber-700 hover:underline cursor-pointer"
+                              className="text-[10px] font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
                             >
                               +{th.assignedProjects.length - 2} more
                             </button>
@@ -360,8 +360,8 @@ export const ThekedarsPage = () => {
                     {/* Workforce Scope with Worker Names & Phone Numbers */}
                     <td className="px-5 py-4">
                       <div className="space-y-1.5">
-                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 px-2 py-0.5 text-xs font-bold text-purple-900 border border-purple-200">
-                          <Users className="h-3.5 w-3.5 text-purple-700" />
+                        <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 text-xs font-bold text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
+                          <Users className="h-3.5 w-3.5 text-purple-700 dark:text-purple-400" />
                           <span>{th.workerCount || th.workers?.length || 0} Workers</span>
                         </div>
                         {th.workers && th.workers.length > 0 ? (
@@ -369,13 +369,13 @@ export const ThekedarsPage = () => {
                             {th.workers.slice(0, 3).map((w) => (
                               <div
                                 key={w._id}
-                                className="flex items-center justify-between gap-2 rounded-md bg-slate-50 border border-slate-200/90 px-2 py-1 text-xs"
+                                className="flex items-center justify-between gap-2 rounded-md bg-slate-50 dark:bg-slate-800/70 border border-slate-200/90 dark:border-slate-700 px-2 py-1 text-xs"
                               >
-                                <span className="font-bold text-slate-900 truncate" title={w.name}>
+                                <span className="font-bold text-slate-900 dark:text-white truncate" title={w.name}>
                                   {w.name}
                                 </span>
-                                <span className="font-mono text-[11px] text-slate-700 font-medium shrink-0 flex items-center gap-1">
-                                  <Phone className="h-2.5 w-2.5 text-slate-400" />
+                                <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 font-medium shrink-0 flex items-center gap-1">
+                                  <Phone className="h-2.5 w-2.5 text-slate-400 dark:text-slate-500" />
                                   {w.phone}
                                 </span>
                               </div>
@@ -387,14 +387,14 @@ export const ThekedarsPage = () => {
                                   setSelectedThekedar(th);
                                   setDetailsModalOpen(true);
                                 }}
-                                className="text-[10px] font-bold text-purple-700 hover:underline cursor-pointer block mt-0.5"
+                                className="text-[10px] font-bold text-purple-700 dark:text-purple-400 hover:underline cursor-pointer block mt-0.5"
                               >
                                 +{th.workers.length - 3} more craftsmen
                               </button>
                             )}
                           </div>
                         ) : (
-                          <div className="text-[11px] text-slate-400 italic">No workers assigned</div>
+                          <div className="text-[11px] text-slate-400 dark:text-slate-500 italic">No workers assigned</div>
                         )}
                       </div>
                     </td>
@@ -404,8 +404,8 @@ export const ThekedarsPage = () => {
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${
                           th.status === 'ACTIVE'
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                            : 'bg-rose-50 text-rose-800 border-rose-200'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60'
                         }`}
                       >
                         <span
@@ -425,7 +425,7 @@ export const ThekedarsPage = () => {
                             type="button"
                             disabled={statusActionLoadingId === th._id}
                             onClick={(e) => handleToggleStatus(th, e)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 hover:border-rose-400 disabled:opacity-50 transition cursor-pointer"
+                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-400 dark:hover:border-rose-700 disabled:opacity-50 transition cursor-pointer"
                             title="Deactivate / Suspend contractor login access"
                           >
                             {statusActionLoadingId === th._id ? (
@@ -440,7 +440,7 @@ export const ThekedarsPage = () => {
                             type="button"
                             disabled={statusActionLoadingId === th._id}
                             onClick={(e) => handleToggleStatus(th, e)}
-                            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 disabled:opacity-50 transition cursor-pointer"
+                            className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-700 disabled:opacity-50 transition cursor-pointer"
                             title="Activate contractor login access"
                           >
                             {statusActionLoadingId === th._id ? (
@@ -468,7 +468,7 @@ export const ThekedarsPage = () => {
                             type="button"
                             disabled={statusActionLoadingId === th._id}
                             onClick={(e) => handleDeleteThekedar(th, e)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition cursor-pointer"
+                            className="p-1 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
                             title="Delete contractor account (only available when 0 projects and 0 workers)"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -492,7 +492,7 @@ export const ThekedarsPage = () => {
       >
         <form onSubmit={handleRegisterThekedar} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {t('thekedars.fullName', 'Full Name')} *
             </label>
             <input
@@ -501,12 +501,12 @@ export const ThekedarsPage = () => {
               placeholder="e.g., Rajesh Sharma"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {t('thekedars.emailAddress', 'Email Address')} *
             </label>
             <input
@@ -515,12 +515,12 @@ export const ThekedarsPage = () => {
               placeholder="thekedar.rajesh@furnicraft.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {t('thekedars.mobileNumber', 'Phone Number')} *
             </label>
             <input
@@ -529,12 +529,12 @@ export const ThekedarsPage = () => {
               placeholder="9876543210"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {t('thekedars.password', 'Initial Password')} *
             </label>
             <input
@@ -542,14 +542,14 @@ export const ThekedarsPage = () => {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none"
+              className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none"
             />
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {t('thekedars.passwordNote', 'The Thekedar can change this password after logging in.')}
             </p>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
             <Button
               type="button"
               variant="outline"
@@ -580,21 +580,21 @@ export const ThekedarsPage = () => {
             <div
               className={`rounded-xl p-4 border ${
                 selectedThekedar.status === 'ACTIVE'
-                  ? 'bg-emerald-50/70 border-emerald-200'
-                  : 'bg-rose-50/70 border-rose-200'
+                  ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
+                  : 'bg-rose-50/70 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60'
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
                     Account Authorization State
                   </span>
                   <div className="mt-1 flex items-center gap-2">
                     <span
                       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black border ${
                         selectedThekedar.status === 'ACTIVE'
-                          ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                          : 'bg-rose-100 text-rose-900 border-rose-300'
+                          ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800'
+                          : 'bg-rose-100 dark:bg-rose-950 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-800'
                       }`}
                     >
                       <span
@@ -605,7 +605,7 @@ export const ThekedarsPage = () => {
                       {selectedThekedar.status === 'ACTIVE' ? 'ACTIVE CONTRACTOR' : 'SUSPENDED / DEACTIVATED'}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-600 max-w-sm">
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300 max-w-sm">
                     {selectedThekedar.status === 'ACTIVE'
                       ? 'Thekedar is fully authorized to log in, supervise crafts, record attendance, and manage workers.'
                       : 'Account is deactivated. Login tokens are revoked and access to contractor dashboard is blocked.'}
@@ -639,24 +639,24 @@ export const ThekedarsPage = () => {
             </div>
 
             {/* General Info Card */}
-            <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-2">
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-slate-200 dark:border-slate-700 space-y-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-slate-600">Email Address:</span>
-                <span className="text-slate-900 font-medium">{selectedThekedar.email}</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">Email Address:</span>
+                <span className="text-slate-900 dark:text-white font-medium">{selectedThekedar.email}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-slate-600">Mobile Phone:</span>
-                <span className="text-slate-900 font-medium">{selectedThekedar.phone || 'N/A'}</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">Mobile Phone:</span>
+                <span className="text-slate-900 dark:text-white font-medium">{selectedThekedar.phone || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="font-semibold text-slate-600">Workers Supervised:</span>
-                <span className="text-slate-900 font-bold">{selectedThekedar.workerCount || 0} Craftsmen</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">Workers Supervised:</span>
+                <span className="text-slate-900 dark:text-white font-bold">{selectedThekedar.workerCount || 0} Craftsmen</span>
               </div>
             </div>
 
             {/* Assigned Projects */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
                 Assigned Furniture Projects ({selectedThekedar.assignedProjects?.length || 0})
               </h4>
               {selectedThekedar.assignedProjects && selectedThekedar.assignedProjects.length > 0 ? (
@@ -664,24 +664,24 @@ export const ThekedarsPage = () => {
                   {selectedThekedar.assignedProjects.map((p) => (
                     <div
                       key={p._id}
-                      className="rounded-lg border border-slate-200 p-2.5 bg-white text-xs flex justify-between items-center"
+                      className="rounded-lg border border-slate-200 dark:border-slate-700 p-2.5 bg-white dark:bg-slate-800/80 text-xs flex justify-between items-center"
                     >
                       <div>
-                        <div className="font-bold text-slate-900">{p.name}</div>
-                        <div className="text-slate-500">{p.siteAddress}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
+                        <div className="text-slate-500 dark:text-slate-400">{p.siteAddress}</div>
                       </div>
                       <Badge variant="info">{p.status}</Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic">No projects assigned yet.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic">No projects assigned yet.</p>
               )}
             </div>
 
             {/* Supervised Workers: Name & Phone Number */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
                 Supervised Workers & Craftsmen ({selectedThekedar.workers?.length || selectedThekedar.workerCount || 0})
               </h4>
               {selectedThekedar.workers && selectedThekedar.workers.length > 0 ? (
@@ -689,19 +689,19 @@ export const ThekedarsPage = () => {
                   {selectedThekedar.workers.map((w) => (
                     <div
                       key={w._id}
-                      className="rounded-lg border border-slate-200 p-2.5 bg-white text-xs flex justify-between items-center hover:border-purple-300 transition"
+                      className="rounded-lg border border-slate-200 dark:border-slate-700 p-2.5 bg-white dark:bg-slate-800/80 text-xs flex justify-between items-center hover:border-purple-300 dark:hover:border-purple-600 transition"
                     >
                       <div>
-                        <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                           <span>{w.name}</span>
-                          <span className="text-[10px] font-mono text-purple-800 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                          <span className="text-[10px] font-mono text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                             {w.workerCode}
                           </span>
                         </div>
-                        <div className="text-slate-600 mt-1 flex items-center gap-1.5 font-medium">
-                          <Phone className="h-3 w-3 text-purple-600" />
-                          <span className="font-mono text-slate-800 font-semibold">{w.phone}</span>
-                          {w.email && <span className="text-slate-400 text-[11px]">({w.email})</span>}
+                        <div className="text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
+                          <Phone className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                          <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold">{w.phone}</span>
+                          {w.email && <span className="text-slate-400 dark:text-slate-500 text-[11px]">({w.email})</span>}
                         </div>
                       </div>
                       <Badge variant={w.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
@@ -711,23 +711,23 @@ export const ThekedarsPage = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic">No workers registered under this contractor.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 italic">No workers registered under this contractor.</p>
               )}
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-slate-200">
+            <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-800">
               {selectedThekedar.totalProjects === 0 && selectedThekedar.workerCount === 0 ? (
                 <button
                   type="button"
                   disabled={statusActionLoadingId === selectedThekedar._id}
                   onClick={(e) => handleDeleteThekedar(selectedThekedar, e)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 cursor-pointer"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Delete Thekedar Account</span>
                 </button>
               ) : (
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500">
                   Cannot delete while projects or workers are assigned
                 </span>
               )}

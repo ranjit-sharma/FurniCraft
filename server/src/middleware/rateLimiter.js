@@ -2,7 +2,7 @@ import rateLimit from 'express-rate-limit';
 
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'test' ? 10000 : 20, // Limit each IP to 20 auth requests per windowMs
+  max: process.env.NODE_ENV === 'test' ? 10000 : 1500, // High throughput: allows 500+ users sharing workshop NAT / site Wi-Fi to authenticate
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -13,7 +13,7 @@ export const authLimiter = rateLimit({
 
 export const apiLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: process.env.NODE_ENV === 'test' ? 10000 : 300, // 300 requests per 5 minutes for general API
+  max: process.env.NODE_ENV === 'test' ? 10000 : 5000, // 5000 requests per 5 minutes to support 500+ concurrent users smoothly
   standardHeaders: true,
   legacyHeaders: false,
   message: {

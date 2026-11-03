@@ -35,12 +35,12 @@ export const AuditLogsPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-700">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
           <ShieldAlert className="h-4 w-4" />
           <span>{t('audit.securityCompliance', 'Security & Compliance')}</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">{t('audit.title', 'Append-Only Application Audit Trail')}</h2>
-        <p className="text-xs text-slate-700">{t('audit.subtitle', 'Tamper-evident logs of logins, user registrations, wage updates, payroll finalizations, and tool handovers.')}</p>
+        <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-0.5">{t('audit.title', 'Append-Only Application Audit Trail')}</h2>
+        <p className="text-xs text-slate-700 dark:text-slate-300">{t('audit.subtitle', 'Tamper-evident logs of logins, user registrations, wage updates, payroll finalizations, and tool handovers.')}</p>
       </div>
 
       {/* Audit Log Table */}
@@ -50,11 +50,11 @@ export const AuditLogsPage = () => {
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
           </div>
         ) : logs.length === 0 ? (
-          <p className="py-8 text-center text-xs text-slate-700 italic">{t('audit.noLogs', 'No audit records found.')}</p>
+          <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('audit.noLogs', 'No audit records found.')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="p-3">{t('audit.timestamp', 'Timestamp')}</th>
                   <th className="p-3">{t('audit.actor', 'Actor')}</th>
@@ -65,22 +65,22 @@ export const AuditLogsPage = () => {
                   <th className="p-3">{t('audit.detailsChanges', 'Details / Changes')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {logs.map((l) => (
-                  <tr key={l._id} className="hover:bg-slate-50">
-                    <td className="p-3 text-slate-700 font-mono text-[11px]">
+                  <tr key={l._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="p-3 text-slate-700 dark:text-slate-400 font-mono text-[11px]">
                       {new Date(l.createdAt).toLocaleString()}
                     </td>
-                    <td className="p-3 font-bold text-slate-900">{l.actorName}</td>
+                    <td className="p-3 font-bold text-slate-900 dark:text-white">{l.actorName}</td>
                     <td className="p-3">
                       <Badge variant="default" size="sm">{l.actorRole}</Badge>
                     </td>
-                    <td className="p-3 font-semibold text-purple-900">{l.action}</td>
-                    <td className="p-3 text-slate-700">{l.targetType}</td>
-                    <td className="p-3 font-mono text-[11px] text-slate-700 truncate max-w-[120px]">
+                    <td className="p-3 font-semibold text-purple-900 dark:text-purple-300">{l.action}</td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">{l.targetType}</td>
+                    <td className="p-3 font-mono text-[11px] text-slate-700 dark:text-slate-400 truncate max-w-[120px]">
                       {l.targetId || '-'}
                     </td>
-                    <td className="p-3 text-[11px] text-slate-700 max-w-xs truncate">
+                    <td className="p-3 text-[11px] text-slate-700 dark:text-slate-400 max-w-xs truncate">
                       {l.newValues ? JSON.stringify(l.newValues) : l.reason || '-'}
                     </td>
                   </tr>

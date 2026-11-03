@@ -88,8 +88,8 @@ export const DisputesPage = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">{t('disputes.title', 'Worker Grievances & Disputes')}</h2>
-          <p className="text-xs text-slate-700">{t('disputes.subtitle', 'Transparent dispute handling for attendance shifts, wage rates, tool damage, and advances.')}</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('disputes.title', 'Worker Grievances & Disputes')}</h2>
+          <p className="text-xs text-slate-700 dark:text-slate-300">{t('disputes.subtitle', 'Transparent dispute handling for attendance shifts, wage rates, tool damage, and advances.')}</p>
         </div>
 
         {isWorker && (
@@ -106,24 +106,24 @@ export const DisputesPage = () => {
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
           </div>
         ) : disputes.length === 0 ? (
-          <p className="py-8 text-center text-xs text-slate-700 italic">{t('disputes.noDisputes', 'No disputes or grievances filed.')}</p>
+          <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('disputes.noDisputes', 'No disputes or grievances filed.')}</p>
         ) : (
           <div className="space-y-3">
             {disputes.map((disp) => (
-              <div key={disp._id} className="rounded-xl border border-slate-200 p-4 hover:border-amber-300">
+              <div key={disp._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 hover:border-amber-300 dark:hover:border-amber-500/50">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-800">{disp.disputeCode}</span>
+                      <span className="text-xs font-bold text-amber-800 dark:text-amber-400">{disp.disputeCode}</span>
                       <Badge variant="default" size="sm">{disp.category}</Badge>
                       <Badge variant={disp.status === 'RESOLVED' ? 'success' : disp.status === 'OPEN' ? 'warning' : 'danger'} size="sm">
                         {disp.status === 'RESOLVED' ? t('disputes.resolved', 'RESOLVED') : disp.status === 'OPEN' ? t('disputes.open', 'OPEN') : disp.status}
                       </Badge>
                     </div>
-                    <h3 className="text-base font-bold text-slate-900 mt-1">{disp.subject}</h3>
-                    <p className="text-xs text-slate-700 mt-1">{disp.description}</p>
-                    <span className="inline-block mt-2 text-[11px] text-slate-700">
-                      {t('disputes.filedBy', 'Filed by')}: <strong className="text-slate-800">{disp.workerId?.name}</strong> • {t('disputes.thekedar', 'Thekedar')}: {disp.thekedarId?.name} • {new Date(disp.createdAt).toLocaleDateString()}
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white mt-1">{disp.subject}</h3>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">{disp.description}</p>
+                    <span className="inline-block mt-2 text-[11px] text-slate-700 dark:text-slate-400">
+                      {t('disputes.filedBy', 'Filed by')}: <strong className="text-slate-800 dark:text-slate-200">{disp.workerId?.name}</strong> • {t('disputes.thekedar', 'Thekedar')}: {disp.thekedarId?.name} • {new Date(disp.createdAt).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -143,10 +143,10 @@ export const DisputesPage = () => {
                 </div>
 
                 {disp.resolutionNotes && (
-                  <div className="mt-3 rounded-lg bg-emerald-50/70 p-3 text-xs text-emerald-900 border border-emerald-200">
+                  <div className="mt-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 p-3 text-xs text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/60">
                     <span className="font-bold">{t('disputes.resolutionDecision', 'Resolution Decision')} ({disp.status}):</span>
                     <p className="mt-0.5">{disp.resolutionNotes}</p>
-                    <span className="text-[10px] text-emerald-700 mt-1 block">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-1 block">
                       {t('disputes.resolvedBy', 'Resolved by')}: {disp.resolvedBy?.name || 'Administrator'} on {new Date(disp.resolvedAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -161,11 +161,11 @@ export const DisputesPage = () => {
       <Modal isOpen={createModalOpen} onClose={() => setCreateModalOpen(false)} title={t('disputes.fileDisputeModal', 'File Worker Grievance')}>
         <form onSubmit={handleCreateDispute} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.category', 'Category')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.category', 'Category')}</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:ring-2 focus:ring-amber-500/20"
             >
               <option value="ATTENDANCE">Attendance Correction</option>
               <option value="PAYROLL">Payroll & Wage Settlement</option>
@@ -176,26 +176,26 @@ export const DisputesPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.subject', 'Subject')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.subject', 'Subject')}</label>
             <input
               type="text"
               required
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g. October 2nd shift recorded as Half instead of Full"
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:ring-2 focus:ring-amber-500/20"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('disputes.description', 'Description & Details')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.description', 'Description & Details')}</label>
             <textarea
               required
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Provide all facts regarding work done..."
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:ring-2 focus:ring-amber-500/20"
             />
           </div>
 
@@ -210,17 +210,17 @@ export const DisputesPage = () => {
       <Modal isOpen={resolveModalOpen} onClose={() => setResolveModalOpen(false)} title={t('disputes.resolveGrievanceModal', 'Resolve Grievance')}>
         {selectedDispute && (
           <form onSubmit={handleResolveDispute} className="space-y-4">
-            <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
-              <div>{t('disputes.subject', 'Subject')}: <strong className="text-slate-900">{selectedDispute.subject}</strong></div>
-              <div>{t('common.worker', 'Worker')}: <strong className="text-slate-900">{selectedDispute.workerId?.name}</strong></div>
+            <div className="rounded-lg bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 p-3 text-xs text-slate-700 dark:text-slate-300">
+              <div>{t('disputes.subject', 'Subject')}: <strong className="text-slate-900 dark:text-white">{selectedDispute.subject}</strong></div>
+              <div>{t('common.worker', 'Worker')}: <strong className="text-slate-900 dark:text-white">{selectedDispute.workerId?.name}</strong></div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('disputes.resolutionDecision', 'Resolution Decision')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.resolutionDecision', 'Resolution Decision')}</label>
               <select
                 value={resolveStatus}
                 onChange={(e) => setResolveStatus(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:ring-2 focus:ring-amber-500/20"
               >
                 <option value="RESOLVED">{t('disputes.resolved', 'Resolved')} (Accepted & Addressed)</option>
                 <option value="REJECTED">{t('common.rejected', 'Rejected')} (Declined with reason)</option>
@@ -228,14 +228,14 @@ export const DisputesPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('disputes.resolutionExplanation', 'Resolution Explanation & Notes')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('disputes.resolutionExplanation', 'Resolution Explanation & Notes')}</label>
               <textarea
                 required
                 rows={3}
                 value={resolutionNotes}
                 onChange={(e) => setResolutionNotes(e.target.value)}
                 placeholder="State the decision and any compensatory action taken..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:ring-2 focus:ring-amber-500/20"
               />
             </div>
 

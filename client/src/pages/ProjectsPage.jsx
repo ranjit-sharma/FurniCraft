@@ -319,8 +319,8 @@ export const ProjectsPage = () => {
       {/* Header Banner */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">{t('projects.allProjects', 'Modern Furniture Projects')}</h2>
-          <p className="text-xs text-slate-700">{t('projects.furnitureScope', 'Scope of modern furniture works with priority & archive controls.')}</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('projects.allProjects', 'Modern Furniture Projects')}</h2>
+          <p className="text-xs text-slate-700 dark:text-slate-300">{t('projects.furnitureScope', 'Scope of modern furniture works with priority & archive controls.')}</p>
         </div>
 
         {isThekedar && (
@@ -329,18 +329,18 @@ export const ProjectsPage = () => {
           </Button>
         )}
         {isOwner && (
-          <div className="flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-1.5 border border-purple-200 text-xs font-semibold text-purple-900 w-full sm:w-auto">
+          <div className="flex items-center gap-2 rounded-lg bg-purple-50 dark:bg-purple-950/60 px-3 py-1.5 border border-purple-200 dark:border-purple-800 text-xs font-semibold text-purple-900 dark:text-purple-300 w-full sm:w-auto">
             <span>{t('projects.executiveView', 'Read-Only Executive Visibility')}</span>
           </div>
         )}
       </div>
 
       {/* Filtration & Search Bar */}
-      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs">
         {/* Row 1: Status Filtration Pills */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-700 flex items-center gap-1 mr-1">
-            <Filter className="h-3.5 w-3.5 text-amber-600" /> {t('projects.status', 'Status')}:
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1 mr-1">
+            <Filter className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> {t('projects.status', 'Status')}:
           </span>
 
           <button
@@ -349,12 +349,12 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'ALL_ACTIVE'
                 ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span>{t('projects.allActive', 'All Active')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ALL_ACTIVE' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'ALL_ACTIVE' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.active}
             </span>
@@ -366,13 +366,13 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'IN_PROGRESS'
                 ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-amber-400" />
             <span>{t('projects.inProgress', 'In Progress')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'IN_PROGRESS' ? 'bg-amber-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'IN_PROGRESS' ? 'bg-amber-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.inProgress}
             </span>
@@ -384,13 +384,13 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'PLANNED'
                 ? 'bg-indigo-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-indigo-400" />
             <span>{t('projects.planned', 'Planned')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'PLANNED' ? 'bg-indigo-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'PLANNED' ? 'bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.planned}
             </span>
@@ -402,13 +402,13 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'ON_HOLD'
                 ? 'bg-orange-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-orange-400" />
             <span>{t('projects.onHold', 'On Hold')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ON_HOLD' ? 'bg-orange-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'ON_HOLD' ? 'bg-orange-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.onHold}
             </span>
@@ -420,13 +420,13 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'COMPLETED'
                 ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
             <span>{t('projects.completed', 'Completed')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'COMPLETED' ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'COMPLETED' ? 'bg-emerald-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.completed}
             </span>
@@ -441,13 +441,13 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'ARCHIVED'
                 ? 'bg-slate-800 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <Archive className="h-3 w-3" />
             <span>{t('projects.archived', 'Archived')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ARCHIVED' ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'ARCHIVED' ? 'bg-slate-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.archived}
             </span>
@@ -459,12 +459,12 @@ export const ProjectsPage = () => {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               statusFilter === 'ALL'
                 ? 'bg-slate-700 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             <span>{t('projects.allTotal', 'All Total')}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black ${
-              statusFilter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-800'
+              statusFilter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
             }`}>
               {counts.total}
             </span>
@@ -472,7 +472,7 @@ export const ProjectsPage = () => {
         </div>
 
         {/* Row 2: Search Query, Priority Filter & Furniture Type */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
@@ -480,7 +480,7 @@ export const ProjectsPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('projects.searchPlaceholder', 'Search title, client, site address, or code...')}
-              className="w-full rounded-xl border border-slate-300 bg-white pl-9 pr-8 py-2 text-xs font-medium text-slate-900 shadow-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 pl-9 pr-8 py-2 text-xs font-medium text-slate-900 dark:text-white shadow-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
             />
             {searchQuery && (
               <button
@@ -495,11 +495,11 @@ export const ProjectsPage = () => {
 
           {/* Priority / Importance Filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-600 shrink-0">{t('projects.importance', 'Importance')}:</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">{t('projects.importance', 'Importance')}:</span>
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="text-xs font-bold rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-slate-800 shadow-xs focus:border-amber-500 cursor-pointer"
+              className="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-slate-800 dark:text-slate-200 shadow-xs focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">{t('projects.allPriorities', 'All Importance')}</option>
               <option value="CRITICAL">🔥 {t('projects.critical', 'Critical')}</option>
@@ -511,11 +511,11 @@ export const ProjectsPage = () => {
 
           {/* Furniture Type Filter */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-600 shrink-0">{t('projects.type', 'Type')}:</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">{t('projects.type', 'Type')}:</span>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="text-xs font-bold rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-slate-800 shadow-xs focus:border-amber-500 cursor-pointer"
+              className="text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-2 text-slate-800 dark:text-slate-200 shadow-xs focus:border-amber-500 cursor-pointer"
             >
               <option value="ALL">{t('projects.allTypes', 'All Types')}</option>
               <option value="MODULAR_KITCHEN">Modular Kitchen</option>
@@ -532,7 +532,7 @@ export const ProjectsPage = () => {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs font-bold text-rose-600 hover:text-rose-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50"
+              className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40"
             >
               <X className="h-3.5 w-3.5" /> {t('projects.resetFilters', 'Reset Filters')}
             </button>
@@ -553,28 +553,28 @@ export const ProjectsPage = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-amber-600" />
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                     <span>{t('projects.prioritizedActive', 'Prioritized Active Projects')}</span>
-                    <span className="text-xs font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-black bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded-full">
                       {filteredActiveProjects.length}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
                     {t('projects.orderedStrictly', 'Ordered strictly by importance level: Critical (highest) → High → Medium → Low.')}
                   </p>
                 </div>
 
-                <div className="text-[11px] font-semibold text-slate-500">
+                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                   {t('projects.importance', 'Priority')}: Active
                 </div>
               </div>
 
               {filteredActiveProjects.length === 0 ? (
                 <Card className="text-center py-10 border-dashed">
-                  <FolderKanban className="mx-auto h-10 w-10 text-slate-300" />
-                  <h4 className="mt-2 text-sm font-bold text-slate-800">{t('projects.noActiveMatch', 'No active projects match your filters')}</h4>
-                  <p className="text-xs text-slate-500 mt-1">{t('projects.trySwitching', 'Try switching status tabs, resetting filters, or adding a new project.')}</p>
+                  <FolderKanban className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
+                  <h4 className="mt-2 text-sm font-bold text-slate-800 dark:text-slate-200">{t('projects.noActiveMatch', 'No active projects match your filters')}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('projects.trySwitching', 'Try switching status tabs, resetting filters, or adding a new project.')}</p>
                   {hasActiveFilters && (
                     <Button size="sm" variant="outline" className="mt-3 text-xs" onClick={clearAllFilters}>
                       {t('projects.resetFilters', 'Reset Filters')}
@@ -588,16 +588,16 @@ export const ProjectsPage = () => {
                       key={p._id}
                       className={`flex flex-col justify-between transition-all hover:border-amber-400 hover:shadow-md ${
                         p.priority === 'CRITICAL'
-                          ? 'border-rose-300/80 bg-gradient-to-b from-rose-50/20 to-white'
+                          ? 'border-rose-300/80 dark:border-rose-800/80 bg-gradient-to-b from-rose-50/20 to-white dark:from-rose-950/20 dark:to-slate-900'
                           : p.priority === 'HIGH'
-                          ? 'border-amber-300/80 bg-gradient-to-b from-amber-50/20 to-white'
+                          ? 'border-amber-300/80 dark:border-amber-800/80 bg-gradient-to-b from-amber-50/20 to-white dark:from-amber-950/20 dark:to-slate-900'
                           : ''
                       }`}
                     >
                       <div>
                         {/* Header: Code, Priority & Status */}
                         <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-black text-amber-900 flex items-center gap-1.5">
+                          <span className="text-xs font-black text-amber-900 dark:text-amber-400 flex items-center gap-1.5">
                             <span className="text-[10px] text-slate-400 font-semibold">#{idx + 1}</span>
                             {p.projectCode}
                           </span>
@@ -607,17 +607,17 @@ export const ProjectsPage = () => {
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-base font-black text-slate-900 mt-2 line-clamp-1">{p.name}</h3>
+                        <h3 className="text-base font-black text-slate-900 dark:text-white mt-2 line-clamp-1">{p.name}</h3>
 
                         {/* Quick Status / Priority Dropdowns for Thekedar */}
                         {isThekedar ? (
-                          <div className="mt-2.5 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                          <div className="mt-2.5 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] font-bold text-slate-600">{t('projects.status', 'Status')}:</span>
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{t('projects.status', 'Status')}:</span>
                               <select
                                 value={p.status}
                                 onChange={(e) => handleProjectStatusChange(p._id, e.target.value)}
-                                className="text-xs font-bold rounded-lg border border-slate-300 bg-white px-2 py-0.5 text-slate-900 shadow-xs focus:border-amber-500 cursor-pointer"
+                                className="text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
                               >
                                 <option value="PLANNED">PLANNED</option>
                                 <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -628,11 +628,11 @@ export const ProjectsPage = () => {
                             </div>
 
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] font-bold text-slate-600">{t('projects.importance', 'Priority')}:</span>
+                              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{t('projects.importance', 'Priority')}:</span>
                               <select
                                 value={p.priority || 'MEDIUM'}
                                 onChange={(e) => handleProjectPriorityChange(p._id, e.target.value)}
-                                className="text-xs font-black rounded-lg border border-slate-300 bg-white px-1.5 py-0.5 text-slate-900 shadow-xs focus:border-amber-500 cursor-pointer"
+                                className="text-xs font-black rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-0.5 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
                               >
                                 <option value="CRITICAL">🔥 CRITICAL</option>
                                 <option value="HIGH">⚡ HIGH</option>
@@ -649,10 +649,10 @@ export const ProjectsPage = () => {
                         )}
 
                         {/* Project Details */}
-                        <div className="mt-3 space-y-1.5 text-xs text-slate-700">
+                        <div className="mt-3 space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
                           <div className="flex items-center gap-2">
                             <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-900">{p.clientName}</strong></span>
+                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-900 dark:text-white">{p.clientName}</strong></span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
@@ -660,28 +660,28 @@ export const ProjectsPage = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.type', 'Type')}: <strong className="text-amber-900">{p.projectType?.replace('_', ' ')}</strong></span>
+                            <span>{t('projects.type', 'Type')}: <strong className="text-amber-900 dark:text-amber-400">{p.projectType?.replace('_', ' ')}</strong></span>
                           </div>
                         </div>
 
                         {/* Financial Card (Non-worker) */}
                         {!isWorker && (
                           p.totalMoneyReceived > 0 ? (
-                            <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs">
+                            <div className="mt-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 text-xs">
                               <div className="flex items-center justify-between">
-                                <span className="text-emerald-800 font-bold uppercase tracking-wider text-[10px]">{t('projects.clientMoneyReceived', 'Client Money Received')}</span>
+                                <span className="text-emerald-800 dark:text-emerald-400 font-bold uppercase tracking-wider text-[10px]">{t('projects.clientMoneyReceived', 'Client Money Received')}</span>
                                 {p.paymentsCount > 0 && (
-                                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-full font-semibold">
+                                  <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-semibold">
                                     {p.paymentsCount} {p.paymentsCount === 1 ? 'receipt' : 'receipts'}
                                   </span>
                                 )}
                               </div>
-                              <div className="mt-1 text-base font-black text-emerald-950">
+                              <div className="mt-1 text-base font-black text-emerald-950 dark:text-emerald-200">
                                 ₹{p.totalMoneyReceived.toLocaleString('en-IN')}
                               </div>
                             </div>
                           ) : (
-                            <div className="mt-4 rounded-xl bg-slate-50 border border-slate-200/60 p-2.5 text-xs text-slate-600 flex items-center justify-between">
+                            <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700 p-2.5 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
                               <span className="font-medium">{t('projects.noPaymentReceived', 'No client payment received yet')}</span>
                               <span className="text-[10px] text-slate-400 italic">₹0</span>
                             </div>
@@ -690,12 +690,12 @@ export const ProjectsPage = () => {
 
                         {/* Thekedar Pending Review Alert */}
                         {isThekedar && p.pendingApprovalTasksCount > 0 && (
-                          <div className="mt-3.5 rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-xs font-bold text-amber-900 flex items-center justify-between animate-pulse">
+                          <div className="mt-3.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-2.5 text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center justify-between animate-pulse">
                             <span className="flex items-center gap-1.5">
-                              <Clock className="h-4 w-4 text-amber-700 shrink-0" />
+                              <Clock className="h-4 w-4 text-amber-700 dark:text-amber-400 shrink-0" />
                               {p.pendingApprovalTasksCount} {t('projects.tasksAwaitingReview', 'Task(s) Awaiting Review')}
                             </span>
-                            <Link to={`/projects/${p._id}`} className="text-amber-800 underline text-[11px] font-extrabold hover:text-amber-950 shrink-0">
+                            <Link to={`/projects/${p._id}`} className="text-amber-800 dark:text-amber-400 underline text-[11px] font-extrabold hover:text-amber-950 dark:hover:text-amber-200 shrink-0">
                               {t('thekedar.approve', 'Approve')} →
                             </Link>
                           </div>
@@ -719,16 +719,16 @@ export const ProjectsPage = () => {
                                     key={latestTask._id}
                                     className={`rounded-xl border p-3 text-xs transition-all ${
                                       latestTask.status === 'REWORK_NEEDED'
-                                        ? 'border-rose-300 bg-rose-50/50'
+                                        ? 'border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30'
                                         : latestTask.status === 'COMPLETED'
-                                        ? 'border-amber-300 bg-amber-50/60'
+                                        ? 'border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30'
                                         : latestTask.status === 'VERIFIED'
-                                        ? 'border-emerald-300 bg-emerald-50/60'
-                                        : 'border-emerald-300 bg-emerald-50/40 shadow-xs'
+                                        ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/30'
+                                        : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-xs'
                                     }`}
                                   >
                                     <div className="flex items-start justify-between gap-1">
-                                      <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                                      <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                                         <CheckCircle className={`h-4 w-4 shrink-0 ${latestTask.status === 'VERIFIED' ? 'text-emerald-600' : latestTask.status === 'COMPLETED' ? 'text-amber-600' : 'text-emerald-600'}`} />
                                         <span>{latestTask.furnitureItemName}</span>
                                       </span>
@@ -746,25 +746,25 @@ export const ProjectsPage = () => {
                                       )}
                                     </div>
 
-                                    <div className="mt-1 flex items-center justify-between text-[11px] text-slate-600">
-                                      <span>Stage: <strong>{latestTask.taskType}</strong></span>
-                                      <span>Units: <strong>{latestTask.completedUnits || 0}/{latestTask.plannedUnits} {latestTask.unitMetric || 'pcs'}</strong></span>
+                                    <div className="mt-1 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+                                      <span>Stage: <strong className="text-slate-800 dark:text-slate-200">{latestTask.taskType}</strong></span>
+                                      <span>Units: <strong className="text-slate-800 dark:text-slate-200">{latestTask.completedUnits || 0}/{latestTask.plannedUnits} {latestTask.unitMetric || 'pcs'}</strong></span>
                                     </div>
 
-                                    <div className="mt-2.5 pt-2 border-t border-slate-200/80 flex items-center justify-between gap-2">
+                                    <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-750 flex items-center justify-between gap-2">
                                       {latestTask.status === 'COMPLETED' ? (
-                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900 dark:text-amber-400">
                                           <Clock className="h-3.5 w-3.5 text-amber-600 animate-spin" />
                                           <span>{t('projects.awaitingApproval', 'Awaiting Thekedar Approval')}</span>
                                         </div>
                                       ) : latestTask.status === 'VERIFIED' ? (
-                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800">
+                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
                                           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                                           <span>{t('projects.qualityChecked', 'Quality Checked & Approved ✓')}</span>
                                         </div>
                                       ) : (
                                         <>
-                                          <span className="text-[10px] text-emerald-800 font-semibold">Craft task</span>
+                                          <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold">Craft task</span>
                                           <Button
                                             size="sm"
                                             variant="primary"
@@ -782,18 +782,18 @@ export const ProjectsPage = () => {
                               })()}
 
                               {p.assignedTasks.length > 1 && (
-                                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5 px-0.5">
+                                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5 px-0.5">
                                   <span>+{p.assignedTasks.length - 1} earlier task{p.assignedTasks.length - 1 > 1 ? 's' : ''} on this project</span>
-                                  <Link to={`/projects/${p._id}`} className="font-semibold text-amber-800 hover:text-amber-950 underline">
+                                  <Link to={`/projects/${p._id}`} className="font-semibold text-amber-800 dark:text-amber-400 hover:text-amber-950 underline">
                                     {t('common.view', 'View')} {t('projects.tasks', 'Tasks')} →
                                   </Link>
                                 </div>
                               )}
                             </div>
                           ) : p.myAssignment ? (
-                            <div className="mt-4 rounded-xl border border-emerald-300 bg-emerald-50/50 p-3 text-xs space-y-2">
+                            <div className="mt-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 p-3 text-xs space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                                <span className="font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
                                   <CheckCircle className="h-4 w-4 text-emerald-600" />
                                   Role: {p.myAssignment.roleInProject || 'Craftsman'}
                                 </span>
@@ -801,19 +801,19 @@ export const ProjectsPage = () => {
                                   {p.myAssignment.status === 'COMPLETED' ? 'COMPLETED ✓' : 'ACTIVE WORK'}
                                 </Badge>
                               </div>
-                              <p className="text-[11px] text-emerald-800">
+                              <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
                                 {p.myAssignment.wageOverride ? `Special daily wage: ₹${p.myAssignment.wageOverride}` : 'Standard daily wage site deployment'}
                               </p>
 
-                              <div className="pt-2 border-t border-emerald-200/70 flex items-center justify-between gap-2">
+                              <div className="pt-2 border-t border-emerald-200/70 dark:border-emerald-800/70 flex items-center justify-between gap-2">
                                 {p.myAssignment.status === 'COMPLETED' ? (
-                                  <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                                     Work Completed on Site ✓
                                   </span>
                                 ) : (
                                   <>
-                                    <span className="text-[10px] text-emerald-800 font-semibold">Finish and submit for review</span>
+                                    <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold">Finish and submit for review</span>
                                     <Button
                                       size="sm"
                                       variant="primary"
@@ -828,7 +828,7 @@ export const ProjectsPage = () => {
                               </div>
                             </div>
                           ) : (
-                            <div className="mt-4 rounded-xl bg-slate-50 border border-slate-200/70 p-2.5 text-xs text-slate-500 flex items-center gap-2 italic">
+                            <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 p-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 italic">
                               <Clock className="h-3.5 w-3.5 text-slate-400" />
                               <span>No task assigned to you on this project yet</span>
                             </div>
@@ -837,8 +837,8 @@ export const ProjectsPage = () => {
                       </div>
 
                       {/* Footer Actions */}
-                      <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-600 truncate">
+                      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-600 dark:text-slate-400 truncate">
                           Thekedar: {p.thekedarId?.name || 'Assigned'}
                         </span>
 
@@ -847,7 +847,7 @@ export const ProjectsPage = () => {
                             <button
                               type="button"
                               onClick={() => handleProjectStatusChange(p._id, 'ARCHIVED')}
-                              className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 px-2 py-1 rounded-md transition"
+                              className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1 rounded-md transition"
                               title="Archive project"
                             >
                               {t('projects.archive', 'Archive')}
@@ -870,17 +870,17 @@ export const ProjectsPage = () => {
           {/* ======================================================== */}
           {/* SECTION 2: Dedicated Archive Section at the End         */}
           {/* ======================================================== */}
-          <div id="archive-section" className="pt-6 border-t-2 border-slate-200 space-y-4">
+          <div id="archive-section" className="pt-6 border-t-2 border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <Archive className="h-5 w-5 text-slate-700" />
+                <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <Archive className="h-5 w-5 text-slate-700 dark:text-slate-300" />
                   <span>{t('projects.archivedProjects', 'Archived Projects')}</span>
-                  <span className="text-xs font-black bg-slate-200 text-slate-800 px-2.5 py-0.5 rounded-full">
+                  <span className="text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-2.5 py-0.5 rounded-full">
                     {filteredArchivedProjects.length}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   {t('projects.archivedDesc', 'Decommissioned or archived furniture projects preserved for permanent record.')}
                 </p>
               </div>
@@ -890,7 +890,7 @@ export const ProjectsPage = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => setArchiveExpanded(!archiveExpanded)}
-                  className="text-xs font-bold text-slate-700"
+                  className="text-xs font-bold text-slate-700 dark:text-slate-300"
                 >
                   {archiveExpanded ? (
                     <>
@@ -907,10 +907,10 @@ export const ProjectsPage = () => {
 
             {archiveExpanded && (
               filteredArchivedProjects.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 p-8 text-center">
+                <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/40 p-8 text-center">
                   <Archive className="mx-auto h-10 w-10 text-slate-400" />
-                  <h4 className="mt-2 text-sm font-bold text-slate-800">{t('projects.noArchivedFound', 'No archived projects found')}</h4>
-                  <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                  <h4 className="mt-2 text-sm font-bold text-slate-800 dark:text-slate-200">{t('projects.noArchivedFound', 'No archived projects found')}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
                     {t('projects.archiveHelp', 'Projects can be archived anytime by Thekedars using the status dropdown on any project card. They will appear here safely archived.')}
                   </p>
                 </div>
@@ -919,7 +919,7 @@ export const ProjectsPage = () => {
                   {filteredArchivedProjects.map((p) => (
                     <Card
                       key={p._id}
-                      className="flex flex-col justify-between border-slate-300/80 bg-slate-50/70 hover:bg-white transition-all shadow-xs"
+                      className="flex flex-col justify-between border-slate-300/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition-all shadow-xs"
                     >
                       <div>
                         {/* Header: Project Code & Badges */}
@@ -933,13 +933,13 @@ export const ProjectsPage = () => {
                           </div>
                         </div>
 
-                        <h3 className="text-base font-bold text-slate-800 mt-2 line-clamp-1">{p.name}</h3>
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mt-2 line-clamp-1">{p.name}</h3>
 
                         {/* Details */}
-                        <div className="mt-3 space-y-1.5 text-xs text-slate-600">
+                        <div className="mt-3 space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                           <div className="flex items-center gap-2">
                             <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-800">{p.clientName}</strong></span>
+                            <span>{t('projects.client', 'Client')}: <strong className="text-slate-800 dark:text-slate-200">{p.clientName}</strong></span>
                           </div>
                           <div className="flex items-center gap-2">
                             <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
@@ -947,19 +947,19 @@ export const ProjectsPage = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                            <span>{t('projects.type', 'Type')}: <strong className="text-slate-700">{p.projectType?.replace('_', ' ')}</strong></span>
+                            <span>{t('projects.type', 'Type')}: <strong className="text-slate-700 dark:text-slate-300">{p.projectType?.replace('_', ' ')}</strong></span>
                           </div>
                         </div>
 
                         {/* Status Change / Re-activate */}
                         {isThekedar && (
-                          <div className="mt-3 p-2.5 rounded-xl bg-white border border-slate-200 space-y-2">
+                          <div className="mt-3 p-2.5 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
                             <div className="flex items-center justify-between text-xs">
-                              <span className="font-semibold text-slate-600">{t('projects.status', 'Status')}:</span>
+                              <span className="font-semibold text-slate-600 dark:text-slate-400">{t('projects.status', 'Status')}:</span>
                               <select
                                 value={p.status}
                                 onChange={(e) => handleProjectStatusChange(p._id, e.target.value)}
-                                className="text-xs font-bold rounded-lg border border-slate-300 bg-white px-2 py-1 text-slate-900 shadow-xs focus:border-amber-500 cursor-pointer"
+                                className="text-xs font-bold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-slate-900 dark:text-white shadow-xs focus:border-amber-500 cursor-pointer"
                               >
                                 <option value="ARCHIVED">ARCHIVED 📁</option>
                                 <option value="IN_PROGRESS">Restore: IN_PROGRESS</option>
@@ -972,7 +972,7 @@ export const ProjectsPage = () => {
                       </div>
 
                       {/* Footer */}
-                      <div className="mt-5 pt-3 border-t border-slate-200/80 flex items-center justify-between gap-2">
+                      <div className="mt-5 pt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2">
                         {isThekedar ? (
                           <Button
                             size="sm"
@@ -1071,11 +1071,11 @@ export const ProjectsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('projects.importance', 'Project Importance / Priority')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('projects.importance', 'Project Importance / Priority')}</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm font-bold text-slate-900"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-sm font-bold text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
               >
                 <option value="CRITICAL">🔥 CRITICAL</option>
                 <option value="HIGH">⚡ HIGH</option>

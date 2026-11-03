@@ -170,73 +170,73 @@ export const MembersOverviewPage = () => {
       {/* KPI Cards Grid: Whole Members & Visits Breakdown */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
         {/* Total Members */}
-        <Card className="border-purple-200 bg-purple-50/30 hover:shadow-md transition-shadow">
+        <Card className="border-purple-200 dark:border-purple-800/60 bg-purple-50/30 dark:bg-purple-950/20 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-purple-900 uppercase tracking-wider">{t('members.allMembers', 'Total Members')}</span>
-            <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
+            <span className="text-xs font-bold text-purple-900 dark:text-purple-300 uppercase tracking-wider">{t('members.allMembers', 'Total Members')}</span>
+            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/60 flex items-center justify-center text-purple-700 dark:text-purple-300">
               <Users className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-purple-950 mt-2">{summary.totalMembers}</div>
-          <div className="text-[11px] text-purple-800 font-semibold mt-1">
+          <div className="text-3xl font-black text-purple-950 dark:text-purple-100 mt-2">{summary.totalMembers}</div>
+          <div className="text-[11px] text-purple-800 dark:text-purple-400 font-semibold mt-1">
             {t('members.registeredPlatform', 'Registered on Platform')}
           </div>
         </Card>
 
         {/* Total Thekedars */}
-        <Card className="border-amber-200 bg-amber-50/30 hover:shadow-md transition-shadow">
+        <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/20 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">{t('members.thekedarsCount', 'Thekedars')}</span>
-            <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+            <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">{t('members.thekedarsCount', 'Thekedars')}</span>
+            <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center text-amber-700 dark:text-amber-300">
               <HardHat className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-amber-950 mt-2">{summary.totalThekedars}</div>
-          <div className="text-[11px] text-amber-800 font-semibold mt-1 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+          <div className="text-3xl font-black text-amber-950 dark:text-amber-100 mt-2">{summary.totalThekedars}</div>
+          <div className="text-[11px] text-amber-800 dark:text-amber-400 font-semibold mt-1 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             {summary.activeThekedars} {t('thekedars.activeContractors', 'Active Contractors')}
           </div>
         </Card>
 
         {/* Total Workers */}
-        <Card className="border-blue-200 bg-blue-50/30 hover:shadow-md transition-shadow">
+        <Card className="border-blue-200 dark:border-blue-800/60 bg-blue-50/30 dark:bg-blue-950/20 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">{t('members.workersCount', 'Workers')}</span>
-            <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+            <span className="text-xs font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider">{t('members.workersCount', 'Workers')}</span>
+            <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300">
               <UserCheck2 className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-blue-950 mt-2">{summary.totalWorkers}</div>
-          <div className="text-[11px] text-blue-800 font-semibold mt-1 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+          <div className="text-3xl font-black text-blue-950 dark:text-blue-100 mt-2">{summary.totalWorkers}</div>
+          <div className="text-[11px] text-blue-800 dark:text-blue-400 font-semibold mt-1 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             {summary.activeWorkers} {t('worker.activeCraftsmen', 'Active Craftsmen')}
           </div>
         </Card>
 
         {/* Total Owners */}
-        <Card className="border-emerald-200 bg-emerald-50/30 hover:shadow-md transition-shadow">
+        <Card className="border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-emerald-950/20 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">{t('members.ownersCount', 'Administrators')}</span>
-            <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+            <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wider">{t('members.ownersCount', 'Administrators')}</span>
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
               <Shield className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-emerald-950 mt-2">{summary.totalOwners}</div>
-          <div className="text-[11px] text-emerald-800 font-semibold mt-1">
+          <div className="text-3xl font-black text-emerald-950 dark:text-emerald-100 mt-2">{summary.totalOwners}</div>
+          <div className="text-[11px] text-emerald-800 dark:text-emerald-400 font-semibold mt-1">
             {t('members.executiveOwners', 'Executive Owner Accounts')}
           </div>
         </Card>
 
         {/* Total Visits to Application */}
-        <Card className="col-span-2 lg:col-span-1 border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-blue-50/30 hover:shadow-md transition-shadow">
+        <Card className="col-span-2 lg:col-span-1 border-indigo-200 dark:border-indigo-800/60 bg-gradient-to-br from-indigo-50/50 to-blue-50/30 dark:from-indigo-950/30 dark:to-blue-950/20 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-indigo-900 uppercase tracking-wider">{t('members.totalVisits', 'Total App Visits')}</span>
-            <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
+            <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">{t('members.totalVisits', 'Total App Visits')}</span>
+            <div className="h-8 w-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 flex items-center justify-center text-indigo-700 dark:text-indigo-300">
               <Eye className="h-4 w-4" />
             </div>
           </div>
-          <div className="text-3xl font-black text-indigo-950 mt-2">{summary.totalVisits.toLocaleString('en-IN')}</div>
-          <div className="text-[11px] text-indigo-800 font-semibold mt-1 flex items-center gap-1">
+          <div className="text-3xl font-black text-indigo-950 dark:text-indigo-100 mt-2">{summary.totalVisits.toLocaleString('en-IN')}</div>
+          <div className="text-[11px] text-indigo-800 dark:text-indigo-400 font-semibold mt-1 flex items-center gap-1">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             {summary.todayVisits} {t('members.todayVisits', 'Visits Today')}
           </div>
@@ -244,32 +244,32 @@ export const MembersOverviewPage = () => {
       </div>
 
       {/* Role-wise Visit Breakdown Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Activity className="h-4 w-4 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Activity className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               {t('members.visitsDistribution', 'Application Visits Distribution by Member Role')}
             </h3>
-            <p className="text-xs text-slate-500">{t('members.sessionsBreakdown', 'Breakdown of total system sessions and login activity across workforce ranks.')}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t('members.sessionsBreakdown', 'Breakdown of total system sessions and login activity across workforce ranks.')}</p>
           </div>
-          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
             {t('members.totalSessions', 'Total Sessions')}: {summary.totalVisits}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-          <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-3.5">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/30 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-900">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-amber-800">
+              <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-amber-800 dark:text-amber-400">
                 {summary.totalVisits ? Math.round(((summary.visitsByRole?.THEKEDAR || 0) / summary.totalVisits) * 100) : 0}%
               </span>
             </div>
-            <div className="text-2xl font-black text-amber-950 mt-1">
+            <div className="text-2xl font-black text-amber-950 dark:text-amber-100 mt-1">
               {(summary.visitsByRole?.THEKEDAR || 0).toLocaleString('en-IN')}
             </div>
-            <div className="w-full bg-amber-200 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-amber-200 dark:bg-amber-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-amber-600 h-full rounded-full"
                 style={{
@@ -279,17 +279,17 @@ export const MembersOverviewPage = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3.5">
+          <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/40 dark:bg-blue-950/30 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-blue-900">{t('members.workersCount', 'Worker')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-blue-800">
+              <span className="text-xs font-semibold text-blue-900 dark:text-blue-300">{t('members.workersCount', 'Worker')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-blue-800 dark:text-blue-400">
                 {summary.totalVisits ? Math.round(((summary.visitsByRole?.WORKER || 0) / summary.totalVisits) * 100) : 0}%
               </span>
             </div>
-            <div className="text-2xl font-black text-blue-950 mt-1">
+            <div className="text-2xl font-black text-blue-950 dark:text-blue-100 mt-1">
               {(summary.visitsByRole?.WORKER || 0).toLocaleString('en-IN')}
             </div>
-            <div className="w-full bg-blue-200 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-blue-200 dark:bg-blue-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-blue-600 h-full rounded-full"
                 style={{
@@ -299,17 +299,17 @@ export const MembersOverviewPage = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-3.5">
+          <div className="rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/30 p-3.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-purple-900">{t('members.ownersCount', 'Owner')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-purple-800">
+              <span className="text-xs font-semibold text-purple-900 dark:text-purple-300">{t('members.ownersCount', 'Owner')} {t('members.visits', 'Visits')}</span>
+              <span className="text-xs font-black text-purple-800 dark:text-purple-400">
                 {summary.totalVisits ? Math.round(((summary.visitsByRole?.OWNER || 0) / summary.totalVisits) * 100) : 0}%
               </span>
             </div>
-            <div className="text-2xl font-black text-purple-950 mt-1">
+            <div className="text-2xl font-black text-purple-950 dark:text-purple-100 mt-1">
               {(summary.visitsByRole?.OWNER || 0).toLocaleString('en-IN')}
             </div>
-            <div className="w-full bg-purple-200 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-purple-200 dark:bg-purple-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-purple-600 h-full rounded-full"
                 style={{
@@ -335,7 +335,7 @@ export const MembersOverviewPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('members.searchPlaceholder', 'Search by name, email, phone, or worker code...')}
-              className="w-full rounded-xl border border-slate-300 pl-9 pr-4 py-2 text-xs focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white pl-9 pr-4 py-2 text-xs focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
             />
           </div>
 
@@ -354,7 +354,7 @@ export const MembersOverviewPage = () => {
                 className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   selectedRole === tab.id
                     ? 'bg-purple-900 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {tab.label}
@@ -364,7 +364,7 @@ export const MembersOverviewPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
             >
               <option value="ALL">{t('common.all', 'All Status')}</option>
               <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
@@ -379,17 +379,17 @@ export const MembersOverviewPage = () => {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
           </div>
         ) : filteredMembers.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center">
             <Users className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-xs font-semibold text-slate-600">No members match your search or filter.</p>
+            <p className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">No members match your search or filter.</p>
             <Button size="xs" variant="secondary" onClick={() => { setSearchQuery(''); setSelectedRole('ALL'); setStatusFilter('ALL'); }} className="mt-3">
               Clear Filters
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-left text-xs">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
                 <tr>
                   <th className="px-4 py-3">{t('profile.accountDetails', 'Member Details')}</th>
                   <th className="px-4 py-3">{t('profile.role', 'Role')}</th>
@@ -400,33 +400,33 @@ export const MembersOverviewPage = () => {
                   <th className="px-4 py-3 text-right">{t('common.status', 'Status')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {filteredMembers.map((m) => (
-                  <tr key={m._id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr key={m._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60 transition-colors">
                     {/* Member Details */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div
                           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl font-black text-xs ${
                             m.role === 'OWNER'
-                              ? 'bg-purple-100 text-purple-900 border border-purple-200'
+                              ? 'bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-300 border border-purple-200 dark:border-purple-800'
                               : m.role === 'THEKEDAR'
-                              ? 'bg-amber-100 text-amber-900 border border-amber-200'
-                              : 'bg-blue-100 text-blue-900 border border-blue-200'
+                              ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                              : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                           }`}
                         >
                           <i className="fa-solid fa-user text-xs"></i>
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
                             {m.name}
                             {m.workerCode && (
-                              <span className="font-mono text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">
+                              <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-semibold">
                                 {m.workerCode}
                               </span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-500">{m.email}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>
                         </div>
                       </div>
                     </td>
@@ -439,12 +439,12 @@ export const MembersOverviewPage = () => {
                     </td>
 
                     {/* Assigned Thekedar */}
-                    <td className="px-4 py-3 text-slate-700">
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                       {m.role === 'WORKER' ? (
                         m.assignedThekedar ? (
                           <div className="space-y-0.5">
-                            <span className="font-bold text-slate-900 block">{m.assignedThekedar.name}</span>
-                            <span className="text-[11px] text-slate-500 block">{m.assignedThekedar.phone}</span>
+                            <span className="font-bold text-slate-900 dark:text-white block">{m.assignedThekedar.name}</span>
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{m.assignedThekedar.phone}</span>
                           </div>
                         ) : (
                           <span className="text-slate-400 italic">Unassigned</span>
@@ -456,20 +456,20 @@ export const MembersOverviewPage = () => {
 
                     {/* Contact */}
                     <td className="px-4 py-3">
-                      <div className="text-slate-800 font-mono text-xs">{m.phone}</div>
-                      <div className="text-[10px] text-slate-500">Joined: {new Date(m.createdAt).toLocaleDateString()}</div>
+                      <div className="text-slate-800 dark:text-slate-200 font-mono text-xs">{m.phone}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">Joined: {new Date(m.createdAt).toLocaleDateString()}</div>
                     </td>
 
                     {/* App Visits */}
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-black text-indigo-900 border border-indigo-200">
-                        <Eye className="h-3 w-3 text-indigo-600" />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 text-xs font-black text-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                         {m.visitCount || 0}
                       </span>
                     </td>
 
                     {/* Last Active */}
-                    <td className="px-4 py-3 text-slate-700 text-xs">
+                    <td className="px-4 py-3 text-slate-700 dark:text-slate-300 text-xs">
                       {formatDateTime(m.lastLoginAt)}
                     </td>
 
@@ -486,8 +486,8 @@ export const MembersOverviewPage = () => {
                             onClick={() => handleToggleThekedarStatus(m)}
                             className={`px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer disabled:opacity-50 ${
                               m.status === 'ACTIVE'
-                                ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
-                                : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                                ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/60'
+                                : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
                             }`}
                             title={m.status === 'ACTIVE' ? 'Deactivate Thekedar' : 'Activate Thekedar'}
                           >
@@ -496,7 +496,7 @@ export const MembersOverviewPage = () => {
                         ) : m.role === 'WORKER' ? (
                           <span className="text-[10px] text-slate-400 italic">Managed by Thekedar</span>
                         ) : (
-                          <span className="text-[10px] text-purple-600 font-semibold">Protected</span>
+                          <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Protected</span>
                         )}
                       </div>
                     </td>
@@ -514,35 +514,35 @@ export const MembersOverviewPage = () => {
         subtitle="Chronological audit stream of members visiting and authenticating into the application"
       >
         {recentVisits.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-4">No recent visits recorded.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-4">No recent visits recorded.</p>
         ) : (
           <div className="space-y-2.5">
             {recentVisits.map((v) => (
               <div
                 key={v._id}
-                className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-xs hover:bg-slate-50 transition-colors"
+                className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 font-bold">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold">
                     <Activity className="h-4 w-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900">{v.actorName || 'User'}</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{v.actorName || 'User'}</span>
                       <Badge variant={getRoleBadgeVariant(v.actorRole)} size="sm">
                         {v.actorRole}
                       </Badge>
-                      <span className="text-[10px] text-slate-400">• {v.action}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500">• {v.action}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       Session recorded from IP: {v.ipAddress || '127.0.0.1'}
                     </div>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="font-semibold text-slate-700 block">{new Date(v.createdAt).toLocaleTimeString()}</span>
-                  <span className="text-[10px] text-slate-400">{new Date(v.createdAt).toLocaleDateString()}</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 block">{new Date(v.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">{new Date(v.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}

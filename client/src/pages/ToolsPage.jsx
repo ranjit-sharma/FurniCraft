@@ -198,16 +198,16 @@ export const ToolsPage = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-black text-slate-900">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
               {t('tools.title', 'Modern Furniture Tool Tracking & Job Site Assets')}
             </h2>
             {isThekedar && (
-              <span className="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-900 border border-amber-200">
+              <span className="rounded-lg bg-amber-100 dark:bg-amber-900/60 px-2.5 py-1 text-xs font-bold text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                 {t('tools.thekedarFilterLabel', 'Thekedar:')} {user?.name}
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-700 mt-1">
+          <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
             {isThekedar
               ? t('tools.thekedarScope', 'Your team\'s dedicated equipment and power tools. Isolated per Thekedar to prevent job site mix-ups and tool conflicts.')
               : t('tools.ownerScope', 'Central inventory of plunge saws, routers, edge banders, drills, and site hand tool sets across contractors.')}
@@ -217,7 +217,7 @@ export const ToolsPage = () => {
         <div className="flex items-center gap-3">
           {isOwner && thekedars.length > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-700">{t('tools.thekedarFilterLabel', 'Thekedar:')}</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{t('tools.thekedarFilterLabel', 'Thekedar:')}</span>
               <select
                 value={thekedarFilter}
                 onChange={(e) => {
@@ -225,7 +225,7 @@ export const ToolsPage = () => {
                   setThekedarFilter(val);
                   fetchToolsData(val);
                 }}
-                className="rounded-lg border border-slate-300 p-1.5 text-xs font-semibold text-slate-800"
+                className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none"
               >
                 <option value="">{t('tools.allThekedarsTools', 'All Thekedars\' Tools')}</option>
                 {thekedars.map((th) => {
@@ -251,11 +251,11 @@ export const ToolsPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 overflow-x-auto no-scrollbar scrollbar-none pb-0.5">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar scrollbar-none pb-0.5">
         <button
           onClick={() => setActiveTab('inventory')}
           className={`whitespace-nowrap px-4 py-2.5 text-xs font-bold transition-all border-b-2 shrink-0 ${
-            activeTab === 'inventory' ? 'border-amber-600 text-amber-900' : 'border-transparent text-slate-700 hover:text-slate-900'
+            activeTab === 'inventory' ? 'border-amber-600 text-amber-900 dark:text-amber-400' : 'border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t('tools.inventoryTab', 'Tool Inventory')} ({tools.length})
@@ -263,7 +263,7 @@ export const ToolsPage = () => {
         <button
           onClick={() => setActiveTab('issues')}
           className={`whitespace-nowrap px-4 py-2.5 text-xs font-bold transition-all border-b-2 shrink-0 ${
-            activeTab === 'issues' ? 'border-amber-600 text-amber-900' : 'border-transparent text-slate-700 hover:text-slate-900'
+            activeTab === 'issues' ? 'border-amber-600 text-amber-900 dark:text-amber-400' : 'border-transparent text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           {t('tools.issuesTab', 'Active Issues & History')} ({issues.length})
@@ -277,10 +277,10 @@ export const ToolsPage = () => {
             <Card key={tool._id} className="flex flex-col justify-between hover:border-amber-400">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-amber-800">{tool.toolCode}</span>
+                  <span className="text-xs font-bold text-amber-800 dark:text-amber-400">{tool.toolCode}</span>
                   <div className="flex items-center gap-1.5">
                     {isOwner && tool.thekedarId && (
-                      <span className="rounded bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                      <span className="rounded bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         {tool.thekedarId.name}
                       </span>
                     )}
@@ -289,30 +289,30 @@ export const ToolsPage = () => {
                 </div>
 
                 <div className="mt-3 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300">
                     <Wrench className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900">{tool.name}</h3>
-                    <p className="text-xs text-slate-700">{tool.category} • {t('tools.brand', 'Brand')}: {tool.brand || 'Standard'}</p>
-                    <span className="inline-block mt-1 text-[11px] font-semibold text-slate-700">
-                      {t('tools.condition', 'Condition')}: <strong className="text-slate-800">{tool.condition}</strong>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{tool.name}</h3>
+                    <p className="text-xs text-slate-700 dark:text-slate-400">{tool.category} • {t('tools.brand', 'Brand')}: {tool.brand || 'Standard'}</p>
+                    <span className="inline-block mt-1 text-[11px] font-semibold text-slate-700 dark:text-slate-400">
+                      {t('tools.condition', 'Condition')}: <strong className="text-slate-800 dark:text-slate-200">{tool.condition}</strong>
                     </span>
                   </div>
                 </div>
 
                 {tool.currentAssignment?.projectId && (
-                  <div className="mt-4 rounded-lg bg-slate-50 p-2.5 text-xs space-y-0.5">
-                    <div className="text-slate-700">{t('tools.deployedAt', 'Currently Deployed at:')}</div>
-                    <div className="font-bold text-slate-900">{tool.currentAssignment?.projectId?.name}</div>
-                    <div className="text-[11px] text-amber-900">
+                  <div className="mt-4 rounded-lg bg-slate-50 dark:bg-slate-800/80 p-2.5 text-xs space-y-0.5">
+                    <div className="text-slate-700 dark:text-slate-400">{t('tools.deployedAt', 'Currently Deployed at:')}</div>
+                    <div className="font-bold text-slate-900 dark:text-white">{tool.currentAssignment?.projectId?.name}</div>
+                    <div className="text-[11px] text-amber-900 dark:text-amber-400">
                       {t('tools.handoverWith', 'With:')} {tool.currentAssignment?.workerId?.name || 'Site Crew'}
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
                 {(isOwner || isThekedar) && tool.status === 'AVAILABLE' && (
                   <Button
                     size="sm"
@@ -335,11 +335,11 @@ export const ToolsPage = () => {
       {activeTab === 'issues' && (
         <Card title={t('tools.activeIssuesTitle', 'Active Issues & Movement History')} subtitle={t('tools.activeIssuesSubtitle', 'Project assignments, receipts, and returns')}>
           {issues.length === 0 ? (
-            <p className="py-8 text-center text-xs text-slate-700 italic">{t('tools.noIssues', 'No tool issue records found.')}</p>
+            <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('tools.noIssues', 'No tool issue records found.')}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+                <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                   <tr>
                     <th className="p-3">{t('tools.tableIssueCode', 'Issue Code')}</th>
                     <th className="p-3">{t('tools.tableTool', 'Tool')}</th>
@@ -350,14 +350,14 @@ export const ToolsPage = () => {
                     <th className="p-3 text-right">{t('tools.tableActions', 'Actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {issues.map((iss) => (
-                    <tr key={iss._id} className="hover:bg-slate-50">
-                      <td className="p-3 font-bold text-amber-800">{iss.issueCode}</td>
-                      <td className="p-3 font-semibold text-slate-900">{iss.toolId?.name}</td>
-                      <td className="p-3 text-slate-700">{iss.projectId?.name}</td>
-                      <td className="p-3 font-medium text-slate-800">{iss.workerId?.name}</td>
-                      <td className="p-3">{new Date(iss.issueDate).toLocaleDateString()}</td>
+                    <tr key={iss._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                      <td className="p-3 font-bold text-amber-800 dark:text-amber-400">{iss.issueCode}</td>
+                      <td className="p-3 font-semibold text-slate-900 dark:text-white">{iss.toolId?.name}</td>
+                      <td className="p-3 text-slate-700 dark:text-slate-300">{iss.projectId?.name}</td>
+                      <td className="p-3 font-medium text-slate-800 dark:text-slate-200">{iss.workerId?.name}</td>
+                      <td className="p-3 text-slate-700 dark:text-slate-400">{new Date(iss.issueDate).toLocaleDateString()}</td>
                       <td className="p-3">
                         <Badge variant={iss.status} size="sm">{iss.status}</Badge>
                       </td>
@@ -403,12 +403,12 @@ export const ToolsPage = () => {
         <form onSubmit={handleAddTool} className="space-y-4">
           {isOwner && thekedars.length > 0 && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('tools.ownershipLabel', 'Assign Ownership to Thekedar *')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.ownershipLabel', 'Assign Ownership to Thekedar *')}</label>
               <select
                 required
                 value={toolThekedarId}
                 onChange={(e) => setToolThekedarId(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm font-semibold"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm font-semibold focus:outline-none"
               >
                 {thekedars.map((th) => {
                   const thId = th.userId?._id || th._id;
@@ -425,24 +425,24 @@ export const ToolsPage = () => {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700">{t('tools.toolNameLabel', 'Tool / Machinery Name')}</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.toolNameLabel', 'Tool / Machinery Name')}</label>
             <input
               type="text"
               required
               value={toolName}
               onChange={(e) => setToolName(e.target.value)}
               placeholder="e.g. Bosch GSB 18V-50 Cordless Impact Drill"
-              className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('tools.categoryLabel', 'Category')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.categoryLabel', 'Category')}</label>
               <select
                 value={toolCategory}
                 onChange={(e) => setToolCategory(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 <option value="DRILL">Drill / Driver</option>
                 <option value="CUTTER">Plunge / Circular Saw</option>
@@ -456,24 +456,24 @@ export const ToolsPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('tools.brandLabel', 'Brand')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.brandLabel', 'Brand')}</label>
               <input
                 type="text"
                 value={toolBrand}
                 onChange={(e) => setToolBrand(e.target.value)}
                 placeholder="e.g. Bosch / Makita / Festool"
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('tools.conditionLabel', 'Condition')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.conditionLabel', 'Condition')}</label>
               <select
                 value={toolCondition}
                 onChange={(e) => setToolCondition(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 <option value="NEW">New</option>
                 <option value="EXCELLENT">Excellent</option>
@@ -482,18 +482,18 @@ export const ToolsPage = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('tools.purchaseCostLabel', 'Purchase Cost (₹)')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('tools.purchaseCostLabel', 'Purchase Cost (₹)')}</label>
               <input
                 type="number"
                 value={purchaseCost}
                 onChange={(e) => setPurchaseCost(e.target.value)}
                 placeholder="e.g. 14500"
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
             <Button variant="secondary" onClick={() => setAddToolOpen(false)}>Cancel</Button>
             <Button type="submit">Add Tool</Button>
           </div>
@@ -504,17 +504,17 @@ export const ToolsPage = () => {
       <Modal isOpen={issueToolOpen} onClose={() => setIssueToolOpen(false)} title="Issue Tool to Site">
         {selectedTool && (
           <form onSubmit={handleIssueTool} className="space-y-4">
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
-              Tool: <strong className="text-sm">{selectedTool.name}</strong> ({selectedTool.toolCode})
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+              Tool: <strong className="text-sm text-slate-900 dark:text-white">{selectedTool.name}</strong> ({selectedTool.toolCode})
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Destination Furniture Project</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Destination Furniture Project</label>
               <select
                 value={issueProjectId}
                 onChange={(e) => setIssueProjectId(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {projects.map((p) => (
                   <option key={p._id} value={p._id}>
@@ -525,12 +525,12 @@ export const ToolsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Responsible Worker</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Responsible Worker</label>
               <select
                 value={issueWorkerId}
                 onChange={(e) => setIssueWorkerId(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {workers.map((w) => {
                   const wId = w.userId?._id || w._id;
@@ -546,16 +546,16 @@ export const ToolsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Expected Return Date</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Expected Return Date</label>
               <input
                 type="date"
                 value={expectedReturnDate}
                 onChange={(e) => setExpectedReturnDate(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
               <Button variant="secondary" onClick={() => setIssueToolOpen(false)}>Cancel</Button>
               <Button type="submit">Confirm Tool Issue</Button>
             </div>
@@ -567,16 +567,16 @@ export const ToolsPage = () => {
       <Modal isOpen={returnToolOpen} onClose={() => setReturnToolOpen(false)} title="Record Tool Return">
         {selectedIssue && (
           <form onSubmit={handleReturnTool} className="space-y-4">
-            <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
-              Returning: <strong className="text-sm text-slate-900">{selectedIssue.toolId?.name}</strong> from project <strong className="text-slate-900">{selectedIssue.projectId?.name}</strong>
+            <div className="rounded-lg bg-slate-50 dark:bg-slate-800/70 p-3 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              Returning: <strong className="text-sm text-slate-900 dark:text-white">{selectedIssue.toolId?.name}</strong> from project <strong className="text-slate-900 dark:text-white">{selectedIssue.projectId?.name}</strong>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Condition at Handover</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Condition at Handover</label>
               <select
                 value={returnCondition}
                 onChange={(e) => setReturnCondition(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 <option value="EXCELLENT">Excellent</option>
                 <option value="GOOD">Good</option>
@@ -586,17 +586,17 @@ export const ToolsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Condition / Damage Notes</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Condition / Damage Notes</label>
               <textarea
                 rows={2}
                 value={returnDamageNotes}
                 onChange={(e) => setReturnDamageNotes(e.target.value)}
                 placeholder="Note any blade wear, cable cuts, or necessary maintenance..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
               <Button variant="secondary" onClick={() => setReturnToolOpen(false)}>Cancel</Button>
               <Button type="submit">Confirm Return to Inventory</Button>
             </div>
@@ -608,17 +608,17 @@ export const ToolsPage = () => {
       <Modal isOpen={transferToolOpen} onClose={() => setTransferToolOpen(false)} title="Transfer Tool Between Projects">
         {transferIssue && (
           <form onSubmit={handleTransferTool} className="space-y-4">
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
-              Tool: <strong>{transferIssue.toolId?.name}</strong> currently at <strong>{transferIssue.projectId?.name}</strong>
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+              Tool: <strong className="text-slate-900 dark:text-white">{transferIssue.toolId?.name}</strong> currently at <strong className="text-slate-900 dark:text-white">{transferIssue.projectId?.name}</strong>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Destination Furniture Project</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Destination Furniture Project</label>
               <select
                 value={toProjectId}
                 onChange={(e) => setToProjectId(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {projects.map((p) => (
                   <option key={p._id} value={p._id}>
@@ -629,12 +629,12 @@ export const ToolsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Destination Worker In-Charge</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Destination Worker In-Charge</label>
               <select
                 value={toWorkerId}
                 onChange={(e) => setToWorkerId(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {workers.map((w) => {
                   const wId = w.userId?._id || w._id;
@@ -650,18 +650,18 @@ export const ToolsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">Reason for Project Transfer</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Reason for Project Transfer</label>
               <input
                 type="text"
                 required
                 value={transferReason}
                 onChange={(e) => setTransferReason(e.target.value)}
                 placeholder="e.g. Urgent circular plunge cutting needed at Penthouse site"
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
               <Button variant="secondary" onClick={() => setTransferToolOpen(false)}>Cancel</Button>
               <Button type="submit">Confirm Project Transfer</Button>
             </div>

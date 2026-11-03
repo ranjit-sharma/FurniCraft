@@ -151,8 +151,8 @@ export const PayrollPage = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900">{t('payroll.pageTitle', 'Salary & Payroll Management')}</h2>
-          <p className="text-xs text-slate-700">{t('payroll.pageSub', 'Monthly wage settlements, advance recoveries, and payslips.')}</p>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white">{t('payroll.pageTitle', 'Salary & Payroll Management')}</h2>
+          <p className="text-xs text-slate-700 dark:text-slate-300">{t('payroll.pageSub', 'Monthly wage settlements, advance recoveries, and payslips.')}</p>
         </div>
 
         {(isOwner || isThekedar) && (
@@ -169,11 +169,11 @@ export const PayrollPage = () => {
             <div className="h-6 w-6 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
           </div>
         ) : payrolls.length === 0 ? (
-          <p className="py-8 text-center text-xs text-slate-700 italic">{t('payroll.noPayrolls', 'No finalized payroll records found.')}</p>
+          <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('payroll.noPayrolls', 'No finalized payroll records found.')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
+              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                 <tr>
                   <th className="p-3">{t('payroll.statementCode', 'Statement Code')}</th>
                   <th className="p-3">{t('payroll.worker', 'Worker')}</th>
@@ -187,17 +187,17 @@ export const PayrollPage = () => {
                   <th className="p-3 text-right">{t('payroll.actions', 'Actions')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {payrolls.map((pay) => (
-                  <tr key={pay._id} className="hover:bg-slate-50">
-                    <td className="p-3 font-bold text-amber-800">{pay.payrollCode}</td>
-                    <td className="p-3 font-semibold text-slate-900">{pay.workerId?.name}</td>
-                    <td className="p-3">{pay.periodMonth}/{pay.periodYear}</td>
-                    <td className="p-3">{pay.totalApprovedDays} {t('calendar.daysCount', '{count} Days').replace('{count}', '')}</td>
-                    <td className="p-3">₹{pay.grossEarnings?.toLocaleString('en-IN')}</td>
-                    <td className="p-3 text-rose-600 font-semibold">-₹{pay.advancesRecovered?.toLocaleString('en-IN')}</td>
-                    <td className="p-3 font-black text-slate-900">₹{pay.netPayable?.toLocaleString('en-IN')}</td>
-                    <td className="p-3 font-bold text-blue-900">₹{pay.balanceRemaining?.toLocaleString('en-IN')}</td>
+                  <tr key={pay._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
+                    <td className="p-3 font-bold text-amber-800 dark:text-amber-400">{pay.payrollCode}</td>
+                    <td className="p-3 font-semibold text-slate-900 dark:text-white">{pay.workerId?.name}</td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">{pay.periodMonth}/{pay.periodYear}</td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">{pay.totalApprovedDays} {t('calendar.daysCount', '{count} Days').replace('{count}', '')}</td>
+                    <td className="p-3 text-slate-700 dark:text-slate-300">₹{pay.grossEarnings?.toLocaleString('en-IN')}</td>
+                    <td className="p-3 text-rose-600 dark:text-rose-400 font-semibold">-₹{pay.advancesRecovered?.toLocaleString('en-IN')}</td>
+                    <td className="p-3 font-black text-slate-900 dark:text-white">₹{pay.netPayable?.toLocaleString('en-IN')}</td>
+                    <td className="p-3 font-bold text-blue-900 dark:text-blue-300">₹{pay.balanceRemaining?.toLocaleString('en-IN')}</td>
                     <td className="p-3">
                       <Badge variant={pay.status} size="sm">{pay.status}</Badge>
                     </td>
@@ -236,11 +236,11 @@ export const PayrollPage = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.selectWorker', 'Select Worker')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.selectWorker', 'Select Worker')}</label>
               <select
                 value={selectedWorkerId}
                 onChange={(e) => setSelectedWorkerId(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {workers.map((w) => {
                   const wId = w.userId?._id || w._id;
@@ -256,11 +256,11 @@ export const PayrollPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.month', 'Month')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.month', 'Month')}</label>
               <select
                 value={periodMonth}
                 onChange={(e) => setPeriodMonth(parseInt(e.target.value, 10))}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               >
                 {[...Array(12).keys()].map((i) => (
                   <option key={i + 1} value={i + 1}>
@@ -271,44 +271,44 @@ export const PayrollPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.year', 'Year')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.year', 'Year')}</label>
               <input
                 type="number"
                 value={periodYear}
                 onChange={(e) => setPeriodYear(parseInt(e.target.value, 10))}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.allowances', 'Allowances (₹)')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.allowances', 'Allowances (₹)')}</label>
               <input
                 type="number"
                 value={allowances}
                 onChange={(e) => setAllowances(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.deductions', 'Deductions (₹)')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.deductions', 'Deductions (₹)')}</label>
               <input
                 type="number"
                 value={deductions}
                 onChange={(e) => setDeductions(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.advanceRecovery', 'Advance Recovery (₹)')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.advanceRecovery', 'Advance Recovery (₹)')}</label>
               <input
                 type="number"
                 value={advanceRecovery}
                 onChange={(e) => setAdvanceRecovery(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
           </div>
@@ -321,12 +321,12 @@ export const PayrollPage = () => {
 
           {/* Preview Box */}
           {previewData && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-amber-200 pb-2">
-                <span className="font-bold text-sm text-amber-950">
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30 p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-amber-200 dark:border-amber-800/60 pb-2">
+                <span className="font-bold text-sm text-amber-950 dark:text-amber-200">
                   {t('payroll.salaryPreview', 'Salary Preview:')} {previewData.worker?.name} ({previewData.periodMonth}/{previewData.periodYear})
                 </span>
-                <span className="text-xs text-amber-800">
+                <span className="text-xs text-amber-800 dark:text-amber-300">
                   {t('payroll.approvedDaysBreakdown', '{days} Approved Days ({items} Shift Records)')
                     .replace('{days}', previewData.totalApprovedDays)
                     .replace('{items}', previewData.lineItemsCount)}
@@ -334,44 +334,44 @@ export const PayrollPage = () => {
               </div>
 
               {/* Shift Breakdown */}
-              <div className="grid grid-cols-4 gap-2 text-xs text-slate-700">
-                <div className="bg-white p-2 rounded-lg border border-amber-200">
+              <div className="grid grid-cols-4 gap-2 text-xs text-slate-700 dark:text-slate-300">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-amber-200 dark:border-amber-800/60">
                   <div>{t('payroll.fullDayBreakdown', 'Full Day (P):')} <strong>{previewData.breakdown?.P?.count || 0}</strong></div>
-                  <div className="text-[10px] text-slate-700">₹{previewData.breakdown?.P?.earnings}</div>
+                  <div className="text-[10px] text-slate-700 dark:text-slate-400">₹{previewData.breakdown?.P?.earnings}</div>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-amber-200">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-amber-200 dark:border-amber-800/60">
                   <div>{t('payroll.halfDayBreakdown', 'Half Day (HALF):')} <strong>{previewData.breakdown?.HALF?.count || 0}</strong></div>
-                  <div className="text-[10px] text-slate-700">₹{previewData.breakdown?.HALF?.earnings}</div>
+                  <div className="text-[10px] text-slate-700 dark:text-slate-400">₹{previewData.breakdown?.HALF?.earnings}</div>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-amber-200">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-amber-200 dark:border-amber-800/60">
                   <div>{t('payroll.ot9pmBreakdown', 'Ext 9PM (P1/5):')} <strong>{previewData.breakdown?.['P1/5']?.count || 0}</strong></div>
-                  <div className="text-[10px] text-slate-700">₹{previewData.breakdown?.['P1/5']?.earnings}</div>
+                  <div className="text-[10px] text-slate-700 dark:text-slate-400">₹{previewData.breakdown?.['P1/5']?.earnings}</div>
                 </div>
-                <div className="bg-white p-2 rounded-lg border border-amber-200">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-lg border border-amber-200 dark:border-amber-800/60">
                   <div>{t('payroll.midnightBreakdown', 'Midnight (PP):')} <strong>{previewData.breakdown?.PP?.count || 0}</strong></div>
-                  <div className="text-[10px] text-slate-700">₹{previewData.breakdown?.PP?.earnings}</div>
+                  <div className="text-[10px] text-slate-700 dark:text-slate-400">₹{previewData.breakdown?.PP?.earnings}</div>
                 </div>
               </div>
 
               {/* Calculation Summary */}
-              <div className="rounded-lg bg-white p-3 border border-amber-200 text-xs space-y-1">
+              <div className="rounded-lg bg-white dark:bg-slate-900 p-3 border border-amber-200 dark:border-amber-800/60 text-xs space-y-1">
                 <div className="flex justify-between">
                   <span>{t('payroll.grossLabel', 'Gross Earnings:')}</span>
                   <span className="font-bold">₹{previewData.grossEarnings?.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-700">
+                <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
                   <span>{t('payroll.allowancesLabel', '+ Allowances:')}</span>
                   <span>₹{previewData.allowances}</span>
                 </div>
-                <div className="flex justify-between text-rose-700">
+                <div className="flex justify-between text-rose-700 dark:text-rose-400">
                   <span>{t('payroll.deductionsLabel', '- Deductions:')}</span>
                   <span>₹{previewData.deductions}</span>
                 </div>
-                <div className="flex justify-between text-rose-700">
+                <div className="flex justify-between text-rose-700 dark:text-rose-400">
                   <span>{t('payroll.advancesRecoveredLabel', '- Advances Recovered:')}</span>
                   <span>₹{previewData.advancesRecovered?.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-1 text-sm font-black text-slate-900">
+                <div className="flex justify-between border-t border-slate-200 dark:border-slate-700 pt-1 text-sm font-black text-slate-900 dark:text-white">
                   <span>{t('payroll.netSalaryPayable', 'NET SALARY PAYABLE:')}</span>
                   <span>₹{previewData.netPayable?.toFixed(2)}</span>
                 </div>
@@ -392,50 +392,50 @@ export const PayrollPage = () => {
       <Modal isOpen={adjustModalOpen} onClose={() => setAdjustModalOpen(false)} title={t('payroll.adjustModalTitle', 'Add Linked Payroll Adjustment')}>
         {selectedPayroll && (
           <form onSubmit={handleAddAdjustment} className="space-y-4">
-            <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-700">
-              <div>{t('payroll.statementCode', 'Payroll')}: <span className="font-bold">{selectedPayroll.payrollCode}</span></div>
-              <div>{t('payroll.worker', 'Worker')}: <span className="font-bold">{selectedPayroll.workerId?.name}</span></div>
-              <div>{t('payroll.remainingDue', 'Current Remaining Balance')}: <span className="font-bold">₹{selectedPayroll.balanceRemaining}</span></div>
+            <div className="rounded-lg bg-slate-50 dark:bg-slate-800/70 p-3 text-xs text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+              <div>{t('payroll.statementCode', 'Payroll')}: <span className="font-bold text-slate-900 dark:text-white">{selectedPayroll.payrollCode}</span></div>
+              <div>{t('payroll.worker', 'Worker')}: <span className="font-bold text-slate-900 dark:text-white">{selectedPayroll.workerId?.name}</span></div>
+              <div>{t('payroll.remainingDue', 'Current Remaining Balance')}: <span className="font-bold text-slate-900 dark:text-white">₹{selectedPayroll.balanceRemaining}</span></div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700">{t('payroll.adjustType', 'Adjustment Type')}</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.adjustType', 'Adjustment Type')}</label>
                 <select
                   value={adjustType}
                   onChange={(e) => setAdjustType(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                  className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
                 >
                   <option value="CREDIT">{t('payroll.creditOption', 'Credit (Increase payable balance)')}</option>
                   <option value="DEBIT">{t('payroll.debitOption', 'Debit (Decrease payable balance)')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700">{t('payroll.adjustAmount', 'Amount (INR ₹)')}</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.adjustAmount', 'Amount (INR ₹)')}</label>
                 <input
                   type="number"
                   required
                   min="1"
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                  className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700">{t('payroll.adjustReason', 'Reason for Authorized Adjustment')}</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('payroll.adjustReason', 'Reason for Authorized Adjustment')}</label>
               <textarea
                 required
                 rows={3}
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
                 placeholder="Document the exact business or audit reason for this wage adjustment..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:outline-none"
               />
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
               <Button variant="secondary" onClick={() => setAdjustModalOpen(false)}>{t('common.cancel', 'Cancel')}</Button>
               <Button type="submit">{t('payroll.saveAdjust', 'Save Immutable Adjustment')}</Button>
             </div>

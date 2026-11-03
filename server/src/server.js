@@ -13,12 +13,16 @@ const startServer = async () => {
     const app = createApp();
     const server = http.createServer(app);
 
-    // 3. Optional Real-time Socket.IO Server
+    // 3. High-concurrency Real-time Socket.IO Server (optimized for 500+ active connections)
     const io = new SocketIOServer(server, {
       cors: {
         origin: [env.CLIENT_URL, 'http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost:5173', 'http://127.0.0.1:5173'],
         credentials: true,
       },
+      pingTimeout: 30000,
+      pingInterval: 25000,
+      maxHttpBufferSize: 1e6, // 1MB payload limit
+      transports: ['websocket', 'polling'],
     });
 
     io.on('connection', (socket) => {

@@ -133,5 +133,8 @@ attendanceSchema.index({ workerId: 1, projectId: 1, date: 1, shift: 1 }, { uniqu
 // Worker date query index for calendar queries
 attendanceSchema.index({ workerId: 1, date: 1 });
 attendanceSchema.index({ projectId: 1, date: 1 });
+attendanceSchema.index({ thekedarId: 1, date: 1 });
+attendanceSchema.index({ workerId: 1, isPayrollProcessed: 1 });
+attendanceSchema.index({ thekedarId: 1, approvalStatus: 1 });
 
 export const Attendance = mongoose.model('Attendance', attendanceSchema);

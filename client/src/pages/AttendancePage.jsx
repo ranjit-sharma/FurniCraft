@@ -188,8 +188,8 @@ export const AttendancePage = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">{t('nav.attendance') || 'Attendance Calendar'} & {t('dashboard.attendanceApprovals') || 'Approvals'}</h2>
-          <p className="text-xs text-slate-700">{t('calendar.legend') || 'Daily multiplier calculations'} (P = 1.0x, HALF = 0.5x, P1/5 = 1.5x, PP = 2.0x).</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{t('nav.attendance') || 'Attendance Calendar'} & {t('dashboard.attendanceApprovals') || 'Approvals'}</h2>
+          <p className="text-xs text-slate-700 dark:text-slate-300">{t('calendar.legend') || 'Daily multiplier calculations'} (P = 1.0x, HALF = 0.5x, P1/5 = 1.5x, PP = 2.0x).</p>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -201,13 +201,13 @@ export const AttendancePage = () => {
 
       {/* Filter Toolbar */}
       {!isWorker && (
-        <div className="flex flex-col sm:flex-row flex-wrap sm:items-center gap-2.5 sm:gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:p-3.5 shadow-sm text-xs">
-          <span className="font-bold text-slate-700">{t('common.filter') || 'Filter'}:</span>
+        <div className="flex flex-col sm:flex-row flex-wrap sm:items-center gap-2.5 sm:gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-sm text-xs">
+          <span className="font-bold text-slate-700 dark:text-slate-300">{t('common.filter') || 'Filter'}:</span>
 
           <select
             value={filterWorkerId}
             onChange={(e) => handleFilterChange(e.target.value, filterProjectId)}
-            className="rounded-lg border border-slate-300 p-1.5 text-xs font-medium w-full sm:w-auto"
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-1.5 text-xs font-medium w-full sm:w-auto"
           >
             <option value="">{t('common.all') || 'All'} {t('thekedar.managedWorkers') || 'Workers'}</option>
             {workers.map((w) => {
@@ -225,7 +225,7 @@ export const AttendancePage = () => {
           <select
             value={filterProjectId}
             onChange={(e) => handleFilterChange(filterWorkerId, e.target.value)}
-            className="rounded-lg border border-slate-300 p-1.5 text-xs font-medium w-full sm:w-auto"
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-1.5 text-xs font-medium w-full sm:w-auto"
           >
             <option value="">{t('common.all') || 'All'} {t('projects.allProjects') || 'Furniture Projects'}</option>
             {projects.map((p) => (
@@ -276,10 +276,10 @@ export const AttendancePage = () => {
 
         {/* Advances & Financial Transactions on this date */}
         {(selectedDayPayments.length > 0 || selectedDayAdvances.length > 0) && (
-          <div className="mb-4 space-y-2 rounded-xl bg-slate-50 p-3 border border-slate-200">
-            <h4 className="text-xs font-bold text-slate-900 flex items-center justify-between">
+          <div className="mb-4 space-y-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 p-3 border border-slate-200 dark:border-slate-700">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center justify-between">
               <span>{t('attendancePage.advancesAndTxOnDate') || 'Advances & Financial Transactions on this Date'}</span>
-              <span className="text-[10px] text-slate-500 font-normal">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
                 {selectedDayPayments.length + selectedDayAdvances.filter((a) => a.status !== 'DISBURSED').length} entry(s)
               </span>
             </h4>
@@ -291,8 +291,8 @@ export const AttendancePage = () => {
                     key={p._id}
                     className={`flex items-center justify-between p-2.5 rounded-lg text-xs border font-medium ${
                       isAdv
-                        ? 'bg-rose-50 border-rose-200 text-rose-950'
-                        : 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                        ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-900 text-rose-950 dark:text-rose-200'
+                        : 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-900 text-emerald-950 dark:text-emerald-200'
                     }`}
                   >
                     <div>
@@ -301,13 +301,13 @@ export const AttendancePage = () => {
                         <span className="font-bold">
                           {isAdv ? (t('attendancePage.advanceTaken') || '💸 Advance Taken') : (t('attendancePage.salaryPayout') || 'Salary Payout')}
                         </span>
-                        {p.workerId?.name && <span className="font-semibold text-slate-800"> ({p.workerId.name})</span>}
+                        {p.workerId?.name && <span className="font-semibold text-slate-800 dark:text-slate-200"> ({p.workerId.name})</span>}
                       </div>
-                      <div className="text-[10px] text-slate-600 mt-0.5">
+                      <div className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5">
                         via {p.paymentMethod} {p.receiptReference ? `• Ref: ${p.receiptReference}` : ''} {p.notes ? `• ${p.notes}` : ''}
                       </div>
                     </div>
-                    <span className={`font-black text-sm shrink-0 ${isAdv ? 'text-rose-700' : 'text-emerald-700'}`}>
+                    <span className={`font-black text-sm shrink-0 ${isAdv ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                       {isAdv ? '-' : ''}₹{p.amount?.toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -317,14 +317,14 @@ export const AttendancePage = () => {
               {selectedDayAdvances.filter((a) => a.status !== 'DISBURSED').map((adv) => (
                 <div
                   key={adv._id}
-                  className="flex items-center justify-between p-2.5 rounded-lg text-xs bg-amber-50 border border-amber-200 text-amber-950 font-medium"
+                  className="flex items-center justify-between p-2.5 rounded-lg text-xs bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-900 text-amber-950 dark:text-amber-200 font-medium"
                 >
                   <div>
                     <span className="font-bold">{t('worker.requestAdvance') || 'Advance Request'} ({adv.status})</span>
-                    {adv.workerId?.name && <span className="font-semibold text-slate-800"> ({adv.workerId.name})</span>}
-                    {adv.reason && <div className="text-[10px] text-amber-800 mt-0.5">{t('common.reason') || 'Reason'}: "{adv.reason}"</div>}
+                    {adv.workerId?.name && <span className="font-semibold text-slate-800 dark:text-slate-200"> ({adv.workerId.name})</span>}
+                    {adv.reason && <div className="text-[10px] text-amber-800 dark:text-amber-300 mt-0.5">{t('common.reason') || 'Reason'}: "{adv.reason}"</div>}
                   </div>
-                  <span className="font-black text-sm text-amber-800 shrink-0">
+                  <span className="font-black text-sm text-amber-800 dark:text-amber-300 shrink-0">
                     ₹{adv.amount?.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -336,11 +336,11 @@ export const AttendancePage = () => {
         {selectedRecords && selectedRecords.length > 0 ? (
           <div className="space-y-4">
             {/* Top summary */}
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 p-3 border border-slate-200">
-              <div className="text-xs text-slate-700">
-                <span className="font-bold text-slate-900">{selectedRecords.length}</span> {t('attendancePage.recordsOnDate') || 'record(s) on this date'}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 p-3 border border-slate-200 dark:border-slate-700">
+              <div className="text-xs text-slate-700 dark:text-slate-300">
+                <span className="font-bold text-slate-900 dark:text-white">{selectedRecords.length}</span> {t('attendancePage.recordsOnDate') || 'record(s) on this date'}
                 {selectedRecords.filter((r) => r.approvalStatus === 'SUBMITTED' || r.approvalStatus === 'CORRECTION_REQUESTED').length > 0 && (
-                  <span className="ml-2 font-bold text-amber-700">
+                  <span className="ml-2 font-bold text-amber-700 dark:text-amber-400">
                     ({selectedRecords.filter((r) => r.approvalStatus === 'SUBMITTED' || r.approvalStatus === 'CORRECTION_REQUESTED').length} {t('common.pending') || 'pending'})
                   </span>
                 )}
@@ -358,15 +358,15 @@ export const AttendancePage = () => {
                 return (
                   <div
                     key={record._id}
-                    className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm space-y-2.5"
+                    className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 shadow-sm space-y-2.5"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
                       <div>
-                        <div className="font-bold text-slate-900 text-sm">
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">
                           {record.workerId?.name || (t('thekedarDashboard.tableWorker') || 'Worker')}
                         </div>
-                        <div className="text-[11px] text-slate-700">
-                          {t('thekedarDashboard.tableProject') || 'Project'}: <span className="font-semibold text-slate-800">{record.projectId?.name || 'Assigned Project'}</span>
+                        <div className="text-[11px] text-slate-700 dark:text-slate-400">
+                          {t('thekedarDashboard.tableProject') || 'Project'}: <span className="font-semibold text-slate-800 dark:text-slate-200">{record.projectId?.name || 'Assigned Project'}</span>
                           {record.projectId?.projectCode && ` (${record.projectId.projectCode})`}
                         </div>
                       </div>
@@ -382,12 +382,12 @@ export const AttendancePage = () => {
 
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-slate-700">{t('attendancePage.applicableWage') || 'Applicable Wage'}: </span>
-                        <span className="font-semibold text-slate-800">₹{record.applicableDailyWage || 0}/day</span>
+                        <span className="text-slate-700 dark:text-slate-400">{t('attendancePage.applicableWage') || 'Applicable Wage'}: </span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">₹{record.applicableDailyWage || 0}/day</span>
                       </div>
                       <div>
-                        <span className="text-slate-700">{t('attendancePage.payableEarned') || 'Payable Earned'}: </span>
-                        <span className="font-black text-emerald-800">₹{record.calculatedEarnings || 0}</span>
+                        <span className="text-slate-700 dark:text-slate-400">{t('attendancePage.payableEarned') || 'Payable Earned'}: </span>
+                        <span className="font-black text-emerald-800 dark:text-emerald-400">₹{record.calculatedEarnings || 0}</span>
                       </div>
                     </div>
 
@@ -418,7 +418,7 @@ export const AttendancePage = () => {
                               value={rejectReason}
                               onChange={(e) => setRejectReason(e.target.value)}
                               placeholder="e.g. Incomplete hours, wrong shift code submitted"
-                              className="w-full rounded border border-rose-300 p-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                              className="w-full rounded border border-rose-300 dark:border-rose-700 bg-white dark:bg-slate-800 p-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-rose-500"
                               autoFocus
                             />
                             <div className="flex justify-end gap-2 pt-1">
@@ -445,11 +445,11 @@ export const AttendancePage = () => {
                         ) : (
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-semibold text-slate-600">Approve as:</span>
+                              <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Approve as:</span>
                               <select
                                 value={approveCodeOverrides[record._id] || record.code}
                                 onChange={(e) => setApproveCodeOverrides((prev) => ({ ...prev, [record._id]: e.target.value }))}
-                                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-bold text-slate-800"
+                                className="rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-800 dark:text-slate-100"
                               >
                                 <option value="P">P (1.0x Full Day)</option>
                                 <option value="HALF">HALF (0.5x Half Day)</option>

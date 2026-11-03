@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -25,6 +26,12 @@ import auditRoutes from './routes/auditRoutes.js';
 
 export const createApp = () => {
   const app = express();
+
+  // Trust reverse proxy (Render, Nginx, Cloudflare) for accurate client IP identification
+  app.set('trust proxy', 1);
+
+  // Compress HTTP responses with gzip/deflate (reduces payload by 70-80% for high concurrency)
+  app.use(compression());
 
   // Security headers (allow inline theme script and CDN fonts for SPA)
   app.use(

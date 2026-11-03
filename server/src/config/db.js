@@ -30,6 +30,11 @@ export const connectDB = async (uri = env.MONGODB_URI, retries = 3) => {
         const conn = await mongoose.connect(connectionUri, {
           serverSelectionTimeoutMS: 8000,
           connectTimeoutMS: 10000,
+          maxPoolSize: 150, // Concurrency connection pool for 500+ users
+          minPoolSize: 10,  // Pre-warmed pool for zero cold-start spikes
+          socketTimeoutMS: 45000,
+          family: 4, // Force IPv4 to prevent dual-stack DNS delays
+          autoIndex: !env.isProduction, // Disable runtime index builds in production
         });
 
         console.log(`[MongoDB] Connected: ${conn.connection.host}/${conn.connection.name}`);
