@@ -21,19 +21,68 @@ export const createTool = async (req, res, next) => {
   }
 };
 
+export const getToolById = async (req, res, next) => {
+  try {
+    const tool = await toolService.getToolById({
+      toolId: req.params.toolId,
+      user: req.user,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateTool = async (req, res, next) => {
+  try {
+    const tool = await toolService.updateTool({
+      toolId: req.params.toolId,
+      data: req.body,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool details updated successfully',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getToolStats = async (req, res, next) => {
+  try {
+    const stats = await toolService.getToolStats({ user: req.user });
+
+    res.status(200).json({
+      status: 'success',
+      data: { stats },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listTools = async (req, res, next) => {
   try {
-    const { category, status, projectId, thekedarId } = req.query;
+    const { category, status, projectId, workerId, thekedarId, search } = req.query;
     const filter = {};
+
     if (category) filter.category = category;
     if (status) filter.status = status;
     if (projectId) filter['currentAssignment.projectId'] = projectId;
+    if (workerId) filter['currentAssignment.workerId'] = workerId;
 
     if (req.user.role === ROLES.THEKEDAR) {
-      // Thekedar ONLY sees their own tools inventory — prevents conflicts between Thekedars
+      // Strict Thekedar isolation: Thekedar ONLY sees their own tools
       filter.thekedarId = req.user._id;
     } else if (req.user.role === ROLES.WORKER) {
-      // Workers view tools assigned to them or available tools from their supervising thekedar
       const wp = await WorkerProfile.findOne({ userId: req.user._id });
       filter.$or = [
         { 'currentAssignment.workerId': req.user._id },
@@ -43,9 +92,18 @@ export const listTools = async (req, res, next) => {
       if (thekedarId) filter.thekedarId = thekedarId;
     }
 
+    if (search && search.trim()) {
+      const s = search.trim();
+      filter.$or = [
+        { toolCode: { $regex: s, $options: 'i' } },
+        { name: { $regex: s, $options: 'i' } },
+        { brand: { $regex: s, $options: 'i' } },
+      ];
+    }
+
     const tools = await Tool.find(filter)
       .populate('thekedarId', 'name email phone')
-      .populate('currentAssignment.projectId', 'name projectCode')
+      .populate('currentAssignment.projectId', 'name projectCode siteAddress')
       .populate('currentAssignment.workerId', 'name phone')
       .sort({ createdAt: -1 });
 
@@ -60,8 +118,9 @@ export const listTools = async (req, res, next) => {
 
 export const issueTool = async (req, res, next) => {
   try {
+    const toolId = req.params.toolId || req.body.toolId;
     const toolIssue = await toolService.issueTool({
-      data: req.body,
+      data: { ...req.body, toolId },
       user: req.user,
       req,
     });
@@ -70,6 +129,136 @@ export const issueTool = async (req, res, next) => {
       status: 'success',
       message: 'Tool issued successfully',
       data: { toolIssue },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const transferTool = async (req, res, next) => {
+  try {
+    const toolId = req.params.toolId || req.body.toolId;
+    const tool = await toolService.transferTool({
+      data: { ...req.body, toolId },
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool transferred to new project successfully',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const returnTool = async (req, res, next) => {
+  try {
+    const toolId = req.params.toolId || req.body.toolId;
+    const issueId = req.params.issueId || req.body.issueId;
+
+    const tool = await toolService.returnTool({
+      toolId,
+      issueId,
+      conditionAtReturn: req.body.conditionAtReturn,
+      quantity: req.body.quantity,
+      damageNotes: req.body.damageNotes,
+      notes: req.body.notes,
+      reviewerUser: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool return recorded successfully',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reportMissing = async (req, res, next) => {
+  try {
+    const tool = await toolService.reportMissingTool({
+      toolId: req.params.toolId,
+      reason: req.body.reason,
+      missingDate: req.body.missingDate,
+      conditionLastSeen: req.body.conditionLastSeen,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool reported missing',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resolveMissing = async (req, res, next) => {
+  try {
+    const tool = await toolService.resolveMissingTool({
+      toolId: req.params.toolId,
+      resolutionStatus: req.body.resolutionStatus,
+      verifiedCondition: req.body.verifiedCondition,
+      notes: req.body.notes,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Missing tool report resolved',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reportDamage = async (req, res, next) => {
+  try {
+    const tool = await toolService.reportToolDamage({
+      toolId: req.params.toolId,
+      damageType: req.body.damageType,
+      description: req.body.description || req.body.damageNotes,
+      damageDate: req.body.damageDate,
+      workerId: req.body.workerId,
+      projectId: req.body.projectId,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool damage reported',
+      data: { tool },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resolveDamage = async (req, res, next) => {
+  try {
+    const tool = await toolService.resolveToolDamage({
+      toolId: req.params.toolId,
+      resolutionStatus: req.body.resolutionStatus,
+      notes: req.body.notes,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Tool damage resolution updated',
+      data: { tool },
     });
   } catch (error) {
     next(error);
@@ -88,63 +277,6 @@ export const acknowledgeReceipt = async (req, res, next) => {
       status: 'success',
       message: 'Tool receipt acknowledged',
       data: { issue },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const returnTool = async (req, res, next) => {
-  try {
-    const issue = await toolService.returnTool({
-      issueId: req.params.issueId,
-      conditionAtReturn: req.body.conditionAtReturn,
-      damageNotes: req.body.damageNotes,
-      reviewerUser: req.user,
-      req,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Tool returned successfully',
-      data: { issue },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const transferTool = async (req, res, next) => {
-  try {
-    const issue = await toolService.transferTool({
-      data: req.body,
-      user: req.user,
-      req,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Tool transferred to new project and worker',
-      data: { issue },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const reportDamage = async (req, res, next) => {
-  try {
-    const result = await toolService.reportToolDamageOrMissing({
-      toolId: req.params.toolId,
-      damageNotes: req.body.damageNotes,
-      isMissing: req.body.isMissing,
-      reporterUser: req.user,
-      req,
-    });
-
-    res.status(200).json({
-      status: 'success',
-      ...result,
     });
   } catch (error) {
     next(error);

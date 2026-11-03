@@ -47,6 +47,16 @@ const toolIssueSchema = new mongoose.Schema(
     expectedReturnDate: {
       type: Date,
     },
+    quantity: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+    returnedQuantity: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     actualReturnDate: {
       type: Date,
       default: null,
@@ -63,7 +73,7 @@ const toolIssueSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['ISSUED', 'RETURNED', 'REPORTED_DAMAGED', 'REPORTED_MISSING', 'TRANSFERRED'],
+      enum: ['ISSUED', 'RETURNED', 'PARTIALLY_RETURNED', 'REPORTED_DAMAGED', 'REPORTED_MISSING', 'TRANSFERRED'],
       default: 'ISSUED',
       index: true,
     },

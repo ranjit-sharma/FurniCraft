@@ -165,4 +165,146 @@ describe('Tool Management & Movement History API Tests', () => {
     // Clean up
     await ProjectAssignment.deleteMany({ workerId: testWorker._id });
   });
+
+  it('RULE: Register tool generates FC-TOOL-XXXX and records REGISTERED in movement timeline', async () => {
+    const regRes = await request(app)
+      .post('/api/v1/tools')
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        name: 'Festool Track Saw TS 55',
+        category: 'Cutting Tools',
+        initialCondition: 'NEW',
+        quantity: 1,
+        brand: 'Festool',
+        description: 'Precision plunge-cut saw with 1400mm guide rail',
+        purchaseCost: 45000,
+      });
+
+    expect(regRes.status).toBe(201);
+    const registered = regRes.body.data.tool;
+    expect(registered.toolCode).toMatch(/^FC-TOOL-\d+/);
+    expect(registered.status).toBe('AVAILABLE');
+    expect(registered.movementHistory).toHaveLength(1);
+    expect(registered.movementHistory[0].action).toBe('REGISTERED');
+
+    // Transfer Tool test
+    // 1. Issue tool first
+    await request(app)
+      .post(`/api/v1/tools/${registered._id}/issue`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        projectId: project._id.toString(),
+        workerId: workerUser._id.toString(),
+        conditionAtIssue: 'NEW',
+      });
+
+    const issuedTool = await Tool.findById(registered._id);
+    expect(issuedTool.status).toBe('ISSUED');
+
+    // 2. Transfer to project 2
+    const project2 = await Project.findOne({ projectCode: 'FURN-2026-002' });
+    const transferRes = await request(app)
+      .post(`/api/v1/tools/${registered._id}/transfer`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        toProjectId: project2._id.toString(),
+        reason: 'Required for precision panel sizing at Site 2',
+      });
+
+    expect(transferRes.status).toBe(200);
+    const transferredTool = await Tool.findById(registered._id);
+    const lastMovement = transferredTool.movementHistory[transferredTool.movementHistory.length - 1];
+    expect(lastMovement.action).toBe('TRANSFERRED');
+    expect(lastMovement.toProjectId.toString()).toBe(project2._id.toString());
+
+    // 3. Return Tool
+    const returnRes = await request(app)
+      .post(`/api/v1/tools/${registered._id}/return`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        conditionAtReturn: 'GOOD',
+        notes: 'Returned in working condition',
+      });
+
+    expect(returnRes.status).toBe(200);
+    const returnedTool = await Tool.findById(registered._id);
+    expect(returnedTool.status).toBe('AVAILABLE');
+
+    // 4. Report Missing Tool (mandatory reason)
+    const missingRes = await request(app)
+      .post(`/api/v1/tools/${registered._id}/report-missing`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        reason: 'Guide rail and saw not found after evening site lockup',
+      });
+
+    expect(missingRes.status).toBe(200);
+    const missingTool = await Tool.findById(registered._id);
+    expect(missingTool.status).toBe('MISSING');
+    expect(missingTool.missingReport.isMissing).toBe(true);
+
+    // 5. Resolve Missing (Mark Found)
+    const resolveMissingRes = await request(app)
+      .patch(`/api/v1/tools/${registered._id}/resolve-missing`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        resolutionStatus: 'FOUND',
+        verifiedCondition: 'GOOD',
+        notes: 'Found safely stored in client secure storeroom',
+      });
+
+    expect(resolveMissingRes.status).toBe(200);
+    const foundTool = await Tool.findById(registered._id);
+    expect(foundTool.status).toBe('AVAILABLE');
+    expect(foundTool.missingReport.isMissing).toBe(false);
+
+    // 6. Report Damage (mandatory description)
+    const damageRes = await request(app)
+      .post(`/api/v1/tools/${registered._id}/report-damage`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        damageType: 'Blade Broken',
+        description: 'TCT blade chipped after hitting embedded metal staple',
+      });
+
+    expect(damageRes.status).toBe(200);
+    const damagedTool = await Tool.findById(registered._id);
+    expect(damagedTool.status).toBe('DAMAGED');
+    expect(damagedTool.damageReport.isDamaged).toBe(true);
+
+    // 7. Resolve Damage (Mark Usable Again)
+    const resolveDamageRes = await request(app)
+      .patch(`/api/v1/tools/${registered._id}/resolve-damage`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        resolutionStatus: 'USABLE_AGAIN',
+        notes: 'Fitted new Festool 48T carbide blade, tested cut precision',
+      });
+
+    expect(resolveDamageRes.status).toBe(200);
+    const repairedTool = await Tool.findById(registered._id);
+    expect(repairedTool.status).toBe('AVAILABLE');
+
+    // 8. Tool stats endpoint
+    const statsRes = await request(app)
+      .get('/api/v1/tools/stats')
+      .set('Authorization', `Bearer ${thekedarToken}`);
+
+    expect(statsRes.status).toBe(200);
+    expect(statsRes.body.data.stats).toHaveProperty('total');
+    expect(statsRes.body.data.stats).toHaveProperty('available');
+    expect(statsRes.body.data.stats).toHaveProperty('issued');
+    expect(statsRes.body.data.stats).toHaveProperty('transferred');
+    expect(statsRes.body.data.stats).toHaveProperty('returned');
+    expect(statsRes.body.data.stats).toHaveProperty('missing');
+    expect(statsRes.body.data.stats).toHaveProperty('damaged');
+
+    // 9. Single tool detail with movement timeline
+    const detailRes = await request(app)
+      .get(`/api/v1/tools/${registered._id}`)
+      .set('Authorization', `Bearer ${thekedarToken}`);
+
+    expect(detailRes.status).toBe(200);
+    expect(detailRes.body.data.tool.movementHistory.length).toBeGreaterThanOrEqual(6);
+  });
 });

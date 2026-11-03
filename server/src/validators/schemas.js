@@ -245,14 +245,30 @@ export const addPayrollAdjustmentSchema = z.object({
 export const createToolSchema = z.object({
   toolCode: z.string().optional(),
   name: z.string().min(2, 'Tool name is required'),
-  category: z.enum(Object.values(TOOL_CATEGORIES)),
+  category: z.string().min(1, 'Category is required'),
   thekedarId: z.string().optional(),
+  description: z.string().optional(),
   brand: z.string().optional(),
   modelNumber: z.string().optional(),
   serialNumber: z.string().optional(),
-  condition: z.enum(Object.values(TOOL_CONDITION)).optional(),
+  quantity: z.number().min(1).optional(),
+  initialCondition: z.string().optional(),
+  condition: z.string().optional(),
+  registrationDate: z.string().optional(),
   purchaseDate: z.string().optional(),
   purchaseCost: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+export const updateToolSchema = z.object({
+  name: z.string().min(2).optional(),
+  category: z.string().optional(),
+  description: z.string().optional(),
+  brand: z.string().optional(),
+  modelNumber: z.string().optional(),
+  serialNumber: z.string().optional(),
+  condition: z.string().optional(),
+  isActive: z.boolean().optional(),
   notes: z.string().optional(),
 });
 
@@ -260,26 +276,60 @@ export const issueToolSchema = z.object({
   toolId: z.string().min(1, 'Tool ID is required'),
   projectId: z.string().min(1, 'Project ID is required'),
   workerId: z.string().min(1, 'Worker ID is required'),
+  issueDate: z.string().optional(),
   expectedReturnDate: z.string().optional(),
-  conditionAtIssue: z.enum(Object.values(TOOL_CONDITION)).optional(),
+  quantity: z.number().min(1).optional(),
+  conditionAtIssue: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export const returnToolSchema = z.object({
-  conditionAtReturn: z.enum(Object.values(TOOL_CONDITION)),
+  toolId: z.string().optional(),
+  returnDate: z.string().optional(),
+  quantity: z.number().min(1).optional(),
+  conditionAtReturn: z.string().optional(),
   damageNotes: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export const transferToolSchema = z.object({
-  toolIssueId: z.string().min(1),
+  toolId: z.string().optional(),
+  toolIssueId: z.string().optional(),
   toProjectId: z.string().min(1, 'Destination project required'),
-  toWorkerId: z.string().min(1, 'Destination worker required'),
-  reason: z.string().min(3, 'Transfer reason required'),
+  toWorkerId: z.string().optional(),
+  transferDate: z.string().optional(),
+  reason: z.string().min(2, 'Transfer reason required'),
+  notes: z.string().optional(),
 });
 
 export const reportToolDamageSchema = z.object({
   toolId: z.string().optional(),
-  damageNotes: z.string().min(3, 'Damage report details required'),
+  damageType: z.string().optional(),
+  description: z.string().min(2, 'Damage description required').optional(),
+  damageNotes: z.string().optional(),
+  damageDate: z.string().optional(),
+  workerId: z.string().optional(),
+  projectId: z.string().optional(),
   isMissing: z.boolean().optional(),
+});
+
+export const reportMissingToolSchema = z.object({
+  reason: z.string().min(3, 'Reason / circumstances for missing tool is mandatory'),
+  missingDate: z.string().optional(),
+  conditionLastSeen: z.string().optional(),
+  workerId: z.string().optional(),
+  projectId: z.string().optional(),
+});
+
+export const resolveMissingToolSchema = z.object({
+  resolutionStatus: z.enum(['FOUND', 'CLOSED']),
+  verifiedCondition: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+export const resolveDamageToolSchema = z.object({
+  resolutionStatus: z.enum(['USABLE_AGAIN', 'RETIRED']),
+  notes: z.string().optional(),
 });
 
 // Furniture Task Schemas

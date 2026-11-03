@@ -114,6 +114,17 @@ export const PAYROLL_STATUS = {
 };
 
 export const TOOL_CATEGORIES = {
+  CUTTING_TOOLS: 'Cutting Tools',
+  DRILLING_TOOLS: 'Drilling Tools',
+  POWER_TOOLS: 'Power Tools',
+  MEASURING_TOOLS: 'Measuring Tools',
+  ASSEMBLY_TOOLS: 'Assembly Tools',
+  INSTALLATION_TOOLS: 'Installation Tools',
+  HAND_TOOLS: 'Hand Tools',
+  ELECTRICAL_TOOLS: 'Electrical Tools',
+  SAFETY_EQUIPMENT: 'Safety Equipment',
+  OTHER: 'Other',
+  // Legacy / DB backwards compatibility
   DRILL: 'DRILL',
   CUTTER: 'CUTTER',
   ROUTER: 'ROUTER',
@@ -122,7 +133,6 @@ export const TOOL_CATEGORIES = {
   TOOL_KIT: 'TOOL_KIT',
   LADDER: 'LADDER',
   EDGE_BANDER_TOOL: 'EDGE_BANDER_TOOL',
-  OTHER: 'OTHER',
 };
 
 export const TOOL_CONDITION = {
@@ -138,6 +148,13 @@ export const TOOL_CONDITION = {
 export const TOOL_STATUS = {
   AVAILABLE: 'AVAILABLE',
   ISSUED: 'ISSUED',
+  PARTIALLY_ISSUED: 'PARTIALLY_ISSUED',
+  TRANSFERRED: 'TRANSFERRED',
+  RETURNED: 'RETURNED',
+  MISSING: 'MISSING',
+  DAMAGED: 'DAMAGED',
+  UNDER_INSPECTION: 'UNDER_INSPECTION',
+  RETIRED: 'RETIRED',
   MAINTENANCE: 'MAINTENANCE',
   LOST: 'LOST',
 };

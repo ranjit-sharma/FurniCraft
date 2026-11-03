@@ -36,25 +36,13 @@ export const ThekedarDashboard = () => {
   const { t, language } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [pendingAttendance, setPendingAttendance] = useState([]);
-  const [pendingTasks, setPendingTasks] = useState([]);
-  const [approvingTaskId, setApprovingTaskId] = useState(null);
-  const [taskReworkModalOpen, setTaskReworkModalOpen] = useState(false);
-  const [selectedTaskToRework, setSelectedTaskToRework] = useState(null);
-  const [taskReworkNotes, setTaskReworkNotes] = useState('');
   const [message, setMessage] = useState(null);
-  const [approvalCodes, setApprovalCodes] = useState({});
 
   // Disburse Modal State
   const [disburseModalOpen, setDisburseModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
   const [receiptReference, setReceiptReference] = useState('');
-
-  // Rejection Modal State
-  const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectAttendanceId, setRejectAttendanceId] = useState(null);
-  const [rejectionReason, setRejectionReason] = useState('');
 
   // Dedicated Workforce Management State
   const [workersList, setWorkersList] = useState([]);
@@ -78,7 +66,6 @@ export const ThekedarDashboard = () => {
   const [editWorkerPhone, setEditWorkerPhone] = useState('');
   const [editWorkerTrade, setEditWorkerTrade] = useState('Mistry');
   const [editWorkerWage, setEditWorkerWage] = useState('');
-  const [editWorkerAddress, setEditWorkerAddress] = useState('');
   const [editWorkerSubmitting, setEditWorkerSubmitting] = useState(false);
 
   // Mark Daily Attendance Modal State
@@ -116,22 +103,6 @@ export const ThekedarDashboard = () => {
     try {
       const res = await api.get('/reports/dashboard');
       setData(res.data);
-      if (res.data?.pendingTaskApprovals) {
-        setPendingTasks(res.data.pendingTaskApprovals);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const fetchPendingAttendance = async () => {
-    try {
-      const now = new Date();
-      const res = await api.get(`/attendance/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`);
-      const unapproved = res.data?.records?.filter(
-        (r) => r.approvalStatus === 'SUBMITTED' || r.approvalStatus === 'CORRECTION_REQUESTED'
-      ) || [];
-      setPendingAttendance(unapproved);
     } catch (err) {
       console.error(err);
     }
@@ -139,7 +110,7 @@ export const ThekedarDashboard = () => {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchDashboard(), fetchPendingAttendance(), fetchWorkforceData()]).finally(() => setLoading(false));
+    Promise.all([fetchDashboard(), fetchWorkforceData()]).finally(() => setLoading(false));
   }, []);
 
   const handleAddWorker = async (e) => {
@@ -179,7 +150,6 @@ export const ThekedarDashboard = () => {
     setEditWorkerPhone(worker.userId?.phone || worker.phone || '');
     setEditWorkerTrade(worker.skills?.[0] || 'Mistry');
     setEditWorkerWage(worker.defaultDailyWage || '750');
-    setEditWorkerAddress(worker.address || '');
     setEditWorkerModalOpen(true);
   };
 
@@ -193,7 +163,6 @@ export const ThekedarDashboard = () => {
         phone: editWorkerPhone.trim(),
         trade: editWorkerTrade,
         defaultDailyWage: parseFloat(editWorkerWage) || undefined,
-        address: editWorkerAddress,
       });
       setMessage({ type: 'success', text: `Worker details for ${editWorkerName} updated successfully!` });
       setEditWorkerModalOpen(false);
@@ -240,43 +209,11 @@ export const ThekedarDashboard = () => {
       setMarkAttendanceModalOpen(false);
       setAttendanceNotes('');
       fetchWorkforceData();
-      fetchPendingAttendance();
       fetchDashboard();
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to mark attendance' });
     } finally {
       setMarkAttendanceSubmitting(false);
-    }
-  };
-
-  const handleApproveAttendance = async (id) => {
-    try {
-      const codeToApprove = approvalCodes[id] || pendingAttendance.find((a) => a._id === id)?.code || 'P';
-      setPendingAttendance((prev) => prev.filter((a) => a._id !== id));
-      await api.patch(`/attendance/${id}/approve`, { code: codeToApprove });
-      setMessage({ type: 'success', text: `Attendance approved successfully as ${codeToApprove}!` });
-      fetchPendingAttendance();
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
-      fetchPendingAttendance();
-    }
-  };
-
-  const handleRejectAttendance = async (e) => {
-    e.preventDefault();
-    try {
-      const id = rejectAttendanceId;
-      setPendingAttendance((prev) => prev.filter((a) => a._id !== id));
-      await api.patch(`/attendance/${id}/reject`, { reason: rejectionReason });
-      setMessage({ type: 'success', text: 'Attendance rejected.' });
-      setRejectModalOpen(false);
-      setRejectionReason('');
-      fetchPendingAttendance();
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message });
-      fetchPendingAttendance();
     }
   };
 
@@ -302,48 +239,6 @@ export const ThekedarDashboard = () => {
       fetchDashboard();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
-    }
-  };
-
-  const handleApproveTask = async (taskId, itemName) => {
-    try {
-      setApprovingTaskId(taskId);
-      setPendingTasks((prev) => prev.filter((t) => t._id !== taskId));
-      await api.patch(`/furniture-tasks/${taskId}/verify`);
-      setMessage({ type: 'success', text: `Task "${itemName || 'item'}" successfully checked and approved!` });
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to approve task' });
-      fetchDashboard();
-    } finally {
-      setApprovingTaskId(null);
-    }
-  };
-
-  const handleOpenReworkModal = (task) => {
-    setSelectedTaskToRework(task);
-    setTaskReworkNotes('');
-    setTaskReworkModalOpen(true);
-  };
-
-  const handleSubmitTaskRework = async (e) => {
-    e.preventDefault();
-    if (!selectedTaskToRework) return;
-    try {
-      const taskId = selectedTaskToRework._id;
-      setPendingTasks((prev) => prev.filter((t) => t._id !== taskId));
-      await api.patch(`/furniture-tasks/${taskId}/verify`, {
-        status: 'REWORK_NEEDED',
-        defectNotes: taskReworkNotes || 'Rework requested by Thekedar',
-      });
-      setMessage({ type: 'success', text: `Rework feedback sent to worker for "${selectedTaskToRework.furnitureItemName}".` });
-      setTaskReworkModalOpen(false);
-      setSelectedTaskToRework(null);
-      setTaskReworkNotes('');
-      fetchDashboard();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to request rework' });
-      fetchDashboard();
     }
   };
 
@@ -461,14 +356,14 @@ export const ThekedarDashboard = () => {
 
         <Card className="border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('projects.tasksAwaitingReview') || 'Pending Task Reviews'}</span>
-            <CheckCircle className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+            <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('nav.toolTracking') || 'Tools In Custody'}</span>
+            <Wrench className="h-4 w-4 text-amber-700 dark:text-amber-400" />
           </div>
           <div className="text-2xl font-black text-amber-950 dark:text-amber-200 mt-2">
-            {pendingTasks.length}
+            {issuedTools.length}
           </div>
           <span className="text-[11px] text-amber-800 dark:text-amber-400">
-            {pendingTasks.length} {t('nav.tasks') || 'Quality checks & tasks'}
+            {issuedTools.length} {t('tools.currentlyIssued') || 'Tools currently issued to workers'}
           </span>
         </Card>
 
@@ -684,80 +579,6 @@ export const ThekedarDashboard = () => {
         )}
       </div>
 
-      {/* Pending Task Approvals & Quality Inspection Card */}
-      <Card
-        title={`${t('projects.tasksAwaitingReview') || 'Pending Task Approvals & Quality Checks'} (${pendingTasks.length})`}
-        subtitle={t('projects.awaitingApproval') || 'Review finished furniture craft tasks submitted by workers for supervisor inspection and approval'}
-      >
-        {pendingTasks.length === 0 ? (
-          <div className="py-6 text-center text-xs text-slate-700 dark:text-slate-400 italic">
-            {t('projects.noTasks') || 'No completed tasks awaiting approval. All worker task submissions are verified!'}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                  <th className="p-3">{t('thekedarDashboard.tableWorker') || 'Worker Craftsman'}</th>
-                  <th className="p-3">{t('projectDetail.tasks') || 'Furniture Item / Task'}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableProject') || 'Project Site'}</th>
-                  <th className="p-3">{t('expenses.stage') || 'Stage'}</th>
-                  <th className="p-3">{t('thekedarDashboard.unitsCompleted', 'Units Completed')}</th>
-                  <th className="p-3">{t('thekedarDashboard.tableStatus') || 'Status'}</th>
-                  <th className="p-3 text-right">{t('thekedarDashboard.tableActions') || 'Inspection & Approval'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {pendingTasks.map((task) => (
-                  <tr key={task._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="p-3">
-                      <span className="font-bold text-slate-900 dark:text-white block">{task.assignedWorkerId?.name || (t('thekedarDashboard.tableWorker') || 'Assigned Worker')}</span>
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">{task.assignedWorkerId?.phone}</span>
-                    </td>
-                    <td className="p-3">
-                      <strong className="text-slate-900 dark:text-white block font-semibold">{task.furnitureItemName}</strong>
-                      {task.notes && <span className="text-[10px] text-slate-500 dark:text-slate-400 italic block">{task.notes}</span>}
-                    </td>
-                    <td className="p-3 text-slate-700 dark:text-slate-300">
-                      <span className="font-bold text-amber-800 dark:text-amber-400 block text-[11px]">{task.projectId?.projectCode}</span>
-                      <span>{task.projectId?.name}</span>
-                    </td>
-                    <td className="p-3">
-                      <Badge variant="default" size="sm">{task.taskType}</Badge>
-                    </td>
-                    <td className="p-3 font-semibold text-slate-900 dark:text-white">
-                      {task.completedUnits || task.plannedUnits} / {task.plannedUnits} {task.unitMetric || 'pcs'}
-                    </td>
-                    <td className="p-3">
-                      <Badge variant="warning" size="sm">COMPLETED</Badge>
-                    </td>
-                    <td className="p-3 text-right space-x-1.5 whitespace-nowrap">
-                      <Button
-                        size="sm"
-                        variant="success"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        loading={approvingTaskId === task._id}
-                        onClick={() => handleApproveTask(task._id, task.furnitureItemName)}
-                        icon={CheckCircle}
-                      >
-                        {t('projects.qualityChecked') || 'Approve & Verify ✓'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleOpenReworkModal(task)}
-                      >
-                        {t('thekedarDashboard.reworkModalTitle') || 'Request Rework'}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-
       {/* Grid: Pending Advance Requests & Active Modern Furniture Projects */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Pending Advance Requests */}
@@ -901,79 +722,6 @@ export const ThekedarDashboard = () => {
             <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
               <Button variant="secondary" onClick={() => setDisburseModalOpen(false)}>{t('common.cancel') || 'Cancel'}</Button>
               <Button type="submit">{t('thekedarDashboard.confirmDisburse') || 'Confirm Disbursement'}</Button>
-            </div>
-          </form>
-        )}
-      </Modal>
-
-      {/* Rejection Modal */}
-      <Modal isOpen={rejectModalOpen} onClose={() => setRejectModalOpen(false)} title={t('thekedarDashboard.rejectionModalTitle') || 'Reject Attendance Submission'}>
-        <form onSubmit={handleRejectAttendance} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('thekedarDashboard.rejectionReason') || 'Reason for Rejection'}</label>
-            <textarea
-              required
-              rows={3}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="e.g. Worker was absent from site on afternoon shift, or overtime not authorized..."
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setRejectModalOpen(false)}>{t('common.cancel') || 'Cancel'}</Button>
-            <Button type="submit" variant="danger">{t('thekedarDashboard.confirmReject') || 'Confirm Rejection'}</Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal: Request Task Rework */}
-      <Modal
-        isOpen={taskReworkModalOpen}
-        onClose={() => {
-          setTaskReworkModalOpen(false);
-          setSelectedTaskToRework(null);
-          setTaskReworkNotes('');
-        }}
-        title={t('thekedarDashboard.reworkModalTitle') || 'Request Task Rework / Defect Correction'}
-      >
-        {selectedTaskToRework && (
-          <form onSubmit={handleSubmitTaskRework} className="space-y-4">
-            <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/50 p-3.5 text-xs text-amber-900 dark:text-amber-300 space-y-1">
-              <div>{t('projectDetail.tasks') || 'Furniture Item'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.furnitureItemName}</strong></div>
-              <div>{t('thekedarDashboard.tableWorker') || 'Craftsman'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.assignedWorkerId?.name}</strong></div>
-              <div>{t('thekedarDashboard.tableProject') || 'Project Site'}: <strong className="text-slate-900 dark:text-white">{selectedTaskToRework.projectId?.name} ({selectedTaskToRework.projectId?.projectCode})</strong></div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                {t('thekedarDashboard.reworkNotesLabel') || 'Correction / Rework Instructions for Worker'}
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={taskReworkNotes}
-                onChange={(e) => setTaskReworkNotes(e.target.value)}
-                placeholder="Describe what needs to be fixed or adjusted before this task can be approved (e.g. edge alignment gap, screw tightening, finish polishing)..."
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-xs focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-              />
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setTaskReworkModalOpen(false);
-                  setSelectedTaskToRework(null);
-                  setTaskReworkNotes('');
-                }}
-              >
-                {t('common.cancel') || 'Cancel'}
-              </Button>
-              <Button type="submit" variant="danger">
-                {t('thekedarDashboard.sendRework') || 'Submit Rework Request'}
-              </Button>
             </div>
           </form>
         )}
@@ -1140,18 +888,6 @@ export const ThekedarDashboard = () => {
               required
               value={editWorkerWage}
               onChange={(e) => setEditWorkerWage(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Address / Notes
-            </label>
-            <input
-              type="text"
-              value={editWorkerAddress}
-              onChange={(e) => setEditWorkerAddress(e.target.value)}
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
             />
           </div>

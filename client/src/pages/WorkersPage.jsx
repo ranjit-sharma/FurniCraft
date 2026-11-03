@@ -71,7 +71,6 @@ export const WorkersPage = () => {
   const [editPhone, setEditPhone] = useState('');
   const [editTrade, setEditTrade] = useState('Mistry');
   const [editWage, setEditWage] = useState('');
-  const [editAddress, setEditAddress] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Mark Daily Attendance Modal (Direct from Worker Cards / Roster)
@@ -245,7 +244,6 @@ export const WorkersPage = () => {
     setEditPhone(worker.userId?.phone || worker.phone || '');
     setEditTrade(worker.skills?.[0] || 'Mistry');
     setEditWage(worker.defaultDailyWage || '750');
-    setEditAddress(worker.address || '');
     setEditWorkerModalOpen(true);
   };
 
@@ -260,7 +258,6 @@ export const WorkersPage = () => {
         phone: editPhone.trim(),
         trade: editTrade,
         defaultDailyWage: parseFloat(editWage) || undefined,
-        address: editAddress,
       });
       setMessage({ type: 'success', text: `Craftsman details for ${editName} updated successfully!` });
       setEditWorkerModalOpen(false);
@@ -272,7 +269,7 @@ export const WorkersPage = () => {
     }
   };
 
-  const handleOpenActivity = async (w, initialTab = 'tasks') => {
+  const handleOpenActivity = async (w, initialTab = 'attendance') => {
     setActivityWorker(w);
     setActivityModalOpen(true);
     setActivityLoading(true);
@@ -656,7 +653,6 @@ export const WorkersPage = () => {
                   <div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white">{w.userId?.name || 'Worker'}</h3>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
-                    <p className="text-[11px] text-slate-700 dark:text-slate-400">{w.userId?.email || ''}</p>
                   </div>
                 </div>
 
@@ -978,16 +974,6 @@ export const WorkersPage = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Address / Workshop Notes</label>
-            <input
-              type="text"
-              value={editAddress}
-              onChange={(e) => setEditAddress(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setEditWorkerModalOpen(false)}>Cancel</Button>
             <Button type="submit" disabled={editSubmitting}>
@@ -1194,7 +1180,6 @@ export const WorkersPage = () => {
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1"><Phone className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {activityWorker.userId?.phone || 'No phone'}</span>
-                    <span className="flex items-center gap-1"><Mail className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {activityWorker.userId?.email || ''}</span>
                   </div>
                 </div>
               </div>
@@ -1210,8 +1195,10 @@ export const WorkersPage = () => {
                   <div className="text-xs font-bold text-rose-600 dark:text-rose-400">₹{activityData?.profile?.outstandingAdvanceBalance ?? activityWorker.outstandingAdvanceBalance ?? 0}</div>
                 </div>
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Assigned Tasks</div>
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">{activityData?.tasks?.length || 0}</div>
+                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Net Payable</div>
+                  <div className={`text-xs font-bold ${((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                    ₹{((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}
+                  </div>
                 </div>
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                   <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Attendance Logs</div>
@@ -1222,21 +1209,6 @@ export const WorkersPage = () => {
 
             {/* Tab Navigation */}
             <div className="flex border-b border-slate-200 dark:border-slate-700 gap-1 text-xs font-bold overflow-x-auto no-scrollbar scrollbar-none shrink-0">
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
-                  activeTab === 'tasks'
-                    ? 'border-amber-600 dark:border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/40'
-                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
-              >
-                <CheckSquare className="h-4 w-4" />
-                <span>Assigned Tasks</span>
-                <span className="rounded-full bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-extrabold text-amber-800 dark:text-amber-300">
-                  {activityData?.tasks?.length || 0}
-                </span>
-              </button>
-
               <button
                 onClick={() => setActiveTab('attendance')}
                 className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 border-b-2 whitespace-nowrap shrink-0 transition-all ${
@@ -1292,90 +1264,12 @@ export const WorkersPage = () => {
               <div className="p-8 text-center text-sm text-slate-500">No activity data available.</div>
             ) : (
               <div>
-                {/* TAB 1: ASSIGNED FURNITURE TASKS */}
-                {activeTab === 'tasks' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Modern furniture work orders, modular cutting, edge banding, carcase assembly, and hardware fitting assigned to {activityWorker.userId?.name || 'this worker'}.
-                      </p>
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Total Tasks: {activityData.tasks?.length || 0}
-                      </span>
-                    </div>
-
-                    {(!activityData.tasks || activityData.tasks.length === 0) ? (
-                      <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
-                        <CheckSquare className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
-                        <p className="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-300">No furniture tasks currently assigned.</p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Tasks assigned in project details will appear here automatically.</p>
-                      </div>
-                    ) : (
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-                        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                          <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                            <tr>
-                              <th className="px-4 py-3">Furniture Item & Task</th>
-                              <th className="px-4 py-3">Project</th>
-                              <th className="px-4 py-3">Process Type</th>
-                              <th className="px-4 py-3">Units & Progress</th>
-                              <th className="px-4 py-3">Target Date</th>
-                              <th className="px-4 py-3">Status</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                            {activityData.tasks.map((task) => (
-                              <tr key={task._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
-                                  <div>{task.furnitureItemName}</div>
-                                  {task.notes && <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-xs">{task.notes}</div>}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <div className="font-semibold text-slate-800 dark:text-slate-200">{task.projectId?.name || 'Project'}</div>
-                                  <div className="text-[10px] text-amber-700 dark:text-amber-400">{task.projectId?.projectCode || ''}</div>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <span className="rounded-md bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                    {task.taskType?.replace('_', ' ')}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-bold text-slate-900 dark:text-white">
-                                      {task.completedUnits || 0} / {task.plannedUnits || 1}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 dark:text-slate-400">{task.unitMetric || 'Units'}</span>
-                                  </div>
-                                  <div className="mt-1 h-1.5 w-24 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                                    <div
-                                      className="h-full bg-amber-500 rounded-full"
-                                      style={{
-                                        width: `${Math.min(100, Math.round(((task.completedUnits || 0) / (task.plannedUnits || 1)) * 100))}%`,
-                                      }}
-                                    />
-                                  </div>
-                                </td>
-                                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                                  {formatDate(task.targetDate)}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <Badge variant={task.status} size="sm">{task.status}</Badge>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* TAB 2: ATTENDANCE HISTORY */}
+                {/* TAB 1: ATTENDANCE HISTORY */}
                 {activeTab === 'attendance' && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Attendance logs for the last 30 work shifts including duty codes (P, HALF, P1/5, PP), check-in/out timestamps, and approved status.
+                        Attendance logs for the last 30 work shifts including duty codes (P, HALF, P1/5, PP), check-in/out timestamps, and authorized wage calculations.
                       </p>
                       <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
                         Logged Records: {activityData.attendanceHistory?.length || 0}
@@ -1386,7 +1280,7 @@ export const WorkersPage = () => {
                       <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center">
                         <Calendar className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
                         <p className="mt-2 text-xs font-semibold text-slate-700 dark:text-slate-300">No attendance records found for this worker.</p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Attendance submitted by the worker or thekedar will be tracked here.</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Attendance recorded from worker cards or dashboard will be tracked here.</p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
@@ -1398,7 +1292,6 @@ export const WorkersPage = () => {
                               <th className="px-4 py-3">Code & Weight</th>
                               <th className="px-4 py-3">Work Hours</th>
                               <th className="px-4 py-3">Daily Wage (Earned)</th>
-                              <th className="px-4 py-3">Approval Status</th>
                               <th className="px-4 py-3">Notes</th>
                             </tr>
                           </thead>
@@ -1425,9 +1318,6 @@ export const WorkersPage = () => {
                                 </td>
                                 <td className="px-4 py-3 font-bold text-amber-900 dark:text-amber-300">
                                   {att.calculatedWage ? `₹${att.calculatedWage}` : `₹${activityWorker.defaultDailyWage} (base)`}
-                                </td>
-                                <td className="px-4 py-3">
-                                  <Badge variant={att.approvalStatus} size="sm">{att.approvalStatus}</Badge>
                                 </td>
                                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400 text-[11px] max-w-xs truncate">
                                   {att.notes || '-'}
