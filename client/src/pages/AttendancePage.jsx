@@ -222,13 +222,6 @@ export const AttendancePage = () => {
     }
   };
 
-  const handleExportPDF = () => {
-    let url = `/api/v1/reports/export/attendance?year=${calYear}&month=${calMonth}&lang=${language}&`;
-    if (filterWorkerId) url += `workerId=${filterWorkerId}&`;
-    if (filterProjectId) url += `projectId=${filterProjectId}&`;
-    window.open(url, '_blank');
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -249,9 +242,6 @@ export const AttendancePage = () => {
               Mark Worker Attendance
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={handleExportPDF} icon={FileText} className="w-full sm:w-auto justify-center">
-            {t('calendar.exportPdf') || 'Export Attendance (PDF)'}
-          </Button>
         </div>
       </div>
 

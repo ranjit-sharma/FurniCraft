@@ -258,8 +258,10 @@ export const ThekedarDashboard = () => {
     }
   };
 
-  const handleExportAttendancePDF = () => {
-    window.open(`/api/v1/reports/export/attendance?lang=${language}`, '_blank');
+  const handleExportWorkerAttendancePDF = (worker) => {
+    const workerUserId = worker.userId?._id || worker._id;
+    if (!workerUserId) return;
+    window.open(`/api/v1/reports/export/attendance?workerId=${workerUserId}&lang=${language}`, '_blank');
   };
 
   if (loading) {
@@ -318,15 +320,6 @@ export const ThekedarDashboard = () => {
             className="w-full sm:w-auto justify-center bg-amber-500/10 border-amber-400/40 text-amber-300 hover:bg-amber-500/20"
           >
             Add Craftsman
-          </Button>
-          <Button
-            variant="outline-amber"
-            size="sm"
-            onClick={handleExportAttendancePDF}
-            icon={FileText}
-            className="w-full sm:w-auto justify-center"
-          >
-            {t('calendar.exportPdf') || 'Export Attendance (PDF)'}
           </Button>
           <Link to="/workers" className="w-full sm:w-auto">
             <Button
@@ -548,6 +541,13 @@ export const ThekedarDashboard = () => {
                               title="Mark Daily Attendance"
                             >
                               Attendance
+                            </button>
+                            <button
+                              onClick={() => handleExportWorkerAttendancePDF(w)}
+                              className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-200 transition-colors cursor-pointer text-[10px]"
+                              title={`Download Attendance PDF for ${name}`}
+                            >
+                              PDF
                             </button>
                             <button
                               onClick={() => handleOpenEditWorker(w)}

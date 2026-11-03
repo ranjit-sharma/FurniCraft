@@ -30,7 +30,18 @@ export const exportAttendance = async (req, res, next) => {
     const { projectId, workerId, startDate, endDate, year, month } = req.query;
     const filter = {};
     if (projectId) filter.projectId = projectId;
-    if (workerId) filter.workerId = workerId;
+
+    let targetWorkerDoc = null;
+    if (workerId) {
+      let resolvedWorkerUserId = workerId;
+      const profile = await WorkerProfile.findById(workerId);
+      if (profile && profile.userId) {
+        resolvedWorkerUserId = profile.userId;
+      }
+      filter.workerId = resolvedWorkerUserId;
+      targetWorkerDoc = await User.findById(resolvedWorkerUserId);
+    }
+
     if (startDate && endDate) {
       filter.date = { $gte: startDate, $lte: endDate };
     } else if (year && month) {
@@ -48,9 +59,12 @@ export const exportAttendance = async (req, res, next) => {
     const selectedLang = req.query.lang || req.headers['x-custom-lang'] || req.user?.preferredLanguage || 'en';
     const pdfBuffer = await exportService.generateAttendancePDF(filter, { reqUser: req.user, lang: selectedLang });
 
-    const filename = year && month
-      ? `attendance-${year}-${String(month).padStart(2, '0')}.pdf`
-      : `attendance-report-${Date.now()}.pdf`;
+    const safeWorkerName = targetWorkerDoc?.name ? targetWorkerDoc.name.replace(/\s+/g, '_') : '';
+    const filename = targetWorkerDoc
+      ? `attendance-${safeWorkerName}-${Date.now()}.pdf`
+      : (year && month
+        ? `attendance-${year}-${String(month).padStart(2, '0')}.pdf`
+        : `attendance-report-${Date.now()}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(pdfBuffer);

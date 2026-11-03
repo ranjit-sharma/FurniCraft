@@ -241,6 +241,12 @@ export const WorkersPage = () => {
     }
   };
 
+  const handleExportWorkerAttendancePDF = (worker) => {
+    const workerUserId = worker?.userId?._id || worker?._id;
+    if (!workerUserId) return;
+    window.open(`/api/v1/reports/export/attendance?workerId=${workerUserId}&lang=${language}`, '_blank');
+  };
+
   const handleOpenEditWorker = (worker) => {
     setEditingWorker(worker);
     setEditName(worker.userId?.name || worker.name || '');
@@ -793,6 +799,16 @@ export const WorkersPage = () => {
                       Edit
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="justify-center text-xs font-semibold px-2 py-2 whitespace-nowrap border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onClick={() => handleExportWorkerAttendancePDF(w)}
+                    icon={FileText}
+                    title={`Export Individual Attendance Statement (PDF) for ${w.userId?.name || w.name}`}
+                  >
+                    PDF
+                  </Button>
                   {(isOwner || isThekedar) && (
                     <Button
                       size="sm"
@@ -1267,13 +1283,24 @@ export const WorkersPage = () => {
                 {/* TAB 1: ATTENDANCE HISTORY */}
                 {activeTab === 'attendance' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Attendance logs for the last 30 work shifts including duty codes (P, HALF, P1/5, PP), check-in/out timestamps, and authorized wage calculations.
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl">
+                        Attendance logs for work shifts including duty codes (P, HALF, P1/5, PP), check-in/out timestamps, and authorized wage calculations.
                       </p>
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
-                        Logged Records: {activityData.attendanceHistory?.length || 0}
-                      </span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400">
+                          Records: {activityData.attendanceHistory?.length || 0}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          icon={FileText}
+                          onClick={() => handleExportWorkerAttendancePDF(activityWorker)}
+                          className="text-xs font-bold border-amber-300 dark:border-amber-700 bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100"
+                        >
+                          Export Worker Attendance PDF
+                        </Button>
+                      </div>
                     </div>
 
                     {(!activityData.attendanceHistory || activityData.attendanceHistory.length === 0) ? (

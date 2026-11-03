@@ -88,10 +88,6 @@ export const OwnerDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleExportAttendance = () => {
-    window.open(`/api/v1/reports/export/attendance?lang=${language}`, '_blank');
-  };
-
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -181,15 +177,6 @@ export const OwnerDashboard = () => {
               {t('dashboard.activeContractors') || 'Thekedars'}
             </Button>
           </Link>
-          <Button
-            variant="outline-purple"
-            size="sm"
-            onClick={handleExportAttendance}
-            icon={FileText}
-            className="w-full sm:w-auto justify-center"
-          >
-            {t('calendar.exportPdf') || 'Export Attendance (PDF)'}
-          </Button>
         </div>
       </div>
 

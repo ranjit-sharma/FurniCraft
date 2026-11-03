@@ -256,6 +256,14 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
     thekedarEmail = t.email || '-';
   }
 
+  // Resolve individual worker details if filtered by workerId
+  let targetWorker = null;
+  let targetWorkerProfile = null;
+  if (filterQuery.workerId) {
+    targetWorker = await User.findById(filterQuery.workerId);
+    targetWorkerProfile = await WorkerProfile.findOne({ userId: filterQuery.workerId });
+  }
+
   // Summary Metrics
   const totalRecords = records.length;
   let totalMultiplier = 0;
@@ -296,9 +304,11 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
           }
           doc.fillColor('#FFFFFF').fontSize(15).text('FurniCraft ERP', 108, 42, { bold: true });
           doc.fillColor('#F59E0B').fontSize(7.5).text(trans.tagline, 108, 58, { bold: true });
-          const bannerSub = reqUser && reqUser.role === ROLES.WORKER
-            ? trans.workerAttendanceBanner
-            : trans.thekedarAttendanceBanner;
+          const bannerSub = targetWorker
+            ? 'OFFICIAL INDIVIDUAL CRAFTSMAN ATTENDANCE & SHIFT VERIFICATION STATEMENT'
+            : (reqUser && reqUser.role === ROLES.WORKER
+              ? trans.workerAttendanceBanner
+              : trans.thekedarAttendanceBanner);
           doc.fillColor('#94A3B8').fontSize(7.5).text(bannerSub, 108, 69);
 
           // System document tag on right
@@ -310,7 +320,14 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
           doc.rect(36, 94, 770, 44).fill('#F8FAFC');
           doc.rect(36, 94, 770, 44).stroke('#E2E8F0');
 
-          if (reqUser && reqUser.role === ROLES.WORKER) {
+          if (targetWorker) {
+            // Individual Craftsman Info (Left)
+            const roleStr = targetWorkerProfile?.skills?.[0] || 'Mistry';
+            const wageStr = targetWorkerProfile?.defaultDailyWage ? `₹${targetWorkerProfile.defaultDailyWage}/day` : 'Standard Wage';
+            doc.fillColor('#64748B').fontSize(7.5).text('INDIVIDUAL CRAFTSMAN ATTENDANCE RECORD:', 48, 100);
+            doc.fillColor('#0F172A').fontSize(10).text(`${targetWorker.name} (${targetWorkerProfile?.workerCode || 'FC-WRK'})`, 48, 111, { bold: true });
+            doc.fillColor('#475569').fontSize(7.5).text(`Role: ${roleStr}  |  Wage: ${wageStr}  |  Phone: ${targetWorker.phone || '-'}  |  Contractor: ${thekedarName}`, 48, 124);
+          } else if (reqUser && reqUser.role === ROLES.WORKER) {
             // Worker Info (Left)
             doc.fillColor('#64748B').fontSize(7.5).text(trans.workerAttendanceRecord, 48, 100);
             doc.fillColor('#0F172A').fontSize(10).text(reqUser.name || 'Worker', 48, 111, { bold: true });
@@ -325,7 +342,10 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
           // Report Metadata (Right)
           doc.fillColor('#64748B').fontSize(7.5).text(trans.reportSpecs, 540, 100);
           doc.fillColor('#0F172A').fontSize(8).text(`${trans.generated}: ${new Date().toLocaleString('en-IN')}`, 540, 111);
-          doc.fillColor('#475569').fontSize(7.5).text(`${trans.filter}: ${filterQuery.approvalStatus || 'All Records'}  |  ${trans.loggedShifts}: ${totalRecords}`, 540, 124);
+          const filterDesc = targetWorker
+            ? `Craftsman ID: ${targetWorkerProfile?.workerCode || 'FC-WRK'}  |  Total Shifts: ${totalRecords}`
+            : `${trans.filter}: ${filterQuery.approvalStatus || 'All Records'}  |  ${trans.loggedShifts}: ${totalRecords}`;
+          doc.fillColor('#475569').fontSize(7.5).text(filterDesc, 540, 124);
 
           // KPI Metric Badges (4 boxes)
           const kpiY = 144;
@@ -359,9 +379,11 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
           if (fs.existsSync(LOGO_PATH)) {
             doc.image(LOGO_PATH, 42, 38, { height: 20, fit: [28, 20] });
           }
-          const contText = reqUser && reqUser.role === ROLES.WORKER
-            ? `${trans.continuedWorker}${reqUser.name || 'Worker'}`
-            : `${trans.continuedThekedar}${thekedarName}`;
+          const contText = targetWorker
+            ? `FurniCraft ERP — Attendance Statement (Continued) | Craftsman: ${targetWorker.name} (${targetWorkerProfile?.workerCode || 'FC-WRK'})`
+            : (reqUser && reqUser.role === ROLES.WORKER
+              ? `${trans.continuedWorker}${reqUser.name || 'Worker'}`
+              : `${trans.continuedThekedar}${thekedarName}`);
           doc.fillColor('#FFFFFF').fontSize(8.5).text(contText, 76, 44);
           return 66;
         }
