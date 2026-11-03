@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '../components/common/BrandLogo';
-import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/client';
@@ -117,15 +116,6 @@ export const ThekedarRegisterPage = () => {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-lg">
-        {/* Language Selection Header */}
-        <div className="mb-3.5 flex items-center justify-between px-2">
-          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            {t('common.selectLanguage', 'Select Language / भाषा')}
-          </span>
-          <LanguageSelector variant="pill" />
-        </div>
-
         <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/60 dark:shadow-2xl">
           
           {/* Brand Logo Header */}

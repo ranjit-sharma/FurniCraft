@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { MoreHorizontal, ChevronRight, Globe } from 'lucide-react';
+import { MoreHorizontal, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Modal } from '../common/Modal';
-import { LanguageSelector } from '../common/LanguageSelector';
 import { useNavLinks } from './Sidebar';
 
 const tabClass = (active) =>
@@ -13,7 +12,7 @@ const tabClass = (active) =>
 
 // Phone-only tab bar: up to 5 links as tabs; with more than 5, the first 4 plus a "More" bottom sheet.
 export const BottomNav = () => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { pathname } = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const links = useNavLinks();
@@ -69,19 +68,6 @@ export const BottomNav = () => {
               <ChevronRight className="h-4 w-4 text-slate-400" />
             </NavLink>
           ))}
-        </div>
-
-        <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <Globe className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-              {t('profile.preferredLanguage', 'Language')}
-            </span>
-            <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 px-1.5 py-0.5 rounded uppercase">
-              {language}
-            </span>
-          </div>
-          <LanguageSelector variant="buttons" />
         </div>
       </Modal>
     </>
