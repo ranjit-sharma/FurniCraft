@@ -15,8 +15,6 @@ import {
   Wrench,
   UserCheck,
   CalendarCheck,
-  Mail,
-  Phone,
   FileText,
   RotateCcw,
   Sparkles,
@@ -380,19 +378,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   />
                   <div className="mt-1 text-right text-[10px] text-slate-400">
                     {message.length} / 2000
-                  </div>
-                </div>
-
-                {/* Direct Helpline Banner */}
-                <div className="flex items-center justify-between rounded-xl border border-amber-200/80 bg-amber-50/60 p-2.5 text-[11px] text-amber-900">
-                  <div className="flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5 text-amber-700" />
-                    <span className="font-semibold">{t('help.directSupport', 'Direct Helpdesk')}:</span>
-                    <span className="font-mono font-bold">+91 99222 33445</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <Mail className="h-3.5 w-3.5 text-slate-500" />
-                    <span className="font-mono">furnicraft.erp@gmail.com</span>
                   </div>
                 </div>
 
