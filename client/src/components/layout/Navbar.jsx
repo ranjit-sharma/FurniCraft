@@ -3,10 +3,9 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, Sun, Moon, Monitor } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
-import { ThemeSelector } from '../common/ThemeSelector';
 
 const LogoLinkWithRouter = ({ children }) => {
   const navigate = useNavigate();
@@ -46,7 +45,7 @@ const LogoLink = ({ children }) => {
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
-  const { theme, resolvedTheme, isDark } = useTheme();
+  const { isDark } = useTheme();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -180,26 +179,6 @@ export const Navbar = () => {
                   <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
                     <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> {t('common.active', 'Active')}
                   </span>
-                </div>
-
-                {/* Theme Preference Section (Light / Dark / System) */}
-                <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                      {theme === 'dark' ? (
-                        <Moon className="h-3.5 w-3.5 text-blue-400" />
-                      ) : theme === 'light' ? (
-                        <Sun className="h-3.5 w-3.5 text-amber-500" />
-                      ) : (
-                        <Monitor className="h-3.5 w-3.5 text-slate-400" />
-                      )}
-                      {t('profile.themePreference', 'Theme Preference')}
-                    </span>
-                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/80 px-1.5 py-0.5 rounded uppercase">
-                      {theme}
-                    </span>
-                  </div>
-                  <ThemeSelector variant="buttons" />
                 </div>
 
                 {/* Language Preference Section */}

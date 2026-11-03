@@ -21,95 +21,57 @@ vi.mock('../context/AuthContext', () => ({
 }));
 
 const TestConsumer = () => {
-  const { theme, resolvedTheme, isDark, setTheme } = useTheme();
+  const { theme, resolvedTheme, isDark } = useTheme();
   return (
     <div>
       <span data-testid="theme-val">{theme}</span>
       <span data-testid="resolved-val">{resolvedTheme}</span>
       <span data-testid="isDark-val">{isDark ? 'yes' : 'no'}</span>
-      <button onClick={() => setTheme('light')}>Set Light</button>
-      <button onClick={() => setTheme('dark')}>Set Dark</button>
-      <button onClick={() => setTheme('system')}>Set System</button>
     </div>
   );
 };
 
-describe('Dark Mode & Theme System Verification', () => {
+describe('Light Mode Enforcement Verification', () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.className = '';
     document.documentElement.style.colorScheme = '';
   });
 
-  it('defaults to system theme and respects light/dark methods', () => {
+  it('permanently enforces light theme and strips dark class from root', () => {
+    // Simulate leftover dark class on root and dark theme in localStorage
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('furnicraft_theme', 'dark');
+
     render(
       <ThemeProvider>
         <TestConsumer />
       </ThemeProvider>
     );
 
-    expect(screen.getByTestId('theme-val').textContent).toBe('system');
-
-    // Click Set Dark
-    act(() => {
-      fireEvent.click(screen.getByText('Set Dark'));
-    });
-    expect(screen.getByTestId('theme-val').textContent).toBe('dark');
-    expect(screen.getByTestId('resolved-val').textContent).toBe('dark');
-    expect(screen.getByTestId('isDark-val').textContent).toBe('yes');
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(localStorage.getItem('furnicraft_theme')).toBe('dark');
-
-    // Click Set Light
-    act(() => {
-      fireEvent.click(screen.getByText('Set Light'));
-    });
     expect(screen.getByTestId('theme-val').textContent).toBe('light');
     expect(screen.getByTestId('resolved-val').textContent).toBe('light');
     expect(screen.getByTestId('isDark-val').textContent).toBe('no');
+    // Dark class must be completely removed from root
     expect(document.documentElement.classList.contains('dark')).toBe(false);
-    expect(localStorage.getItem('furnicraft_theme')).toBe('light');
+    expect(localStorage.getItem('furnicraft_theme')).toBeNull();
   });
 
-  it('renders ThemeSelector with Light, Dark, System buttons and switches themes', () => {
-    render(
+  it('ThemeSelector renders null and does not mount theme toggle buttons', () => {
+    const { container } = render(
       <LanguageProvider>
         <ThemeProvider>
-          <ThemeSelector variant="buttons" />
+          <ThemeSelector />
         </ThemeProvider>
       </LanguageProvider>
     );
 
-    const darkBtn = screen.getByTitle('Dark Mode');
-    const lightBtn = screen.getByTitle('Light Mode');
-    const systemBtn = screen.getByTitle('System Mode');
-
-    expect(darkBtn).toBeDefined();
-    expect(lightBtn).toBeDefined();
-    expect(systemBtn).toBeDefined();
-
-    // Click Dark
-    act(() => {
-      fireEvent.click(darkBtn);
-    });
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
-    expect(localStorage.getItem('furnicraft_theme')).toBe('dark');
-
-    // Click Light
-    act(() => {
-      fireEvent.click(lightBtn);
-    });
-    expect(document.documentElement.classList.contains('dark')).toBe(false);
-    expect(localStorage.getItem('furnicraft_theme')).toBe('light');
-
-    // Click System
-    act(() => {
-      fireEvent.click(systemBtn);
-    });
-    expect(localStorage.getItem('furnicraft_theme')).toBe('system');
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByTitle('Dark Mode')).toBeNull();
+    expect(screen.queryByTitle('Light Mode')).toBeNull();
   });
 
-  it('renders theme toggler inside the profile dropdown in Navbar', () => {
+  it('profile dropdown in Navbar no longer renders any Theme Preference section', () => {
     render(
       <LanguageProvider>
         <ThemeProvider>
@@ -127,16 +89,11 @@ describe('Dark Mode & Theme System Verification', () => {
       fireEvent.click(toggler);
     });
 
-    // Profile menu is now open with theme preference
-    expect(screen.getByText(/Theme Preference/i)).toBeDefined();
-    expect(screen.getByTitle('Light Mode')).toBeDefined();
-    expect(screen.getByTitle('Dark Mode')).toBeDefined();
-    expect(screen.getByTitle('System Mode')).toBeDefined();
-
-    // Switch theme from dropdown
-    act(() => {
-      fireEvent.click(screen.getByTitle('Dark Mode'));
-    });
-    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    // Profile menu is now open, but Theme Preference must NOT be present
+    expect(screen.queryByText(/Theme Preference/i)).toBeNull();
+    expect(screen.queryByTitle('Dark Mode')).toBeNull();
+    expect(screen.queryByTitle('Light Mode')).toBeNull();
+    // Language Preference remains present
+    expect(screen.getByText(/Language Preference/i)).toBeDefined();
   });
 });
