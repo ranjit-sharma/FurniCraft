@@ -22,7 +22,7 @@ export const LanguageSelector = ({ variant = 'pill', className = '' }) => {
               key={lang.code}
               type="button"
               onClick={() => changeLanguage(lang.code)}
-              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-2 sm:px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                 isActive
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
@@ -30,7 +30,8 @@ export const LanguageSelector = ({ variant = 'pill', className = '' }) => {
               title={lang.label}
               aria-pressed={isActive}
             >
-              {lang.nativeLabel}
+              <span className="hidden sm:inline">{lang.nativeLabel}</span>
+              <span className="sm:hidden">{lang.icon || lang.nativeLabel}</span>
             </button>
           );
         })}

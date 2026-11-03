@@ -22,16 +22,18 @@ export const LanguageProvider = ({ children }) => {
     return 'en';
   });
 
-  // Whenever the authenticated user ID / profile loads, sync their preferred language
+  // Whenever the authenticated user ID / profile loads, sync their preferred language if no explicit local setting exists
   useEffect(() => {
-    if (user?.preferredLanguage && ['en', 'hi', 'hinglish'].includes(user.preferredLanguage)) {
-      setLanguageState(user.preferredLanguage);
-      try {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved && user?.preferredLanguage && ['en', 'hi', 'hinglish'].includes(user.preferredLanguage)) {
+        setLanguageState(user.preferredLanguage);
         localStorage.setItem(STORAGE_KEY, user.preferredLanguage);
+        localStorage.setItem('fc_language', user.preferredLanguage);
         document.documentElement.lang = user.preferredLanguage === 'hi' ? 'hi' : 'en';
-      } catch {
-        // ignore localStorage write failure
       }
+    } catch {
+      // ignore localStorage read/write failure
     }
   }, [user?._id, user?.preferredLanguage]);
 

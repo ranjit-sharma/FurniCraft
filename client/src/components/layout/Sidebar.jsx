@@ -10,7 +10,9 @@ import {
   IndianRupee,
   Search,
   HardHat,
+  Globe,
 } from 'lucide-react';
+import { LanguageSelector } from '../common/LanguageSelector';
 
 // Shared by the desktop Sidebar and the mobile BottomNav (which shows up to 5 as bottom tabs).
 export const useNavLinks = () => {
@@ -39,7 +41,7 @@ export const useNavLinks = () => {
 
 // Desktop only (>= 1024px); tablets & phones use Drawer + BottomNav.
 export const Sidebar = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const links = useNavLinks();
 
   return (
@@ -74,7 +76,20 @@ export const Sidebar = () => {
           })}
         </nav>
 
-        <div className="mt-auto pt-6">
+        <div className="mt-auto pt-4 space-y-3">
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                {t('profile.preferredLanguage', 'Language')}
+              </span>
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 px-1.5 py-0.5 rounded uppercase">
+                {language}
+              </span>
+            </div>
+            <LanguageSelector variant="buttons" />
+          </div>
+
           <div className="rounded-xl border border-amber-200/60 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/30 p-3.5 text-xs text-amber-900 dark:text-amber-200">
             <div className="font-semibold text-amber-950 dark:text-amber-100 mb-0.5">{t('sidebar.craftScope', 'Modern Craft Scope')}</div>
             <p className="text-[11px] leading-relaxed text-amber-800/90 dark:text-amber-300/80">

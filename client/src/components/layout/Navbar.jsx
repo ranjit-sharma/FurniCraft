@@ -109,33 +109,35 @@ export const Navbar = () => {
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
         </LogoLink>
 
-        {/* Right: Profile Icon Toggler */}
-        {user && (
-        <div className="relative" ref={profileRef}>
-          {/* Round Profile Toggler Button */}
-          <button
-            onClick={() => setProfileOpen(!profileOpen)}
-            className={`group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all focus:outline-none cursor-pointer ${
-              profileOpen
-                ? 'border-blue-600 dark:border-blue-500 ring-4 ring-blue-500/20 shadow-md scale-105'
-                : 'border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:scale-105'
-            }`}
-            aria-expanded={profileOpen}
-            aria-label="User profile toggler"
-          >
-            {/* Fully Round Avatar Circle */}
-            <div
-              className={`flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br ${getRoleGradient(
-                user.role
-              )} font-black text-sm text-white shadow-inner`}
-            >
-              <i className="fa-solid fa-user text-sm md:text-base"></i>
-            </div>
-          </button>
+        {/* Right: Language Selector & Profile Icon Toggler */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <LanguageSelector variant="pill" className="shrink-0" />
+          {user && (
+            <div className="relative" ref={profileRef}>
+              {/* Round Profile Toggler Button */}
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className={`group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all focus:outline-none cursor-pointer ${
+                  profileOpen
+                    ? 'border-blue-600 dark:border-blue-500 ring-4 ring-blue-500/20 shadow-md scale-105'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:scale-105'
+                }`}
+                aria-expanded={profileOpen}
+                aria-label="User profile toggler"
+              >
+                {/* Fully Round Avatar Circle */}
+                <div
+                  className={`flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br ${getRoleGradient(
+                    user.role
+                  )} font-black text-sm text-white shadow-inner`}
+                >
+                  <i className="fa-solid fa-user text-sm md:text-base"></i>
+                </div>
+              </button>
 
-          {/* Profile Dropdown Menu */}
-          {profileOpen && (
-            <div className="absolute right-0 mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 animate-dropdown z-50 text-slate-900 dark:text-slate-100">
+              {/* Profile Dropdown Menu */}
+              {profileOpen && (
+                <div className="absolute right-0 mt-2.5 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] origin-top-right rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 animate-dropdown z-50 text-slate-900 dark:text-slate-100">
               {/* User Identity Card */}
               <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/40 dark:from-slate-800/80 dark:to-slate-800/40 p-3.5 border border-slate-200/80 dark:border-slate-700/80">
                 <div className="flex items-center gap-3">
@@ -234,6 +236,7 @@ export const Navbar = () => {
           )}
         </div>
       )}
-    </header>
+    </div>
+  </header>
   );
 };
