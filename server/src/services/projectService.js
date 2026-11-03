@@ -119,7 +119,12 @@ export const getProjectDashboardDetails = async ({ projectId, user }) => {
   const totalMoneyReceived = moneyReceived.reduce((acc, curr) => acc + curr.amount, 0);
 
   // Tools currently at this project
-  const tools = await Tool.find({ 'currentAssignment.projectId': projectId });
+  const tools = await Tool.find({
+    $or: [
+      { 'currentAssignment.projectId': projectId },
+      { projectId: projectId },
+    ],
+  }).populate('currentAssignment.workerId', 'name email phone');
 
   // Real Labor Cost from approved attendance
   const laborAttendance = await Attendance.aggregate([

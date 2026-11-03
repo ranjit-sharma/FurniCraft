@@ -12,6 +12,7 @@ import { ToolsPage } from '../pages/ToolsPage';
 import { AttendancePage } from '../pages/AttendancePage';
 import { PayrollPage } from '../pages/PayrollPage';
 import { ProjectsPage } from '../pages/ProjectsPage';
+import { ProjectDetailPage } from '../pages/ProjectDetailPage';
 import { ThekedarsPage } from '../pages/ThekedarsPage';
 import { WorkersPage } from '../pages/WorkersPage';
 import { ExpensesPage } from '../pages/ExpensesPage';
@@ -107,6 +108,39 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
       }
       if (url.includes('/projects/money-received/all')) {
         return Promise.resolve({ data: { payments: [] } });
+      }
+      if (url.includes('/projects/proj_1')) {
+        return Promise.resolve({
+          data: {
+            project: {
+              _id: 'proj_1',
+              name: 'Luxury Villa Modular Kitchen',
+              projectCode: 'PRJ-001',
+              status: 'IN_PROGRESS',
+              priority: 'HIGH',
+              siteAddress: 'Sector 62, Noida',
+            },
+            moneyReceived: [
+              {
+                _id: 'mr_1',
+                amount: 50000,
+                stage: 'Advance Booking',
+                paymentMethod: 'BANK_TRANSFER',
+                receiptCode: 'RCP-001',
+              },
+            ],
+            tools: [
+              {
+                _id: 'tool_1',
+                toolCode: 'TOL-001',
+                name: 'Makita Plunge Saw',
+                category: 'Cutting Tools',
+                status: 'ISSUED',
+                condition: 'GOOD',
+              },
+            ],
+          },
+        });
       }
       if (url.includes('/projects')) {
         return Promise.resolve({
@@ -226,6 +260,11 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
 
   it('renders ProjectsPage without crashing or blank screen', async () => {
     const { container } = renderWithProviders(ProjectsPage);
+    expect(container).not.toBeEmptyDOMElement();
+  });
+
+  it('renders ProjectDetailPage tracking only money received and assigned tools', async () => {
+    const { container } = renderWithProviders(ProjectDetailPage);
     expect(container).not.toBeEmptyDOMElement();
   });
 

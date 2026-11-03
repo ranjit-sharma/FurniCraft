@@ -45,8 +45,6 @@ export const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [completingTaskId, setCompletingTaskId] = useState(null);
-  const [completingAssignmentId, setCompletingAssignmentId] = useState(null);
 
   // Filtration & Sorting State
   const [statusFilter, setStatusFilter] = useState('ALL_ACTIVE'); // ALL_ACTIVE, ALL, IN_PROGRESS, PLANNED, ON_HOLD, COMPLETED, ARCHIVED
@@ -98,32 +96,6 @@ export const ProjectsPage = () => {
       fetchProjects();
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to update priority' });
-    }
-  };
-
-  const handleCompleteTask = async (taskId, itemName) => {
-    try {
-      setCompletingTaskId(taskId);
-      await api.patch(`/furniture-tasks/${taskId}`, { status: 'COMPLETED' });
-      setMessage({ type: 'success', text: `Task "${itemName || 'item'}" marked as completed and submitted for Thekedar approval!` });
-      fetchProjects();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to complete task' });
-    } finally {
-      setCompletingTaskId(null);
-    }
-  };
-
-  const handleCompleteAssignment = async (assignmentId, projectName) => {
-    try {
-      setCompletingAssignmentId(assignmentId);
-      await api.patch(`/projects/assignments/${assignmentId}`, { status: 'COMPLETED' });
-      setMessage({ type: 'success', text: `Assigned work on "${projectName || 'project'}" marked as completed!` });
-      fetchProjects();
-    } catch (err) {
-      setMessage({ type: 'error', text: err.message || 'Failed to complete assignment' });
-    } finally {
-      setCompletingAssignmentId(null);
     }
   };
 
@@ -688,152 +660,6 @@ export const ProjectsPage = () => {
                           )
                         )}
 
-                        {/* Thekedar Pending Review Alert */}
-                        {isThekedar && p.pendingApprovalTasksCount > 0 && (
-                          <div className="mt-3.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-2.5 text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center justify-between animate-pulse">
-                            <span className="flex items-center gap-1.5">
-                              <Clock className="h-4 w-4 text-amber-700 dark:text-amber-400 shrink-0" />
-                              {p.pendingApprovalTasksCount} {t('projects.tasksAwaitingReview', 'Task(s) Awaiting Review')}
-                            </span>
-                            <Link to={`/projects/${p._id}`} className="text-amber-800 dark:text-amber-400 underline text-[11px] font-extrabold hover:text-amber-950 dark:hover:text-amber-200 shrink-0">
-                              {t('thekedar.approve', 'Approve')} →
-                            </Link>
-                          </div>
-                        )}
-
-                        {/* Worker Assigned Tasks */}
-                        {isWorker && (
-                          p.assignedTasks && p.assignedTasks.length > 0 ? (
-                            <div className="mt-4 space-y-2.5">
-                              {(() => {
-                                const sortedTasks = [...p.assignedTasks].sort((a, b) => {
-                                  const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime();
-                                  const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime();
-                                  return dateB - dateA;
-                                });
-                                const latestTask = sortedTasks[0];
-                                if (!latestTask) return null;
-
-                                return (
-                                  <div
-                                    key={latestTask._id}
-                                    className={`rounded-xl border p-3 text-xs transition-all ${
-                                      latestTask.status === 'REWORK_NEEDED'
-                                        ? 'border-rose-300 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30'
-                                        : latestTask.status === 'COMPLETED'
-                                        ? 'border-amber-300 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30'
-                                        : latestTask.status === 'VERIFIED'
-                                        ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/30'
-                                        : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-xs'
-                                    }`}
-                                  >
-                                    <div className="flex items-start justify-between gap-1">
-                                      <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                                        <CheckCircle className={`h-4 w-4 shrink-0 ${latestTask.status === 'VERIFIED' ? 'text-emerald-600' : latestTask.status === 'COMPLETED' ? 'text-amber-600' : 'text-emerald-600'}`} />
-                                        <span>{latestTask.furnitureItemName}</span>
-                                      </span>
-                                      {latestTask.status === 'COMPLETED' && (
-                                        <Badge variant="warning" size="sm">COMPLETED</Badge>
-                                      )}
-                                      {latestTask.status === 'VERIFIED' && (
-                                        <Badge variant="success" size="sm">APPROVED ✓</Badge>
-                                      )}
-                                      {latestTask.status === 'REWORK_NEEDED' && (
-                                        <Badge variant="danger" size="sm">REWORK</Badge>
-                                      )}
-                                      {(latestTask.status === 'PENDING' || latestTask.status === 'IN_PROGRESS') && (
-                                        <Badge variant="default" size="sm">{latestTask.taskType || 'TASK'}</Badge>
-                                      )}
-                                    </div>
-
-                                    <div className="mt-1 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
-                                      <span>Stage: <strong className="text-slate-800 dark:text-slate-200">{latestTask.taskType}</strong></span>
-                                      <span>Units: <strong className="text-slate-800 dark:text-slate-200">{latestTask.completedUnits || 0}/{latestTask.plannedUnits} {latestTask.unitMetric || 'pcs'}</strong></span>
-                                    </div>
-
-                                    <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-750 flex items-center justify-between gap-2">
-                                      {latestTask.status === 'COMPLETED' ? (
-                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900 dark:text-amber-400">
-                                          <Clock className="h-3.5 w-3.5 text-amber-600 animate-spin" />
-                                          <span>{t('projects.awaitingApproval', 'Awaiting Thekedar Approval')}</span>
-                                        </div>
-                                      ) : latestTask.status === 'VERIFIED' ? (
-                                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-400">
-                                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                                          <span>{t('projects.qualityChecked', 'Quality Checked & Approved ✓')}</span>
-                                        </div>
-                                      ) : (
-                                        <>
-                                          <span className="text-[10px] text-emerald-800 dark:text-emerald-400 font-semibold">Craft task</span>
-                                          <Button
-                                            size="sm"
-                                            variant="primary"
-                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-3 py-1 flex items-center gap-1.5 shadow-xs"
-                                            loading={completingTaskId === latestTask._id}
-                                            onClick={() => handleCompleteTask(latestTask._id, latestTask.furnitureItemName)}
-                                          >
-                                            <CheckCircle className="h-3.5 w-3.5" /> {t('projects.completeTask', 'Complete Task ✓')}
-                                          </Button>
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })()}
-
-                              {p.assignedTasks.length > 1 && (
-                                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5 px-0.5">
-                                  <span>+{p.assignedTasks.length - 1} earlier task{p.assignedTasks.length - 1 > 1 ? 's' : ''} on this project</span>
-                                  <Link to={`/projects/${p._id}`} className="font-semibold text-amber-800 dark:text-amber-400 hover:text-amber-950 underline">
-                                    {t('common.view', 'View')} {t('projects.tasks', 'Tasks')} →
-                                  </Link>
-                                </div>
-                              )}
-                            </div>
-                          ) : p.myAssignment ? (
-                            <div className="mt-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 p-3 text-xs space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-emerald-950 dark:text-emerald-200 flex items-center gap-1.5">
-                                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                                  Role: {p.myAssignment.roleInProject || 'Craftsman'}
-                                </span>
-                                <Badge variant={p.myAssignment.status === 'COMPLETED' ? 'success' : 'info'} size="sm">
-                                  {p.myAssignment.status === 'COMPLETED' ? 'COMPLETED ✓' : 'ACTIVE WORK'}
-                                </Badge>
-                              </div>
-                              <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
-                                {p.myAssignment.wageOverride ? `Special daily wage: ₹${p.myAssignment.wageOverride}` : 'Standard daily wage site deployment'}
-                              </p>
-
-                              <div className="pt-2 border-t border-emerald-200/70 dark:border-emerald-800/70 flex items-center justify-between gap-2">
-                                {p.myAssignment.status === 'COMPLETED' ? (
-                                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                                    Work Completed on Site ✓
-                                  </span>
-                                ) : (
-                                  <>
-                                    <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-semibold">Finish and submit for review</span>
-                                    <Button
-                                      size="sm"
-                                      variant="primary"
-                                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-3 py-1 flex items-center gap-1.5 shadow-xs"
-                                      loading={completingAssignmentId === p.myAssignment._id}
-                                      onClick={() => handleCompleteAssignment(p.myAssignment._id, p.name)}
-                                    >
-                                      <CheckCircle className="h-3.5 w-3.5" /> {t('projects.completeTask', 'Complete Task ✓')}
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700 p-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 italic">
-                              <Clock className="h-3.5 w-3.5 text-slate-400" />
-                              <span>No task assigned to you on this project yet</span>
-                            </div>
-                          )
-                        )}
                       </div>
 
                       {/* Footer Actions */}
