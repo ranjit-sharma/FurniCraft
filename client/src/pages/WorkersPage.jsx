@@ -75,6 +75,7 @@ export const WorkersPage = () => {
 
   // Mark Daily Attendance Modal (Direct from Worker Cards / Roster)
   const [markAttendanceModalOpen, setMarkAttendanceModalOpen] = useState(false);
+  const [selectedAttendanceWorker, setSelectedAttendanceWorker] = useState(null);
   const [attendanceWorkerId, setAttendanceWorkerId] = useState('');
   const [attendanceProjectId, setAttendanceProjectId] = useState('');
   const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -194,8 +195,10 @@ export const WorkersPage = () => {
     }
   };
 
-  const handleOpenMarkAttendance = (worker = null) => {
-    const targetWorkerId = worker?.userId?._id || worker?._id || workers[0]?.userId?._id || workers[0]?._id || '';
+  const handleOpenMarkAttendance = (worker) => {
+    if (!worker) return;
+    setSelectedAttendanceWorker(worker);
+    const targetWorkerId = worker?.userId?._id || worker?._id || '';
     setAttendanceWorkerId(targetWorkerId);
     if (projectsList.length > 0 && !attendanceProjectId) {
       setAttendanceProjectId(projectsList[0]._id);
@@ -545,16 +548,6 @@ export const WorkersPage = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          {(isOwner || isThekedar) && (
-            <Button
-              variant="outline"
-              onClick={() => handleOpenMarkAttendance()}
-              icon={Calendar}
-              className="w-full sm:w-auto justify-center border-amber-300 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 hover:bg-amber-100 font-bold"
-            >
-              Mark Attendance
-            </Button>
-          )}
           {isThekedar && (
             <Button
               variant="outline"
@@ -990,28 +983,35 @@ export const WorkersPage = () => {
         title="Mark Worker Daily Attendance"
       >
         <form onSubmit={handleMarkAttendance} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Select Craftsman *
-            </label>
-            <select
-              required
-              value={attendanceWorkerId}
-              onChange={(e) => setAttendanceWorkerId(e.target.value)}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            >
-              <option value="">-- Choose Worker --</option>
-              {workers.map((w) => {
-                const uId = w.userId?._id || w._id;
-                const name = w.userId?.name || w.name || 'Worker';
-                const code = w.workerCode || 'FC-WRK';
-                return (
-                  <option key={uId} value={uId}>
-                    {name} ({code}) — ₹{w.defaultDailyWage || 750}/day
-                  </option>
-                );
-              })}
-            </select>
+          {/* Selected Craftsman Fixed Identity Banner (Direct from Worker Card) */}
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/70 bg-gradient-to-r from-amber-50 to-orange-50/50 dark:from-amber-950/40 dark:to-orange-950/20 p-3.5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 font-black text-white shadow-xs text-base">
+                {(selectedAttendanceWorker?.userId?.name || selectedAttendanceWorker?.name || 'W').charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {selectedAttendanceWorker?.userId?.name || selectedAttendanceWorker?.name || 'Worker'}
+                  </h4>
+                  <span className="rounded-md bg-amber-200/80 dark:bg-amber-900/60 px-2 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-200 font-mono">
+                    {selectedAttendanceWorker?.workerCode || 'FC-WRK'}
+                  </span>
+                  <span className="rounded-md bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                    {selectedAttendanceWorker?.skills?.[0] || 'Mistry'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                  Daily Wage Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / day</strong>
+                  {selectedAttendanceWorker?.userId?.phone && (
+                    <span className="ml-2 text-slate-400 dark:text-slate-500">• {selectedAttendanceWorker?.userId?.phone}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 font-medium">
+              Logging attendance directly for this craftsman from their worker card.
+            </div>
           </div>
 
           <div>
