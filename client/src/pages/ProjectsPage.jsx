@@ -45,8 +45,6 @@ export const ProjectsPage = () => {
 
   // Filtration & Sorting State
   const [statusFilter, setStatusFilter] = useState('ALL_ACTIVE'); // ALL_ACTIVE, ALL, IN_PROGRESS, PLANNED, ON_HOLD, COMPLETED, ARCHIVED
-  const [priorityFilter, setPriorityFilter] = useState('ALL'); // ALL, CRITICAL, HIGH, MEDIUM, LOW
-  const [typeFilter, setTypeFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [archiveExpanded, setArchiveExpanded] = useState(true);
 
@@ -176,16 +174,6 @@ export const ProjectsPage = () => {
           if (p.status !== statusFilter) return false;
         }
 
-        // Priority Filter
-        if (priorityFilter !== 'ALL' && (p.priority || 'MEDIUM') !== priorityFilter) {
-          return false;
-        }
-
-        // Type Filter
-        if (typeFilter !== 'ALL' && p.projectType !== typeFilter) {
-          return false;
-        }
-
         // Search Query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
@@ -199,7 +187,7 @@ export const ProjectsPage = () => {
         return true;
       })
     );
-  }, [projects, statusFilter, priorityFilter, typeFilter, searchQuery]);
+  }, [projects, statusFilter, searchQuery]);
 
   // Filtered Archived Projects for Archive Section
   const filteredArchivedProjects = useMemo(() => {
@@ -212,16 +200,6 @@ export const ProjectsPage = () => {
           return false;
         }
 
-        // Priority Filter
-        if (priorityFilter !== 'ALL' && (p.priority || 'MEDIUM') !== priorityFilter) {
-          return false;
-        }
-
-        // Type Filter
-        if (typeFilter !== 'ALL' && p.projectType !== typeFilter) {
-          return false;
-        }
-
         // Search Query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
@@ -235,7 +213,7 @@ export const ProjectsPage = () => {
         return true;
       })
     );
-  }, [projects, statusFilter, priorityFilter, typeFilter, searchQuery]);
+  }, [projects, statusFilter, searchQuery]);
 
   const renderPriorityBadge = (pPriority) => {
     switch (pPriority) {
@@ -271,12 +249,10 @@ export const ProjectsPage = () => {
     }
   };
 
-  const hasActiveFilters = statusFilter !== 'ALL_ACTIVE' || priorityFilter !== 'ALL' || typeFilter !== 'ALL' || searchQuery.trim() !== '';
+  const hasActiveFilters = statusFilter !== 'ALL_ACTIVE' || searchQuery.trim() !== '';
 
   const clearAllFilters = () => {
     setStatusFilter('ALL_ACTIVE');
-    setPriorityFilter('ALL');
-    setTypeFilter('ALL');
     setSearchQuery('');
   };
 
@@ -342,8 +318,8 @@ export const ProjectsPage = () => {
           })}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          <div className="relative sm:col-span-2 lg:col-span-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative flex-1 max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
@@ -359,38 +335,11 @@ export const ProjectsPage = () => {
               </button>
             )}
           </div>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            aria-label="Importance"
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-amber-500 focus:outline-none"
-          >
-            <option value="ALL">{t('projects.allPriorities', 'Any importance')}</option>
-            <option value="CRITICAL">🔥 {t('projects.critical', 'Critical')}</option>
-            <option value="HIGH">⚡ {t('projects.high', 'High')}</option>
-            <option value="MEDIUM">🔷 {t('projects.medium', 'Medium')}</option>
-            <option value="LOW">🟢 {t('projects.low', 'Low')}</option>
-          </select>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            aria-label="Furniture type"
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 focus:border-amber-500 focus:outline-none"
-          >
-            <option value="ALL">{t('projects.allTypes', 'Any type')}</option>
-            <option value="MODULAR_KITCHEN">Modular Kitchen</option>
-            <option value="WARDROBE_SLIDING">Wardrobe & Sliding</option>
-            <option value="TV_UNIT_PANEL">TV Unit & Panel</option>
-            <option value="BED_HEADBOARD">Bed & Headboard</option>
-            <option value="OFFICE_WORKSTATION">Workstations</option>
-            <option value="CABINET_STORAGE">Cabinets & Storage</option>
-            <option value="CUSTOM_FURNITURE">Custom Furniture</option>
-          </select>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={clearAllFilters}
-              className="col-span-2 inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 sm:col-span-1"
+              className="inline-flex items-center justify-center gap-1 rounded-xl px-3 py-2 text-sm font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
             >
               <X className="h-4 w-4" /> {t('projects.resetFilters', 'Clear')}
             </button>
