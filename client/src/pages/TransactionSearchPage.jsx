@@ -148,7 +148,7 @@ export const TransactionSearchPage = () => {
             {t('transactionSearch.searchBtn', 'Search')}
           </Button>
         </form>
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Category">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 touch-pan-x" role="tablist" aria-label="Category">
           {[
             { id: 'ALL', label: t('transactionSearch.allCategories', 'All') },
             { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage payments') },
@@ -160,7 +160,7 @@ export const TransactionSearchPage = () => {
               role="tab"
               aria-selected={selectedCategory === cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+              className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold transition whitespace-nowrap ${
                 selectedCategory === cat.id
                   ? 'border-amber-600 bg-amber-600 text-white'
                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'

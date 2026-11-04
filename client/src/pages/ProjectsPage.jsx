@@ -280,9 +280,9 @@ export const ProjectsPage = () => {
         )}
       />
 
-      {/* Filters: status chips swipe sideways on phones; search + dropdowns below */}
+      {/* Filters: status chips kept in single line across all devices with smooth swipe/scroll */}
       <div className="space-y-3">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Project status">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 touch-pan-x" role="tablist" aria-label="Project status">
           {[
             { id: 'ALL_ACTIVE', label: t('projects.allActive', 'Active'), count: counts.active },
             { id: 'IN_PROGRESS', label: t('projects.inProgress', 'In Progress'), count: counts.inProgress, dot: 'bg-amber-400' },
@@ -303,7 +303,7 @@ export const ProjectsPage = () => {
                   setStatusFilter(id);
                   if (id === 'ARCHIVED') setArchiveExpanded(true);
                 }}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition whitespace-nowrap ${
                   active
                     ? 'border-amber-600 bg-amber-600 text-white'
                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
