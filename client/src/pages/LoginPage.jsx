@@ -211,7 +211,44 @@ export const LoginPage = () => {
     }
   };
 
-
+  const getModalErrorDetails = () => {
+    if (!modalError) return null;
+    const lower = modalError.toLowerCase();
+    if (lower.includes('not registered') || lower.includes('unregistered') || lower.includes('not found')) {
+      return {
+        title: t('login.unregisteredWarning', 'Unregistered Email Warning'),
+        icon: AlertTriangle,
+        style: 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-sm',
+        titleColor: 'text-amber-950 dark:text-amber-200',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+      };
+    }
+    if (lower.includes('wait') || lower.includes('second') || lower.includes('cooldown') || lower.includes('too many')) {
+      return {
+        title: t('login.cooldownNotice', 'Please Wait A Moment'),
+        icon: AlertCircle,
+        style: 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200',
+        titleColor: 'text-blue-950 dark:text-blue-200',
+        iconColor: 'text-blue-600 dark:text-blue-400',
+      };
+    }
+    if (lower.includes('temporarily unavailable') || lower.includes('try again') || lower.includes('service') || lower.includes('network') || lower.includes('timeout')) {
+      return {
+        title: t('login.serviceUnavailableTitle', 'Service Temporarily Busy'),
+        icon: AlertCircle,
+        style: 'border-amber-200 dark:border-amber-900 bg-amber-50/70 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200',
+        titleColor: 'text-amber-950 dark:text-amber-200',
+        iconColor: 'text-amber-600 dark:text-amber-400',
+      };
+    }
+    return {
+      title: otpStep === 'EMAIL_INPUT' ? t('login.notice', 'Notice') : 'Recovery Issue',
+      icon: AlertCircle,
+      style: 'border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200',
+      titleColor: 'text-rose-900 dark:text-rose-200',
+      iconColor: 'text-rose-600 dark:text-rose-400',
+    };
+  };
 
   return (
     <div className="relative min-h-screen flex flex-col justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-blue-600 selection:text-white py-6 sm:py-10 md:py-12 px-3.5 sm:px-6 lg:px-8 overflow-x-hidden overflow-y-auto transition-colors">
@@ -406,31 +443,20 @@ export const LoginPage = () => {
             </div>
           )}
 
-          {modalError && (
-            <div
-              className={`rounded-xl border p-3.5 text-xs animate-fade-in flex items-start gap-2.5 ${
-                otpStep === 'EMAIL_INPUT'
-                  ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 shadow-sm'
-                  : 'border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200'
-              }`}
-            >
-              {otpStep === 'EMAIL_INPUT' ? (
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-              )}
-              <div className="flex-1">
-                <div
-                  className={`font-bold mb-0.5 ${
-                    otpStep === 'EMAIL_INPUT' ? 'text-amber-950 dark:text-amber-200' : 'text-rose-900 dark:text-rose-200'
-                  }`}
-                >
-                  {otpStep === 'EMAIL_INPUT' ? t('login.unregisteredWarning', 'Unregistered Email Warning') : 'Recovery Issue'}
+          {(() => {
+            const errDetails = getModalErrorDetails();
+            if (!errDetails) return null;
+            const ErrorIcon = errDetails.icon;
+            return (
+              <div className={`rounded-xl border p-3.5 text-xs animate-fade-in flex items-start gap-2.5 ${errDetails.style}`}>
+                <ErrorIcon className={`h-4 w-4 shrink-0 mt-0.5 ${errDetails.iconColor}`} />
+                <div className="flex-1">
+                  <div className={`font-bold mb-0.5 ${errDetails.titleColor}`}>{errDetails.title}</div>
+                  <div className="leading-relaxed">{modalError}</div>
                 </div>
-                <div className="leading-relaxed">{modalError}</div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Step 1: Email Input */}
           {otpStep === 'EMAIL_INPUT' && (

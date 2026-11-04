@@ -59,7 +59,7 @@ export const toApiError = (error) => {
     return new ApiError(errorText('sessionExpired'), { status, kind: 'session' });
   }
   if (status === 429) return new ApiError(errorText('tooMany'), { status, kind: 'client' });
-  if (status === 503) return new ApiError(errorText('unavailable'), { status, kind: 'server' });
+  if (status === 503) return new ApiError(serverMessage || errorText('unavailable'), { status, kind: 'server' });
   if (status >= 500) return new ApiError(errorText('server'), { status, kind: 'server' });
   if (status === 404 && (!serverMessage || serverMessage.startsWith('Endpoint not found'))) {
     return new ApiError(errorText('notFound'), { status, kind: 'client' });
