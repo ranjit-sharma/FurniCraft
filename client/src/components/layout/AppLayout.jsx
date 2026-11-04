@@ -3,7 +3,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { WifiOff } from 'lucide-react';
 import { errorText } from '../../api/client';
 import { Navbar } from './Navbar';
-import { AttendanceNotificationBar } from './AttendanceNotificationBar';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { ErrorBoundary } from '../common/ErrorBoundary';
@@ -46,7 +45,6 @@ export const AppLayout = () => {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       <Navbar />
-      <AttendanceNotificationBar />
       <OfflineBanner />
       <div className="flex flex-1 items-start">
         <Sidebar />

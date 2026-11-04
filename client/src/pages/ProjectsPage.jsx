@@ -27,6 +27,7 @@ import {
   ChevronUp,
   X,
   Layers,
+  HardHat,
 } from 'lucide-react';
 
 const PRIORITY_ORDER = {
@@ -398,6 +399,16 @@ export const ProjectsPage = () => {
                       </div>
                       <h3 className="mt-1.5 line-clamp-2 text-base font-black text-slate-900 dark:text-white">{p.name}</h3>
                       <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{p.clientName}</p>
+                      {/* Only owner can see the thekedar name on the project card */}
+                      {isOwner && p.thekedarId && (
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-2 py-1 rounded-lg w-fit">
+                          <HardHat className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">
+                            <span className="text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400 mr-1">{t('thekedars.thekedarSupervisor', 'Thekedar')}:</span>
+                            {p.thekedarId?.name || p.thekedarId}
+                          </span>
+                        </div>
+                      )}
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <Badge variant={p.status} size="sm">{p.status?.replace('_', ' ')}</Badge>
                         {!isWorker && <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{(p.totalMoneyReceived || 0).toLocaleString('en-IN')}</span>}
@@ -470,6 +481,16 @@ export const ProjectsPage = () => {
                       </div>
                       <h3 className="mt-1.5 line-clamp-2 text-base font-black text-slate-900 dark:text-white">{p.name}</h3>
                       <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{p.clientName}</p>
+                      {/* Only owner can see the thekedar name on the project card */}
+                      {isOwner && p.thekedarId && (
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-2 py-1 rounded-lg w-fit">
+                          <HardHat className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">
+                            <span className="text-[10px] uppercase font-bold text-purple-500 dark:text-purple-400 mr-1">{t('thekedars.thekedarSupervisor', 'Thekedar')}:</span>
+                            {p.thekedarId?.name || p.thekedarId}
+                          </span>
+                        </div>
+                      )}
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <Badge variant={p.status} size="sm">{p.status?.replace('_', ' ')}</Badge>
                         {!isWorker && <span className="text-sm font-black text-emerald-700 dark:text-emerald-400">₹{(p.totalMoneyReceived || 0).toLocaleString('en-IN')}</span>}

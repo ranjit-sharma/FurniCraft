@@ -9,7 +9,6 @@ import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { localToday } from '../utils/date';
 import { downloadPdf } from '../utils/download';
-import { useAttendanceAlarm } from '../context/AttendanceAlarmContext';
 import {
   UserPlus,
   IndianRupee,
@@ -39,7 +38,6 @@ const PROJECT_KEY = 'furnicraft_attendance_project';
 export const ThekedarDashboard = () => {
   const { t, language } = useLanguage();
   const { user } = useAuth();
-  const { refreshAttendanceStatus } = useAttendanceAlarm();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -87,7 +85,6 @@ export const ThekedarDashboard = () => {
       });
       setMessage({ type: 'success', text: `${worker.name}: ${res.data?.updated ? 'changed to' : 'marked'} ${code}` });
       await fetchDashboard();
-      refreshAttendanceStatus();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
     } finally {
@@ -198,7 +195,7 @@ export const ThekedarDashboard = () => {
       </div>
 
       {/* Today's attendance: one tap per worker */}
-      <div id="today-attendance-section" className="scroll-mt-24">
+      <div>
         <Card
           title={t('thekedarDash.todayAttendance', "Today's attendance")}
         subtitle={`${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`}

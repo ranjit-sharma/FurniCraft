@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   IndianRupee,
   MapPin,
+  HardHat,
 } from 'lucide-react';
 
 export const ProjectDetailPage = () => {
@@ -211,6 +212,12 @@ export const ProjectDetailPage = () => {
             <h1 className="text-2xl font-black text-slate-900 dark:text-white mt-2">
               {project?.name}
             </h1>
+            {isOwner && project?.thekedarId && (
+              <p className="text-xs font-bold text-purple-700 dark:text-purple-300 mt-1 flex items-center gap-1.5">
+                <HardHat className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                <span>{t('thekedars.thekedarSupervisor', 'Thekedar')}: {project.thekedarId.name || project.thekedarId}</span>
+              </p>
+            )}
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0" />
               {project?.siteAddress || 'No site address specified'}

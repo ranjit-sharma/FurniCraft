@@ -25,9 +25,4 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-      - key: VAPID_PUBLIC_KEY
-        value: BN4aYgiIKCZLtbu3hJOGP-0zOmIssjVEGPAvtL0f0l2bvssi7vyprIQ74WE5TCZ-NWFKtabvZ1OBr5yEpzPFyus
-      - key: VAPID_PRIVATE_KEY
-        value: vsOE3nMehWXs7DcaBRuguR7bI6ww_bSZVVQQ94bl-kc
-      - key: VAPID_SUBJECT
-        value: mailto:furnicraft.erp@gmail.com
+

@@ -66,26 +66,6 @@ export const translations = {
       "day": "Day",
       "dismiss": "OK"
     },
-    "alarm": {
-      "modalTitle": "Attendance Alarm & Mobile Reminder",
-      "barTitle": "Attendance Alarm",
-      "barPendingMsg": "craftsman waiting for today's attendance",
-      "takeNow": "Take Attendance",
-      "statusPending": "Attendance Pending",
-      "statusComplete": "Attendance Complete",
-      "markNow": "Mark Today’s Attendance Now",
-      "enableDailyAlarm": "Daily Attendance Alarm",
-      "enableSub": "Alerts you automatically every day to take attendance",
-      "alarmTime": "Custom Alarm Time",
-      "alarmTimeSub": "Choose exact time for mobile reminder and ringing",
-      "soundChime": "Audible Alarm Ring",
-      "soundChimeSub": "Rings loudly when reminder triggers",
-      "osNotification": "System Notification Bar Alerts",
-      "osAllowed": "✓ Allowed in Android, Windows & macOS notification tray",
-      "osPrompt": "Allow to show alarms in your device notification bar",
-      "enableBtn": "Enable",
-      "testAlarm": "Test Alarm Sound"
-    },
     "errors": {
       "offline": "You're offline. Check your internet connection and try again.",
       "network": "Can't reach the FurniCraft server. Check your connection and try again.",
