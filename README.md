@@ -65,12 +65,14 @@ flowchart TD
         FE["Finance & Advance Recovery Engine"]
         SE["Email & OTP Service (Nodemailer)"]
         EE["Export Engine (PDFKit & SheetJS)"]
+        STE["Help & Support Service (Nodemailer)"]
         
         SERVICES --> PE
         SERVICES --> AE
         SERVICES --> FE
         SERVICES --> SE
         SERVICES --> EE
+        SERVICES --> STE
     end
 
     subgraph Storage["Data & Realtime Layer"]
@@ -176,14 +178,39 @@ flowchart TD
 
 ---
 
+### D. Help & Support Center Ticket & Exclusive Email Routing Lifecycle
+Contractors and Owners can submit inquiries, site assistance queries, or technical issue reports directly through the built-in Help & Support modal in the navigation bar:
+
+```mermaid
+flowchart TD
+    UserNav["User Clicks Help & Support in Navbar"] --> OpenModal["HelpCenterModal Slides Open"]
+    OpenModal --> FormInput["Fill Inquiry Details:<br/>• Category (General Inquiry 1st/default, Attendance, Payment, Project, Access)<br/>• Urgency / Priority (Low, Normal, High, Urgent)<br/>• Subject & Description (Up to 2000 chars)"]
+    
+    FormInput --> Submit["Click 'Submit Request'"]
+    Submit --> AnimSpin["Animated Submitting State (Button Disabled & Spinner Active)"]
+    
+    AnimSpin --> ServerRoute["POST /api/v1/support/tickets"]
+    ServerRoute --> GenTicket["Generate Formatted Tracking ID:<br/>TKT-YYYY-XXXX (e.g., TKT-2026-0001)"]
+    GenTicket --> SaveDB["Persist to SupportTicket Collection"]
+    
+    SaveDB --> EmailDispatch["emailService.sendSupportTicketNotification()<br/><b>Strictly & Exclusively to: furnicraft.erp@gmail.com</b>"]
+    EmailDispatch --> SuccessAnim["Animated Success Modal:<br/>Scale-In Green Checkmark + Ticket Number + One-Click Copy"]
+```
+
+---
+
 ## 3. Technology Stack
 
-### Mobile-First Interface
+### Mobile-First & Responsive Desktop Interface
 
-FurniCraft is designed primarily for contractors on their phones; desktop gets the same screens with a sidebar.
+FurniCraft is designed primarily for contractors on their phones, while providing a powerful multi-column workspace on desktop:
 
+- **Sticky Desktop Navigation**: Navbar and Sidebar remain fixed (`sticky top-0`) on desktop view, keeping brand identity, theme/language toggles, Help & Support access, and section navigation permanently accessible while workspace content scrolls.
 - **Bottom tab bar** (below 768px): the four most-used screens per role plus a **More** sheet for the rest. The sidebar is shown from 768px up.
-- **Bottom sheets**: every dialog (`Modal.jsx`) slides up from the bottom on phones, lock background scroll, and close on backdrop tap or ESC.
+- **Bottom sheets**: every dialog (`Modal.jsx`) slides up from the bottom on phones, locks background scroll, and closes on backdrop tap or ESC.
+- **Single-Line Filter Pills**: Project status tabs and transaction categories stay strictly on a single line on all devices (`overflow-x-auto no-scrollbar touch-pan-x whitespace-nowrap`) with touch-friendly horizontal swipe.
+- **Compact Mobile Transaction Ledger**: On mobile view, matching transaction records display in a 3-card scrollable viewport (`max-h-[352px] overflow-y-auto`) so the official voucher card below remains instantly visible without excessive scrolling. On desktop, it expands to a dual-column ledger with `lg:max-h-[700px]`.
+- **4-Item Dashboard Recency Capping**: Dashboard cards (`Recent payments & advances` and `Active projects`) show at most the 4 latest records, with an `All ↗` link directing to full records.
 - **Stacked tables**: any table inside `.overflow-x-auto` turns into labelled cards below 640px; labels are copied from the `<th>` headers automatically (`AppLayout.jsx` + `index.css`), so new tables get this for free.
 - **Touch & readability**: 44px primary buttons, 36px minimum for pills/selects, 16px inputs (no iOS zoom), no 9-10px text on phones, pinch-zoom allowed.
 - **Smooth motion**: route fade-in, sheet slide-up and press feedback, all disabled under `prefers-reduced-motion`.
@@ -257,26 +284,29 @@ FurniCraft/
 │       │   │   ├── Button.jsx           # Accessible button with loading spinners & variants
 │       │   │   ├── Card.jsx             # Themed content card container
 │       │   │   ├── ErrorBoundary.jsx    # Graceful React crash fallback container
+│       │   │   ├── HelpCenterModal.jsx  # Interactive Help & Support ticket submission with animated success modal
 │       │   │   ├── LanguageSelector.jsx # Pill & button variants for language switching
+│       │   │   ├── LoadError.jsx        # User-friendly failed network request retry card
 │       │   │   ├── Modal.jsx            # Bottom sheet on phones, centered dialog on desktop (ESC, scroll lock)
+│       │   │   ├── PageHeader.jsx       # Standardized page title, subtitle & action controls
 │       │   │   └── ThemeSelector.jsx    # Light / Dark / System mode switch controls
 │       │   ├── layout/                  # Shell layout components
-│       │   │   ├── AppLayout.jsx        # Shell: Navbar + Sidebar/BottomNav + animated page outlet, phone table stacking
-│       │   │   ├── Navbar.jsx           # Sticky top bar with BrandLogo & profile (theme, language, sign out)
-│       │   │   ├── Sidebar.jsx          # Desktop sidebar + shared role-filtered nav links (useNavLinks)
+│       │   │   ├── AppLayout.jsx        # Shell: Sticky Navbar + Sticky Sidebar/BottomNav + animated page outlet, phone table stacking
+│       │   │   ├── Navbar.jsx           # Sticky top bar with BrandLogo, Help & Support trigger & profile (theme, language, sign out)
+│       │   │   ├── Sidebar.jsx          # Sticky desktop sidebar (sticky top-0) + shared role-filtered nav links (useNavLinks)
 │       │   │   └── BottomNav.jsx        # Phone bottom tab bar with "More" sheet
 │       │   └── attendance/
 │       │       └── AttendanceCalendar.jsx # Interactive monthly grid with multiplier badges
 │       ├── pages/                       # Dedicated application views
 │       │   ├── LoginPage.jsx            # Sign in, demo credentials & Email OTP reset modal
 │       │   ├── ThekedarRegisterPage.jsx # Public self-registration for contractors
-│       │   ├── OwnerDashboard.jsx       # Owner overview: net payable, unpaid wages, advances, per-Thekedar breakdown, recent payments & activity
-│       │   ├── ThekedarDashboard.jsx    # Contractor daily operations & quick action center
-│       │   ├── ProjectsPage.jsx         # Furniture project list, milestones & creation
+│       │   ├── OwnerDashboard.jsx       # Owner overview: net payable, unpaid wages, 4-item recent payments & activity cards with All links
+│       │   ├── ThekedarDashboard.jsx    # Contractor operations: 4-item active projects & recent transactions cards with All links
+│       │   ├── ProjectsPage.jsx         # Furniture project list, single-line status filters across all devices, milestones & creation
 │       │   ├── ProjectDetailPage.jsx   # Project money received & site summary
-│       │   ├── WorkersPage.jsx          # Worker cards (attendance) + tap-to-open sheet: editable attendance history & PDF, give advance, payment bills, pay net
+│       │   ├── WorkersPage.jsx          # Worker cards + tap-to-open sheet: Pay Net Wages, Give Advance, Edit, and attendance statement PDF
 │       │   ├── ExpensesPage.jsx         # Project money received & site material expenses
-│       │   ├── TransactionSearchPage.jsx# Search transactions by code with voucher breakdown
+│       │   ├── TransactionSearchPage.jsx# Search ledger: 3-card mobile viewport with vertical scroll, 2-column desktop voucher inspection
 │       │   ├── DisputesPage.jsx         # Grievances & transparent issue resolution
 │       │   ├── AuditLogsPage.jsx        # Tamper-evident immutable system security logs
 │       │   ├── MembersOverviewPage.jsx  # Organization roster & active workforce visits
@@ -286,6 +316,7 @@ FurniCraft/
 │           ├── ThemeMode.test.jsx       # Dark/Light/System theme toggler tests
 │           ├── LoginPage.test.jsx       # Authentication UI validation tests
 │           ├── AttendanceCalendar.test.jsx # Shift multiplier rendering tests
+│           ├── apiErrors.test.js        # Offline, timeout, and translated API client errors
 │           └── AllPagesRender.test.jsx  # Comprehensive zero-blank-screen verification
 │
 └── server/                              # Backend Node.js / Express REST API (Port 5001)
@@ -298,7 +329,9 @@ FurniCraft/
     │   ├── auth_rules.test.js           # Password reset OTP lifecycle tests
     │   ├── authorization.test.js        # Strict RBAC & IDOR prevention tests
     │   ├── attendance.test.js           # Multiplier calculation & duplicate shift tests
-    │   └── finance.test.js              # Advance recovery & ledger transaction tests
+    │   ├── finance.test.js              # Advance recovery & ledger transaction tests
+    │   ├── errorHandler.test.js         # Centralized error formatter validation
+    │   └── support.test.js              # Help & Support ticket validation & exclusive email destination tests
     └── src/
         ├── server.js                    # HTTP server startup & Socket.IO initialization
         ├── app.js                       # Express app configuration, middleware & route mounting
@@ -327,6 +360,7 @@ FurniCraft/
         │   ├── PayrollAdjustment.js     # Post-finalization debit/credit adjustments
         │   ├── ProjectExpense.js        # Hardware, laminates, fittings & site expenses
         │   ├── ProjectMoneyReceived.js  # Client milestone payment receipts
+        │   ├── SupportTicket.js         # Help & support inquiries, ticket codes & dispatch status
         │   ├── Dispute.js               # Worker grievances & resolution status
         │   ├── Notification.js          # In-app real-time notification alerts
         │   ├── OtpRecord.js             # Hashed 6-digit OTPs with expiration timestamps
@@ -341,6 +375,8 @@ FurniCraft/
         │   ├── financeRoutes.js         # /api/v1/finance (Ledger, Advances, Give Advance, Pay Net Wages)
         │   ├── expenseRoutes.js         # /api/v1/expenses (Client payments & project costs)
         │   ├── reportRoutes.js          # /api/v1/reports (PDF vouchers, Excel attendance)
+        │   ├── supportRoutes.js         # /api/v1/support (Help & Support ticket creation & dispatch)
+        │   ├── systemRoutes.js          # /api/v1/system (System health & diagnostics)
         │   ├── disputeRoutes.js         # /api/v1/disputes (Filing & administrative resolution)
         │   └── auditRoutes.js           # /api/v1/audit (Owner-only security audit log queries)
         ├── services/                    # Encapsulated Business Logic Services
@@ -388,6 +424,7 @@ FurniCraft has **exactly three user roles** (no ambiguous supervisor roles):
 | **Deduct Advance Directly from Bonus** | ❌ | ✅ *(In Pay Net Modal)* | ❌ |
 | **Delete Worker Account** | ❌ | ✅ *(ONLY if Net Balance = ₹0)* | ❌ |
 | **Theme & Language Preference Toggle** | ✅ | ✅ | ❌ |
+| **Access Help & Support Center** | ✅ | ✅ | ❌ |
 
 > Workers cannot sign in (`POST /auth/login` returns 403). Their profiles, attendance, advances and payouts are managed by their Thekedar.
 
@@ -533,13 +570,14 @@ npm test
 - **`attendance.test.js`**: Precision multiplier calculations (`P`, `HALF`, `P1/5`, `PP`), single and bulk approval transitions, duplicate shift prevention.
 - **`errorHandler.test.js`**: Friendly messages for unexpected errors, database outages, malformed JSON and invalid record links (no database needed).
 - **`finance.test.js`**: Cash advance disbursement, wage settlement, bonus-to-advance offsets, immutable payment transactions.
+- **`support.test.js`**: Help & Support ticket creation, schema validation, rate-limiting, and guarantees email dispatch strictly and exclusively to `furnicraft.erp@gmail.com`.
 
 ### Client Component Test Suites (`client/src/tests/`)
 - **`ThemeMode.test.jsx`**: Light, Dark (`#020617` slate), and System mode toggles, localStorage persistence, profile toggler dropdown verification.
 - **`AttendanceCalendar.test.jsx`**: Shift badge rendering, multiplier tag colors, day-wise calculations.
 - **`LoginPage.test.jsx`**: Responsive login form inputs, show/hide password toggle, contractor registration redirect.
 - **`apiErrors.test.js`**: Offline, timeout, session-expiry, 4xx/5xx and translated error messages from the API client.
-- **`AllPagesRender.test.jsx`**: 11-page comprehensive zero-blank-screen smoke test across all application views.
+- **`AllPagesRender.test.jsx`**: 12-page comprehensive zero-blank-screen smoke test across all application views.
 
 ---
 
@@ -554,6 +592,8 @@ npm test
 7. **Clear Errors on the Phone**: every API failure becomes an `ApiError` with a translated message (English / Hindi / Hinglish) for offline, timeout (30s), unreachable server, expired session (auto sign-out with a notice on the login screen), rate limits and server errors (`client/src/api/client.js`). Screens that fail to load show a retry card (`LoadError`), an offline banner appears when the connection drops, and a crashed or failed-to-download screen shows a friendly recovery card instead of technical details (`ErrorBoundary`).
 8. **Modern PDFs**: attendance statements (per individual craftsman statement, **one month at a time** via `?year=YYYY&month=M&workerId=...`) and payment / advance receipts share one design (`services/pdfTheme.js`) using the bundled open-source Noto Sans font (`server/src/assets/fonts`, SIL OFL), so ₹ prints correctly.
 9. **Email OTP**: password-reset codes are sent through Gmail SMTP with a Google App Password (`EMAIL_SERVICE=gmail`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`). The server checks the SMTP login at startup and logs `[EmailService] SMTP ready` or the exact failure. In production it never reports "code sent" unless Gmail accepted the email. Owner accounts are intentionally not recoverable by email. On Render, set these variables in the dashboard (they are listed in `render.yaml`).
+10. **Help & Support Privacy & Exclusive Email Routing**: Support requests submitted via the in-app Help Center are sanitized, assigned unique tracking identifiers (e.g. `TKT-2026-0001`), and routed strictly and exclusively to `furnicraft.erp@gmail.com`. No user or third-party email addresses are ever added as CC or recipients, guaranteeing data privacy.
+11. **Responsive Viewport Density & Recency Capping**: High-traffic ledger views and dashboard cards enforce strict item count thresholds (e.g. 4-item recent dashboard limit, 3-card mobile viewport ledger scroll) to prevent vertical scroll fatigue and maintain instant visibility of primary voucher action inspection cards.
 
 ---
 
