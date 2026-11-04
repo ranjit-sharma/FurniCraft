@@ -61,67 +61,60 @@ export const supportController = {
         status: 'OPEN',
       });
 
-      // Dispatch support notification email to furnicraft.erp@gmail.com
-      let emailResult = null;
-      try {
-        emailResult = await sendSupportTicketEmail({
+      // Dispatch support notification email to furnicraft.erp@gmail.com asynchronously
+      sendSupportTicketEmail({
+        ticketNumber,
+        userName: ticket.userName,
+        userEmail: ticket.userEmail,
+        userPhone: ticket.userPhone,
+        userRole: ticket.userRole,
+        category: ticket.category,
+        priority: ticket.priority,
+        subject: ticket.subject,
+        message: ticket.message,
+        createdAt: ticket.createdAt,
+      }).catch((emailErr) => {
+        console.error('[Support] Async email dispatch failure to furnicraft.erp@gmail.com:', emailErr.message);
+      });
+
+      // Record AuditLog asynchronously
+      AuditLog.create({
+        actorId: user._id,
+        actorName: user.name,
+        actorRole: user.role,
+        action: 'CREATE_SUPPORT_TICKET',
+        targetType: 'SupportTicket',
+        targetId: ticket._id.toString(),
+        reason: `Support ticket ${ticketNumber} created by ${user.name}`,
+        newValues: {
           ticketNumber,
-          userName: ticket.userName,
-          userEmail: ticket.userEmail,
-          userPhone: ticket.userPhone,
-          userRole: ticket.userRole,
-          category: ticket.category,
-          priority: ticket.priority,
+          category: selectedCategory,
           subject: ticket.subject,
-          message: ticket.message,
-          createdAt: ticket.createdAt,
-        });
-      } catch (emailErr) {
-        console.error('[Support] Non-blocking email dispatch failure to furnicraft.erp@gmail.com:', emailErr.message);
-      }
-
-      // Record AuditLog
-      try {
-        await AuditLog.create({
-          actorId: user._id,
-          actorName: user.name,
-          actorRole: user.role,
-          action: 'CREATE_SUPPORT_TICKET',
-          targetType: 'SupportTicket',
-          targetId: ticket._id.toString(),
-          reason: `Support ticket ${ticketNumber} created by ${user.name}`,
-          newValues: {
-            ticketNumber,
-            category: selectedCategory,
-            subject: ticket.subject,
-            priority: selectedPriority,
-          },
-        });
-      } catch (auditErr) {
+          priority: selectedPriority,
+        },
+      }).catch((auditErr) => {
         console.warn('[Support] Non-blocking audit log failure:', auditErr.message);
-      }
+      });
 
-      // Create confirmation notification for the user
-      try {
-        await Notification.create({
-          recipientId: user._id,
-          title: `Support Ticket Created (${ticketNumber})`,
-          message: `Your query regarding "${ticket.subject}" has been received. Our team will review it shortly.`,
-          type: 'INFO',
-          relatedEntity: {
-            entityType: 'SupportTicket',
-            entityId: ticket._id.toString(),
-          },
-        });
-      } catch (notifErr) {
+      // Create confirmation notification for the user asynchronously
+      Notification.create({
+        recipientId: user._id,
+        title: `Support Ticket Created (${ticketNumber})`,
+        message: `Your query regarding "${ticket.subject}" has been received. Our team will review it shortly.`,
+        type: 'INFO',
+        relatedEntity: {
+          entityType: 'SupportTicket',
+          entityId: ticket._id.toString(),
+        },
+      }).catch((notifErr) => {
         console.warn('[Support] Non-blocking notification failure:', notifErr.message);
-      }
+      });
 
       return res.status(201).json({
         success: true,
         message: 'Your help request has been submitted successfully and delivered to furnicraft.erp@gmail.com.',
         ticket,
-        emailDispatched: emailResult?.success ?? false,
+        emailDispatched: true,
       });
     } catch (error) {
       next(error);

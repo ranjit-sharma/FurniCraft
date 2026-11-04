@@ -60,7 +60,8 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
     setLoadingTickets(true);
     try {
       const res = await api.get('/support/tickets/my');
-      setMyTickets(res.data?.tickets || []);
+      const tickets = res?.tickets || res?.data?.tickets || [];
+      setMyTickets(tickets);
     } catch {
       // Non-blocking
     } finally {
@@ -101,8 +102,9 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
         contactPhone: (user?.phone || '').trim(),
       });
 
-      if (res.data?.ticket) {
-        setSubmittedTicket(res.data.ticket);
+      const ticket = res?.ticket || res?.data?.ticket;
+      if (ticket) {
+        setSubmittedTicket(ticket);
         // Refresh ticket list
         fetchMyTickets();
       }
