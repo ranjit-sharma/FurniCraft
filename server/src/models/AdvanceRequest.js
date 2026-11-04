@@ -31,7 +31,7 @@ const advanceRequestSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Advance amount is required'],
       min: [1, 'Amount must be greater than zero'],
-      max: [10000, 'Worker cannot take more than ₹10,000 advance'],
+      max: [25000, 'Worker cannot take more than ₹25,000 advance'],
     },
     reason: {
       type: String,

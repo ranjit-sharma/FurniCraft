@@ -156,13 +156,13 @@ export const bulkApproveAttendanceSchema = z.object({
 export const createAdvanceRequestSchema = z.object({
   workerId: z.string().optional(), // Inferred for worker
   projectId: z.string().optional().nullable(),
-  amount: z.number().min(1, 'Amount must be greater than 0').max(10000, 'Worker cannot take more than ₹10,000 advance'),
+  amount: z.number().min(1, 'Amount must be greater than 0').max(25000, 'Worker cannot take more than ₹25,000 advance'),
   reason: z.string().min(3, 'Reason is required'),
 });
 
 export const giveAdvanceSchema = z.object({
   workerId: z.string().optional(), // from the URL
-  amount: z.number().min(1, 'Amount must be greater than 0').max(10000, 'Worker cannot take more than ₹10,000 advance'),
+  amount: z.number().min(1, 'Amount must be greater than 0').max(25000, 'Worker cannot take more than ₹25,000 advance'),
   reason: z.string().trim().min(3, 'Please enter a reason (at least 3 letters)'),
   paymentMethod: z.enum(Object.values(PAYMENT_METHODS)).optional(),
   receiptReference: z.string().optional(),

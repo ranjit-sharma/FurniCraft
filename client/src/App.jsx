@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AttendanceAlarmProvider } from './context/AttendanceAlarmContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AppLayout, PageLoader } from './components/layout/AppLayout';
 
@@ -59,9 +60,10 @@ export const App = () => {
       <AuthProvider>
         <LanguageProvider>
           <ThemeProvider>
-            <BrowserRouter>
-            <Suspense fallback={<PageLoader />}>
-            <Routes>
+            <AttendanceAlarmProvider>
+              <BrowserRouter>
+              <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register-thekedar" element={<ThekedarRegisterPage />} />
               <Route path="/register" element={<Navigate to="/register-thekedar" replace />} />
@@ -126,6 +128,7 @@ export const App = () => {
             </Routes>
             </Suspense>
           </BrowserRouter>
+          </AttendanceAlarmProvider>
           </ThemeProvider>
         </LanguageProvider>
       </AuthProvider>

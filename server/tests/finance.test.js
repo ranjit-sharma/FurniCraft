@@ -212,48 +212,48 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
     expect(profileCheck).toBeNull();
   });
 
-  it('RULE: Worker with ₹10,000 or more advance cannot request more advance', async () => {
+  it('RULE: Worker with ₹25,000 or more advance cannot request more advance', async () => {
     const profile = await WorkerProfile.findOne({ userId: workerUser._id });
     const originalBal = profile.outstandingAdvanceBalance;
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 10000 });
+    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 25000 });
 
-    // Worker attempts to request advance when at 10000
+    // Worker attempts to request advance when at 25000
     const resOver = await request(app)
       .post('/api/v1/finance/advance-requests')
       .set('Authorization', `Bearer ${workerToken}`)
       .send({
         amount: 500,
-        reason: 'Should be rejected due to 10k cap',
+        reason: 'Should be rejected due to 25k cap',
       });
 
     expect(resOver.status).toBe(400);
-    expect(resOver.body.message).toContain('10,000');
+    expect(resOver.body.message).toContain('25,000');
 
-    // Test exceeding total limit when balance is 9000 and requesting 2000
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 9000 });
+    // Test exceeding total limit when balance is 24000 and requesting 2000
+    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 24000 });
     const resExceed = await request(app)
       .post('/api/v1/finance/advance-requests')
       .set('Authorization', `Bearer ${workerToken}`)
       .send({
         amount: 2000,
-        reason: 'Should exceed 10k total',
+        reason: 'Should exceed 25k total',
       });
 
     expect(resExceed.status).toBe(400);
-    expect(resExceed.body.message).toContain('10,000');
+    expect(resExceed.body.message).toContain('25,000');
 
-    // Test single request of 15000 even with 0 balance
+    // Test single request of 30000 even with 0 balance
     await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 0 });
     const resSingleOver = await request(app)
       .post('/api/v1/finance/advance-requests')
       .set('Authorization', `Bearer ${workerToken}`)
       .send({
-        amount: 15000,
-        reason: 'Should be rejected for exceeding 10k limit',
+        amount: 30000,
+        reason: 'Should be rejected for exceeding 25k limit',
       });
 
     expect([400, 422]).toContain(resSingleOver.status);
-    expect(resSingleOver.body.message).toContain('10,000');
+    expect(resSingleOver.body.message).toContain('25,000');
 
     // Restore original balance
     await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: originalBal });

@@ -53,7 +53,7 @@ async function restoreTestUsers() {
   }
 
   // 3. WorkerProfile for Ramesh
-  let wp1 = await WorkerProfile.findOne({ userId: worker1._id });
+  let wp1 = await WorkerProfile.findOne({ $or: [{ userId: worker1._id }, { workerCode: 'WRK-0001' }] });
   if (!wp1) {
     wp1 = await WorkerProfile.create({
       userId: worker1._id,
@@ -74,6 +74,8 @@ async function restoreTestUsers() {
     });
     console.log('[Restore] Created WorkerProfile for Ramesh');
   } else {
+    wp1.userId = worker1._id;
+    wp1.thekedarId = thekedar._id;
     wp1.outstandingAdvanceBalance = 1500;
     wp1.outstandingSalaryBalance = 4800;
     wp1.defaultDailyWage = 800;
@@ -115,7 +117,7 @@ async function restoreTestUsers() {
     console.log('[Restore] Updated worker.suresh@furnicraft.com password and status');
   }
 
-  let wp2 = await WorkerProfile.findOne({ userId: worker2._id });
+  let wp2 = await WorkerProfile.findOne({ $or: [{ userId: worker2._id }, { workerCode: 'WRK-0002' }] });
   if (!wp2) {
     await WorkerProfile.create({
       userId: worker2._id,
@@ -129,6 +131,11 @@ async function restoreTestUsers() {
       outstandingSalaryBalance: 0,
     });
     console.log('[Restore] Created WorkerProfile for Suresh');
+  } else {
+    wp2.userId = worker2._id;
+    wp2.thekedarId = thekedar._id;
+    await wp2.save();
+    console.log('[Restore] Updated WorkerProfile for Suresh');
   }
 
   console.log('[Restore] Done.');

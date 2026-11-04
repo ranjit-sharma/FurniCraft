@@ -78,7 +78,7 @@ const ATTENDANCE_CODE_OPTIONS = [
   { code: 'LEAVE', label: 'Leave (0.0x)', desc: 'On Leave' },
 ];
 
-const MAX_ADVANCE = 10000; // mirrors MAX_ADVANCE_LIMIT on the server
+const MAX_ADVANCE = 25000; // mirrors MAX_ADVANCE_LIMIT on the server
 
 const PaymentMethodPicker = ({ value, onChange }) => (
   <div>
@@ -1385,7 +1385,7 @@ export const WorkersPage = () => {
                         <div className="space-y-3">
                           {activityData.advanceRequests.map((adv) => {
                             const currentAdvance = activityWorker?.outstandingAdvanceBalance || 0;
-                            const exceedsLimit = currentAdvance >= 10000 || (currentAdvance + (adv.amount || 0)) > 10000;
+                            const exceedsLimit = currentAdvance >= MAX_ADVANCE || (currentAdvance + (adv.amount || 0)) > MAX_ADVANCE;
                             return (
                               <div
                                 key={adv._id}
@@ -1422,7 +1422,7 @@ export const WorkersPage = () => {
                                       type="button"
                                       disabled={reviewLoadingId === adv._id || exceedsLimit}
                                       onClick={() => handleReviewAdvanceFromActivity(adv._id, 'APPROVED')}
-                                      title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit - Cannot Approve" : "Approve advance request"}
+                                      title={exceedsLimit ? "Worker advance exceeds ₹25,000 limit - Cannot Approve" : "Approve advance request"}
                                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
                                         exceedsLimit
                                           ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
@@ -1465,7 +1465,7 @@ export const WorkersPage = () => {
                                           ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                                           : 'bg-amber-600 hover:bg-amber-700 text-white'
                                       }`}
-                                      title={exceedsLimit ? "Worker advance exceeds ₹10,000 limit" : "Disburse approved advance amount"}
+                                      title={exceedsLimit ? "Worker advance exceeds ₹25,000 limit" : "Disburse approved advance amount"}
                                     >
                                       <IndianRupee className="h-3.5 w-3.5" />
                                       <span>Disburse Advance</span>
@@ -1710,7 +1710,7 @@ export const WorkersPage = () => {
                   className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-3 text-lg font-bold focus:border-rose-500 focus:outline-none"
                 />
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {[500, 1000, 2000, 5000].filter((v) => v <= room).map((v) => (
+                  {[500, 1000, 2000, 5000, 10000, 20000, 25000].filter((v) => v <= room).map((v) => (
                     <button key={v} type="button" onClick={() => setAdvanceAmount(String(v))} className="inline-flex items-center rounded-full border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
                       ₹{v.toLocaleString('en-IN')}
                     </button>

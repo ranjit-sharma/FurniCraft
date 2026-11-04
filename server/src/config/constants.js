@@ -81,7 +81,7 @@ export const ADVANCE_REQUEST_STATUS = {
   CANCELLED: 'CANCELLED',
 };
 
-export const MAX_ADVANCE_LIMIT = 10000;
+export const MAX_ADVANCE_LIMIT = 25000;
 
 export const PAYMENT_METHODS = {
   CASH: 'CASH',

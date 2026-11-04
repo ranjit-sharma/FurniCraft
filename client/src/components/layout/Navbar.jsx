@@ -3,11 +3,13 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, AlarmClock } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { HelpCenterModal } from '../common/HelpCenterModal';
 import { ThekedarGuideModal } from '../common/ThekedarGuideModal';
+import { AttendanceAlarmModal } from '../common/AttendanceAlarmModal';
+import { useAttendanceAlarm } from '../../context/AttendanceAlarmContext';
 
 const LogoLinkWithRouter = ({ children }) => {
   const navigate = useNavigate();
@@ -48,9 +50,11 @@ export const Navbar = () => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
   const { isDark } = useTheme();
+  const { attendanceStatus, alarmTime } = useAttendanceAlarm();
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
+  const [alarmModalOpen, setAlarmModalOpen] = useState(false);
   const profileRef = useRef(null);
 
   // Close profile dropdown when clicking outside
@@ -112,29 +116,56 @@ export const Navbar = () => {
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
         </LogoLink>
 
-        {/* Right: Profile Icon Toggler */}
+        {/* Right: Alarm Bell & Profile Icon Toggler */}
         {user && (
-          <div className="relative" ref={profileRef}>
-            {/* Round Profile Toggler Button */}
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className={`group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all focus:outline-none cursor-pointer ${
-                profileOpen
-                  ? 'border-blue-600 dark:border-blue-500 ring-4 ring-blue-500/20 shadow-md scale-105'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:scale-105'
-              }`}
-              aria-expanded={profileOpen}
-              aria-label="User profile toggler"
-            >
-              {/* Fully Round Avatar Circle */}
-              <div
-                className={`flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br ${getRoleGradient(
-                  user.role
-                )} font-black text-sm text-white shadow-inner`}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Thekedar Attendance Alarm Bell */}
+            {user.role === 'THEKEDAR' && (
+              <button
+                type="button"
+                onClick={() => setAlarmModalOpen(true)}
+                title={
+                  attendanceStatus.isPending
+                    ? `⏰ Attendance Alarm: ${attendanceStatus.unmarkedCount} craftsman waiting to be marked today`
+                    : 'Attendance Alarm: All marked for today'
+                }
+                aria-label="Attendance alarm and notifications"
+                className={`relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                  attendanceStatus.isPending
+                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-4 ring-amber-500/20 shadow-md animate-pulse scale-105'
+                    : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:border-amber-400 hover:scale-105'
+                }`}
               >
-                <User className="h-4 w-4 md:h-5 md:w-5 text-white" />
-              </div>
-            </button>
+                <AlarmClock className={`h-5 w-5 ${attendanceStatus.isPending ? 'text-amber-600 dark:text-amber-400' : ''}`} />
+                {attendanceStatus.isPending && (
+                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white shadow-xs">
+                    {attendanceStatus.unmarkedCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            <div className="relative" ref={profileRef}>
+              {/* Round Profile Toggler Button */}
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className={`group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all focus:outline-none cursor-pointer ${
+                  profileOpen
+                    ? 'border-blue-600 dark:border-blue-500 ring-4 ring-blue-500/20 shadow-md scale-105'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md hover:scale-105'
+                }`}
+                aria-expanded={profileOpen}
+                aria-label="User profile toggler"
+              >
+                {/* Fully Round Avatar Circle */}
+                <div
+                  className={`flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br ${getRoleGradient(
+                    user.role
+                  )} font-black text-sm text-white shadow-inner`}
+                >
+                  <User className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                </div>
+              </button>
 
             {/* Profile Dropdown Menu */}
             {profileOpen && (
@@ -228,6 +259,26 @@ export const Navbar = () => {
                   <ChevronRight className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                 </button>
 
+                {/* Attendance Alarm & Reminders */}
+                {user.role === 'THEKEDAR' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false);
+                      setAlarmModalOpen(true);
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <AlarmClock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span>{t('alarm.menuTitle', 'Attendance Alarm')}</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                      {alarmTime}
+                    </span>
+                  </button>
+                )}
+
                 {/* Help & Support Center */}
                 <button
                   type="button"
@@ -257,12 +308,15 @@ export const Navbar = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
       )}
       {/* Help & Support Center Modal */}
       <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
       {/* Thekedar User Guide Modal */}
       <ThekedarGuideModal isOpen={guideModalOpen} onClose={() => setGuideModalOpen(false)} />
+      {/* Thekedar Attendance Alarm Settings Modal */}
+      <AttendanceAlarmModal isOpen={alarmModalOpen} onClose={() => setAlarmModalOpen(false)} />
     </header>
   );
 };

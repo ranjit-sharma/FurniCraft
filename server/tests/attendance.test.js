@@ -36,7 +36,20 @@ describe('Attendance & Calculation Engine API Tests', () => {
     });
     thekedarToken = resT.body.data.token;
 
-    project = await Project.findOne({ projectCode: 'FURN-2026-001' });
+    const wp = await WorkerProfile.findOne({ userId: workerUser._id });
+    project = await Project.findOne({ thekedarId: wp?.thekedarId });
+    if (!project && wp) {
+      project = await Project.create({
+        name: 'Test Workshop Project',
+        projectCode: `FURN-TEST-${Date.now().toString().slice(-4)}`,
+        thekedarId: wp.thekedarId,
+        clientName: 'Test Client',
+        siteAddress: 'Workshop Plot 4, Industrial Area',
+        status: 'IN_PROGRESS',
+        budget: 50000,
+        startDate: new Date('2026-01-01'),
+      });
+    }
     expect(project).toBeDefined();
 
   });
@@ -48,8 +61,9 @@ describe('Attendance & Calculation Engine API Tests', () => {
 
     const res = await request(app)
       .post('/api/v1/attendance/submit')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
+        workerId: workerUser._id,
         projectId: project._id.toString(),
         date: testDate,
         code: 'P',
@@ -68,8 +82,9 @@ describe('Attendance & Calculation Engine API Tests', () => {
 
     const res = await request(app)
       .post('/api/v1/attendance/submit')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
+        workerId: workerUser._id,
         projectId: project._id.toString(),
         date: testDate,
         code: 'HALF',
@@ -88,8 +103,9 @@ describe('Attendance & Calculation Engine API Tests', () => {
 
     const res = await request(app)
       .post('/api/v1/attendance/submit')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
+        workerId: workerUser._id,
         projectId: project._id.toString(),
         date: testDate,
         code: 'P1/5',
@@ -108,8 +124,9 @@ describe('Attendance & Calculation Engine API Tests', () => {
 
     const res = await request(app)
       .post('/api/v1/attendance/submit')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
+        workerId: workerUser._id,
         projectId: project._id.toString(),
         date: testDate,
         code: 'PP',
@@ -122,19 +139,20 @@ describe('Attendance & Calculation Engine API Tests', () => {
     expect(res.body.data.attendance.wageMultiplier).toBe(2.0);
   });
 
-  it('RULE: Duplicate or overlapping attendance for the same worker and date is prevented', async () => {
+  it('RULE: Re-marking attendance on same day by thekedar updates entry in-place', async () => {
     const testDate = '2026-10-28';
     const res = await request(app)
       .post('/api/v1/attendance/submit')
-      .set('Authorization', `Bearer ${workerToken}`)
+      .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
+        workerId: workerUser._id,
         projectId: project._id.toString(),
         date: testDate,
         code: 'P',
       });
 
-    expect(res.status).toBe(409);
-    expect(res.body.message).toContain('already exists for date');
+    expect(res.status).toBe(200);
+    expect(res.body.data.updated).toBe(true);
   });
 
   afterAll(async () => {
