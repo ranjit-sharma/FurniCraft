@@ -17,6 +17,7 @@ import {
   FileText,
   RotateCcw,
   Sparkles,
+  Mail,
 } from 'lucide-react';
 
 export const HelpCenterModal = ({ isOpen, onClose }) => {
@@ -28,17 +29,9 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   const [priority, setPriority] = useState('MEDIUM');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [contactEmail, setContactEmail] = useState(user?.email || '');
-  const [contactPhone, setContactPhone] = useState(user?.phone || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [submittedTicket, setSubmittedTicket] = useState(null);
-
-  // Update contact fields if user profile updates
-  useEffect(() => {
-    if (user?.email && !contactEmail) setContactEmail(user.email);
-    if (user?.phone && !contactPhone) setContactPhone(user.phone);
-  }, [user]);
 
   // Ticket history
   const [myTickets, setMyTickets] = useState([]);
@@ -92,8 +85,8 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
         priority,
         subject: subject.trim(),
         message: message.trim(),
-        contactEmail: contactEmail.trim(),
-        contactPhone: contactPhone.trim(),
+        contactEmail: (user?.email || '').trim(),
+        contactPhone: (user?.phone || '').trim(),
       });
 
       if (res.data?.ticket) {
@@ -281,7 +274,7 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 shrink-0">
-                    {user?.phone || user?.email}
+                    {user?.email || user?.phone}
                   </div>
                 </div>
 
@@ -384,21 +377,17 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Contact Email Field */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('help.contactEmail', 'Provide your email')}
-                  </label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder={t('help.emailPlaceholder', 'Provide your email (e.g. craftsman@furnicraft.com)')}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
-                  />
-                  <div className="mt-1 text-[10px] text-slate-400 font-medium">
-                    {t('help.dispatchNotice', 'Your request will be delivered directly to furnicraft.erp@gmail.com')}
+                {/* Automated Profile Email Notice */}
+                <div className="rounded-xl bg-slate-50 border border-slate-200/90 px-3 py-2 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-slate-600 font-medium text-[11px]">
+                    <Mail className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                    <span>{t('help.dispatchNotice', 'Your request will be delivered directly to furnicraft.erp@gmail.com')}</span>
                   </div>
+                  {user?.email && (
+                    <span className="text-[10px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shrink-0">
+                      {user.email}
+                    </span>
+                  )}
                 </div>
 
                 {/* Form Actions */}
