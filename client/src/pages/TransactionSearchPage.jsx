@@ -212,7 +212,7 @@ export const TransactionSearchPage = () => {
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[475px] lg:max-h-[700px] overflow-y-auto pr-1">
+            <div className="space-y-2.5 max-h-[238px] lg:max-h-[700px] overflow-y-auto pr-1">
               {filteredTransactions.map((tx) => {
                 const isSelected = selectedTx?._id === tx._id;
                 return (
