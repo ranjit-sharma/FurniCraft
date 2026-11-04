@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Receipt,
   FolderKanban,
-  Wrench,
   UserCheck,
   CalendarCheck,
   FileText,
@@ -127,12 +126,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
       label: t('help.catProject', 'Project & Site'),
       icon: FolderKanban,
       color: 'text-blue-600 bg-blue-50 border-blue-200',
-    },
-    {
-      id: 'TOOL_EQUIPMENT',
-      label: t('help.catTool', 'Tools & Machinery'),
-      icon: Wrench,
-      color: 'text-orange-600 bg-orange-50 border-orange-200',
     },
     {
       id: 'ACCOUNT_LOGIN',
@@ -394,13 +387,13 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                 {/* Contact Email Field */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('help.contactEmail', 'Reply Contact Email (Optional)')}
+                    {t('help.contactEmail', 'Provide your email')}
                   </label>
                   <input
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder={user?.email || 'e.g. craftsman@furnicraft.com'}
+                    placeholder={t('help.emailPlaceholder', 'Provide your email (e.g. craftsman@furnicraft.com)')}
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
                   />
                   <div className="mt-1 text-[10px] text-slate-400 font-medium">
