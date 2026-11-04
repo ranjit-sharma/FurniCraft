@@ -36,11 +36,6 @@ export const TransactionSearchPage = () => {
   const [searching, setSearching] = useState(false);
   const [selectedTx, setSelectedTx] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
-  const [showAllMobile, setShowAllMobile] = useState(false);
-
-  useEffect(() => {
-    setShowAllMobile(false);
-  }, [searchTerm, selectedCategory]);
 
   // Fetch initial recent transactions
   const [loadError, setLoadError] = useState(null);
@@ -182,22 +177,9 @@ export const TransactionSearchPage = () => {
         {/* Left Column: Transaction Matches List */}
         <div className="lg:col-span-5 space-y-3">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                {t('transactionSearch.matchingRecords') || 'Matching Records'} ({filteredTransactions.length})
-              </h2>
-              {filteredTransactions.length > 4 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllMobile((prev) => !prev)}
-                  className="lg:hidden text-xs font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 underline underline-offset-2 ml-1"
-                >
-                  {showAllMobile
-                    ? (t('transactionSearch.showTop4', 'Show 4'))
-                    : `${t('thekedarDash.all', 'All')} (${filteredTransactions.length}) →`}
-                </button>
-              )}
-            </div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+              {t('transactionSearch.matchingRecords') || 'Matching Records'} ({filteredTransactions.length})
+            </h2>
             {searchTerm && (
               <span className="text-xs text-blue-600 font-semibold truncate max-w-[150px] sm:max-w-none">
                 {(t('transactionSearch.searchingFor') || 'Searching for "{query}"').replace('{query}', searchTerm)}
@@ -230,15 +212,14 @@ export const TransactionSearchPage = () => {
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
-              {filteredTransactions.map((tx, idx) => {
+            <div className="space-y-2.5 max-h-[475px] lg:max-h-[700px] overflow-y-auto pr-1">
+              {filteredTransactions.map((tx) => {
                 const isSelected = selectedTx?._id === tx._id;
-                const isHiddenOnMobile = !showAllMobile && idx >= 4;
                 return (
                   <div
                     key={tx._id}
                     onClick={() => setSelectedTx(tx)}
-                    className={`${isHiddenOnMobile ? 'hidden lg:block' : ''} rounded-2xl border p-4 transition-all cursor-pointer ${
+                    className={`rounded-2xl border p-4 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20'
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
@@ -285,26 +266,6 @@ export const TransactionSearchPage = () => {
                   </div>
                 );
               })}
-
-              {!showAllMobile && filteredTransactions.length > 4 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllMobile(true)}
-                  className="lg:hidden w-full py-3 px-4 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/70 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-xs font-bold text-amber-900 dark:text-amber-300 flex items-center justify-center gap-1.5 transition-colors shadow-sm"
-                >
-                  <span>{t('thekedarDash.all', 'All')} ({filteredTransactions.length})</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {showAllMobile && filteredTransactions.length > 4 && (
-                <button
-                  type="button"
-                  onClick={() => setShowAllMobile(false)}
-                  className="lg:hidden w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 flex items-center justify-center gap-1 transition-colors"
-                >
-                  <span>{t('transactionSearch.showTop4Only', 'Show 4 only')} &uarr;</span>
-                </button>
-              )}
             </div>
           )}
         </div>
