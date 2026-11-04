@@ -61,17 +61,33 @@ const startServer = async () => {
       console.log(`====================================================`);
     });
 
-    // 5. Graceful Shutdown Handlers
+    // 5. Graceful Shutdown Handlers (Proper zero-downtime order: stop HTTP/Sockets first, then close DB)
     const handleShutdown = async (signal) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+
+      // Set a hard timeout in case keep-alive connections do not drain
+      const forceExitTimer = setTimeout(() => {
+        console.error('[Process] Forcefully exiting after shutdown timeout (10s)');
+        process.exit(1);
+      }, 10000);
+
+      // Stop Socket.IO from accepting incoming packets
       try {
-        await disconnectDB();
-        console.log('[MongoDB] Connection closed cleanly.');
-      } catch (err) {
+        io.close();
+      } catch (e) {
         // ignore
       }
-      server.close(() => {
-        console.log('HTTP server closed.');
+
+      // Close HTTP server so in-flight requests finish cleanly before DB disconnection
+      server.close(async () => {
+        clearTimeout(forceExitTimer);
+        console.log('[HTTP] Server closed to new connections.');
+        try {
+          await disconnectDB();
+          console.log('[MongoDB] Connection closed cleanly.');
+        } catch (err) {
+          console.error('[MongoDB] Error disconnecting:', err);
+        }
         process.exit(0);
       });
     };

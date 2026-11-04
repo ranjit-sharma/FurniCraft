@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as authController from '../controllers/authController.js';
 import { requireAuthentication, requireRole } from '../middleware/authMiddleware.js';
 import { validate } from '../middleware/validationMiddleware.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
+import { authLimiter, loginLimiter, otpLimiter } from '../middleware/rateLimiter.js';
 import {
   loginSchema,
   registerSchema,
@@ -20,20 +20,20 @@ import { ROLES } from '../config/constants.js';
 const router = Router();
 
 // Public routes with rate limiting
-router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 
 // Public Thekedar Registration ONLY (never public Worker or Owner registration)
 router.post('/register-thekedar', authLimiter, validate(thekedarRegisterSchema), authController.registerThekedar);
-router.post('/send-registration-otp', authLimiter, validate(sendRegistrationOtpSchema), authController.sendRegistrationOtp);
+router.post('/send-registration-otp', otpLimiter, validate(sendRegistrationOtpSchema), authController.sendRegistrationOtp);
 
 // OTP Password Reset (Thekedars & Workers only, 6-digit OTP, 5 min expiry, 60s cooldown, attempt limits)
-router.post('/forgot-password-otp', authLimiter, validate(forgotPasswordOtpRequestSchema), authController.requestPasswordResetOtp);
-router.post('/verify-reset-otp', authLimiter, validate(verifyResetOtpSchema), authController.verifyPasswordResetOtp);
-router.post('/reset-password-otp', authLimiter, validate(resetPasswordWithOtpSchema), authController.resetPasswordWithOtp);
+router.post('/forgot-password-otp', otpLimiter, validate(forgotPasswordOtpRequestSchema), authController.requestPasswordResetOtp);
+router.post('/verify-reset-otp', otpLimiter, validate(verifyResetOtpSchema), authController.verifyPasswordResetOtp);
+router.post('/reset-password-otp', otpLimiter, validate(resetPasswordWithOtpSchema), authController.resetPasswordWithOtp);
 
 // Legacy Email-based Recovery (Fallback / compatibility)
-router.post('/forgot-password', authLimiter, validate(resetPasswordRequestSchema), authController.forgotPassword);
-router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
+router.post('/forgot-password', otpLimiter, validate(resetPasswordRequestSchema), authController.forgotPassword);
+router.post('/reset-password', otpLimiter, validate(resetPasswordSchema), authController.resetPassword);
 
 // Workforce Registration (Protected: Thekedars can only register Workers; Owners can register Thekedars/Workers)
 router.post(

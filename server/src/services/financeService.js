@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { AdvanceRequest, FinancialTransaction, WorkerProfile, Payroll, User, Attendance } from '../models/index.js';
 import { ADVANCE_REQUEST_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHODS, PAYROLL_STATUS, ROLES, ATTENDANCE_STATUS, MAX_ADVANCE_LIMIT } from '../config/constants.js';
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
@@ -440,54 +441,94 @@ export const payWorkerNet = async ({
     remainingAdvance: remainingAdv,
   };
 
-  const salaryTxn = await FinancialTransaction.create({
-    transactionId: txIdSalary,
-    category: FINANCIAL_CATEGORIES.SALARY_PAYMENT,
-    amount: netPayable,
-    paymentMethod,
-    receiptReference: receiptReference || null,
-    workerId: worker._id,
-    thekedarId: profile.thekedarId,
-    recordedBy: payerUser._id,
-    breakdown,
-    notes:
-      notes ||
-      (netPayable > 0
-        ? `Direct net wage payment (Base: ₹${numBaseEarned}, Adv Cut: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction}, Bonus: ₹${numAdditionalWages})`
-        : `Net wage settlement (Base: ₹${numBaseEarned} offset against Adv: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction})`),
-    transactionDate: new Date(),
-  });
+  const executePayment = async (session) => {
+    const sessionOpt = session ? { session } : {};
 
-  // If advance was deducted ("cut"), update advance balances on profile without creating duplicate automatic transactions
-  if (numAdvanceDeduction > 0) {
-    profile.outstandingAdvanceBalance = Math.max(
-      0,
-      subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction)
+    const salaryTxnArr = await FinancialTransaction.create(
+      [
+        {
+          transactionId: txIdSalary,
+          category: FINANCIAL_CATEGORIES.SALARY_PAYMENT,
+          amount: netPayable,
+          paymentMethod,
+          receiptReference: receiptReference || null,
+          workerId: worker._id,
+          thekedarId: profile.thekedarId,
+          recordedBy: payerUser._id,
+          breakdown,
+          notes:
+            notes ||
+            (netPayable > 0
+              ? `Direct net wage payment (Base: ₹${numBaseEarned}, Adv Cut: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction}, Bonus: ₹${numAdditionalWages})`
+              : `Net wage settlement (Base: ₹${numBaseEarned} offset against Adv: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction})`),
+          transactionDate: new Date(),
+        },
+      ],
+      sessionOpt
     );
-    profile.totalAdvancesRecovered = addMoney(profile.totalAdvancesRecovered || 0, numAdvanceDeduction);
-  }
+    const createdTxn = salaryTxnArr[0];
 
-  profile.totalSalaryPaid = addMoney(profile.totalSalaryPaid || 0, netPayable);
-  profile.outstandingSalaryBalance = Math.max(
-    0,
-    subtractMoney(profile.outstandingSalaryBalance || 0, numBaseEarned)
-  );
-  await profile.save();
+    // If advance was deducted ("cut"), update advance balances on profile without creating duplicate automatic transactions
+    if (numAdvanceDeduction > 0) {
+      profile.outstandingAdvanceBalance = Math.max(
+        0,
+        subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction)
+      );
+      profile.totalAdvancesRecovered = addMoney(profile.totalAdvancesRecovered || 0, numAdvanceDeduction);
+    }
 
-  // Mark approved attendance as processed up to numBaseEarned
-  if (numBaseEarned > 0) {
-    const unpaidAttendances = await Attendance.find({
-      workerId,
-      approvalStatus: ATTENDANCE_STATUS.APPROVED,
-      isPayrollProcessed: false,
-    }).sort({ date: 1 });
+    profile.totalSalaryPaid = addMoney(profile.totalSalaryPaid || 0, netPayable);
+    profile.outstandingSalaryBalance = Math.max(
+      0,
+      subtractMoney(profile.outstandingSalaryBalance || 0, numBaseEarned)
+    );
+    await profile.save(sessionOpt);
 
-    let remainingToMark = numBaseEarned;
-    for (const att of unpaidAttendances) {
-      if (remainingToMark <= 0) break;
-      att.isPayrollProcessed = true;
-      await att.save();
-      remainingToMark -= att.calculatedEarnings;
+    // Mark approved attendance as processed up to numBaseEarned
+    if (numBaseEarned > 0) {
+      const attendanceQuery = Attendance.find({
+        workerId,
+        approvalStatus: ATTENDANCE_STATUS.APPROVED,
+        isPayrollProcessed: false,
+      }).sort({ date: 1 });
+
+      if (session) {
+        attendanceQuery.session(session);
+      }
+
+      const unpaidAttendances = await attendanceQuery;
+      let remainingToMark = numBaseEarned;
+      for (const att of unpaidAttendances) {
+        if (remainingToMark <= 0) break;
+        att.isPayrollProcessed = true;
+        await att.save(sessionOpt);
+        remainingToMark -= att.calculatedEarnings;
+      }
+    }
+
+    return createdTxn;
+  };
+
+  // Atomically execute payment within MongoDB transaction session when replica set is active (MongoDB Atlas in production)
+  let salaryTxn;
+  try {
+    const session = await mongoose.startSession();
+    try {
+      await session.withTransaction(async () => {
+        salaryTxn = await executePayment(session);
+      });
+    } catch (txErr) {
+      if (/replica set/i.test(txErr.message) || /Transaction numbers/i.test(txErr.message)) {
+        salaryTxn = await executePayment(null);
+      } else {
+        throw txErr;
+      }
+    } finally {
+      await session.endSession();
+    }
+  } catch (sessErr) {
+    if (!salaryTxn) {
+      salaryTxn = await executePayment(null);
     }
   }
 

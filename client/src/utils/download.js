@@ -18,12 +18,6 @@ export const downloadPdf = async (rawUrl, filename = 'document.pdf') => {
     token = null;
   }
 
-  // Append token as query parameter fallback if not already present
-  if (token && !url.includes('token=')) {
-    const separator = url.includes('?') ? '&' : '?';
-    url = `${url}${separator}token=${encodeURIComponent(token)}`;
-  }
-
   try {
     const headers = {};
     if (token) {

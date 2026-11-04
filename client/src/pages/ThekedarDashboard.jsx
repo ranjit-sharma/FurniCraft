@@ -19,7 +19,9 @@ import {
   Lock,
   CheckCircle2,
   CalendarOff,
+  BookOpen,
 } from 'lucide-react';
+import { ThekedarGuideModal } from '../components/common/ThekedarGuideModal';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
 
@@ -47,6 +49,7 @@ export const ThekedarDashboard = () => {
 
   // Add New Craftsman Modal State
   const [addWorkerModalOpen, setAddWorkerModalOpen] = useState(false);
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
   const [newWorkerName, setNewWorkerName] = useState('');
   const [newWorkerPhone, setNewWorkerPhone] = useState('');
   const [newWorkerTrade, setNewWorkerTrade] = useState('Mistry');
@@ -165,9 +168,14 @@ export const ThekedarDashboard = () => {
               {new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
-          <Button variant="outline-white" size="sm" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
-            {t('thekedarDash.addWorker', 'Add Worker')}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline-white" size="sm" icon={BookOpen} onClick={() => setGuideModalOpen(true)}>
+              {language === 'hi' ? 'यूज़र गाइड' : language === 'hinglish' ? 'User Guide' : 'User Guide'}
+            </Button>
+            <Button variant="outline-white" size="sm" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
+              {t('thekedarDash.addWorker', 'Add Worker')}
+            </Button>
+          </div>
         </div>
 
         <Link to="/workers" className="mt-4 block rounded-2xl bg-white/10 p-4 active:scale-[0.99] transition">
@@ -446,6 +454,9 @@ export const ThekedarDashboard = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Thekedar User Guidebook Modal */}
+      <ThekedarGuideModal isOpen={guideModalOpen} onClose={() => setGuideModalOpen(false)} />
     </div>
   );
 };

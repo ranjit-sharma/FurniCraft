@@ -32,10 +32,23 @@ export const createApp = () => {
   // Compress HTTP responses with gzip/deflate (reduces payload by 70-80% for high concurrency)
   app.use(compression());
 
-  // Security headers (allow inline theme script and CDN fonts for SPA)
+  // Security headers: Enable Content Security Policy in production while supporting SPA requirements
   app.use(
     helmet({
-      contentSecurityPolicy: false,
+      contentSecurityPolicy: env.isProduction
+        ? {
+            directives: {
+              defaultSrc: ["'self'"],
+              scriptSrc: ["'self'", "'unsafe-inline'"],
+              styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+              fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+              imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+              connectSrc: ["'self'", 'wss:', 'ws:', 'https:'],
+              objectSrc: ["'none'"],
+              upgradeInsecureRequests: [],
+            },
+          }
+        : false,
       crossOriginEmbedderPolicy: false,
     })
   );
@@ -61,7 +74,7 @@ export const createApp = () => {
         ) {
           return callback(null, true);
         }
-        return callback(null, true);
+        return callback(null, false);
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -108,13 +121,28 @@ export const createApp = () => {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
 
   if (fs.existsSync(clientDistPath)) {
-    app.use(express.static(clientDistPath));
+    app.use(
+      express.static(clientDistPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.includes(`${path.sep}assets${path.sep}`) || filePath.includes('/assets/')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          } else if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+          }
+        },
+      })
+    );
 
     // Handle React SPA client-side routing fallback: any non-API GET route returns index.html
     app.get('*', (req, res, next) => {
       if (req.originalUrl.startsWith('/api')) {
         return next();
       }
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.sendFile(path.join(clientDistPath, 'index.html'));
     });
   }

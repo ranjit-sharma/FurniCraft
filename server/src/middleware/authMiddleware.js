@@ -7,15 +7,12 @@ export const requireAuthentication = async (req, res, next) => {
   try {
     let token = null;
 
-    // Check Authorization: Bearer token header first, fallback to HTTP-only cookie or query param
+    // Check Authorization: Bearer token header first, fallback to HTTP-only cookie
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
       token = req.headers.authorization.split(' ')[1];
     }
     if (!token) {
       token = req.cookies?.[COOKIE_NAME];
-    }
-    if (!token && req.query?.token) {
-      token = req.query.token;
     }
 
     if (!token) {

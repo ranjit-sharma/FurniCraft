@@ -144,7 +144,9 @@ export const translations = {
       "workerDesc": "Craftsman & Site Worker",
       "furnicraftUser": "FurniCraft User",
       "accountDetails": "Account Details",
-      "helpCenter": "Help & Support Center"
+      "helpCenter": "Help & Support Center",
+      "thekedarGuide": "Thekedar User Guide",
+      "thekedarGuideSub": "Complete instructions with photos"
     },
     "help": {
       "title": "Help & Support Center",
@@ -1041,7 +1043,9 @@ export const translations = {
       "workerDesc": "कारीगर एवं साइट कार्यकर्ता",
       "furnicraftUser": "फ़र्नीक्राफ्ट उपयोगकर्ता",
       "accountDetails": "खाता विवरण",
-      "helpCenter": "सहायता एवं समर्थन केंद्र"
+      "helpCenter": "सहायता एवं समर्थन केंद्र",
+      "thekedarGuide": "ठेकेदार यूज़र गाइड",
+      "thekedarGuideSub": "फोटो सहित आसान निर्देश"
     },
     "help": {
       "title": "सहायता एवं समर्थन केंद्र",
@@ -1938,7 +1942,9 @@ export const translations = {
           "workerDesc": "Karigar aur Site Mistri",
           "furnicraftUser": "FurniCraft Sadasya",
           "accountDetails": "Khata Vivaran (Account Details)",
-          "helpCenter": "Madad aur Support Center"
+          "helpCenter": "Madad aur Support Center",
+          "thekedarGuide": "Thekedar User Guide",
+          "thekedarGuideSub": "Photo ke saath aasan guide"
       },
       "help": {
           "title": "Madad aur Support Center",

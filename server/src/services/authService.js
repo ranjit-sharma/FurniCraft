@@ -265,11 +265,13 @@ export const forgotPassword = async ({ email, req }) => {
     targetId: user._id,
   });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   return {
     message: `Your password has been sent to ${user.email}. Please check your inbox.`,
     email: user.email,
-    tempPassword,
-    devPassword: tempPassword,
+    tempPassword: !isProduction ? tempPassword : undefined,
+    devPassword: !isProduction ? tempPassword : undefined,
   };
 };
 
