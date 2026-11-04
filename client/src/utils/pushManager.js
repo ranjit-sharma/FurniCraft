@@ -1,5 +1,8 @@
 import api from '../api/client';
 
+export const DEFAULT_VAPID_PUBLIC_KEY =
+  'BN4aYgiIKCZLtbu3hJOGP-0zOmIssjVEGPAvtL0f0l2bvssi7vyprIQ74WE5TCZ-NWFKtabvZ1OBr5yEpzPFyus';
+
 export const urlBase64ToUint8Array = (base64String) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -53,9 +56,18 @@ export const subscribeToPushNotifications = async ({ alarmTime = '09:30', alarmE
     throw new Error('Notification permission was denied. Please allow notifications in your browser or device settings.');
   }
 
-  // 2. Fetch VAPID public key from backend
-  const vapidRes = await api.get('/notifications/vapid-public-key');
-  const publicKey = vapidRes.data?.data?.publicKey;
+  // 2. Fetch VAPID public key from backend with robust fallback
+  let publicKey = DEFAULT_VAPID_PUBLIC_KEY;
+  try {
+    const vapidRes = await api.get('/notifications/vapid-public-key');
+    const fetchedKey = vapidRes?.data?.publicKey || vapidRes?.publicKey;
+    if (typeof fetchedKey === 'string' && fetchedKey.length > 20) {
+      publicKey = fetchedKey;
+    }
+  } catch (err) {
+    console.warn('[Push] Error fetching public key, using built-in key:', err);
+  }
+
   if (!publicKey) {
     throw new Error('Unable to retrieve server push key.');
   }

@@ -185,8 +185,8 @@ export const AttendanceAlarmProvider = ({ children }) => {
       api
         .get('/notifications/alarm-settings')
         .then((res) => {
-          if (res.data?.data) {
-            const d = res.data.data;
+          const d = res?.data || res;
+          if (d && typeof d === 'object') {
             if (typeof d.alarmEnabled === 'boolean') {
               setAlarmEnabledState(d.alarmEnabled);
               localStorage.setItem('furnicraft_attendance_alarm_enabled', JSON.stringify(d.alarmEnabled));

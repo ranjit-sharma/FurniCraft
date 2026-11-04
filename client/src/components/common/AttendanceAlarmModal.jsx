@@ -65,14 +65,25 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
   };
 
   const handleToggleMobilePush = async () => {
+    setTestPushStatus(null);
     if (isPushSubscribed) {
       await disableMobilePush();
+      setTestPushStatus({ type: 'info', text: 'Mobile notifications turned off on this device.' });
     } else {
       const res = await enableMobilePush();
-      if (!res.success && res.message) {
-        alert(res.message);
+      if (res.success) {
+        setTestPushStatus({
+          type: 'success',
+          text: '✓ Mobile alerts enabled! You will be reminded even when the app is completely closed.',
+        });
+      } else {
+        setTestPushStatus({
+          type: 'error',
+          text: res.message || 'Could not enable notifications. Please check browser permissions.',
+        });
       }
     }
+    setTimeout(() => setTestPushStatus(null), 6000);
   };
 
   const handleSendTestPush = async () => {
