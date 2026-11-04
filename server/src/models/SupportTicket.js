@@ -44,11 +44,6 @@ const supportTicketSchema = new mongoose.Schema(
       ],
       default: 'GENERAL_INQUIRY',
     },
-    priority: {
-      type: String,
-      enum: ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
-      default: 'MEDIUM',
-    },
     subject: {
       type: String,
       required: true,

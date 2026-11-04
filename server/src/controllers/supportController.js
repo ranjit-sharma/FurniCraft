@@ -10,7 +10,7 @@ export const supportController = {
   async createTicket(req, res, next) {
     try {
       const user = req.user;
-      const { category, priority, subject, message, contactEmail, contactPhone } = req.body;
+      const { category, subject, message, contactEmail, contactPhone } = req.body;
 
       if (!subject || !subject.trim()) {
         throw new BadRequestError('Subject is required');
@@ -41,9 +41,6 @@ export const supportController = {
       ];
       const selectedCategory = validCategories.includes(category) ? category : 'GENERAL_INQUIRY';
 
-      const validPriorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
-      const selectedPriority = validPriorities.includes(priority) ? priority : 'MEDIUM';
-
       const userEmail = (contactEmail || user.email || '').trim();
       const userPhone = (contactPhone || user.phone || '').trim();
 
@@ -55,7 +52,6 @@ export const supportController = {
         userPhone,
         userRole: user.role || 'USER',
         category: selectedCategory,
-        priority: selectedPriority,
         subject: subject.trim(),
         message: message.trim(),
         status: 'OPEN',
@@ -69,7 +65,6 @@ export const supportController = {
         userPhone: ticket.userPhone,
         userRole: ticket.userRole,
         category: ticket.category,
-        priority: ticket.priority,
         subject: ticket.subject,
         message: ticket.message,
         createdAt: ticket.createdAt,
@@ -90,7 +85,6 @@ export const supportController = {
           ticketNumber,
           category: selectedCategory,
           subject: ticket.subject,
-          priority: selectedPriority,
         },
       }).catch((auditErr) => {
         console.warn('[Support] Non-blocking audit log failure:', auditErr.message);

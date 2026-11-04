@@ -35,7 +35,6 @@ describe('Support & Help Center API Verification', () => {
 
     const ticketPayload = {
       category: 'ATTENDANCE_WAGES',
-      priority: 'HIGH',
       subject: 'Urgent Wage Discrepancy on Project #102',
       message: 'Worker daily rate was calculated incorrectly for 2 shifts on Saturday.',
       contactEmail: 'ramesh.test@furnicraft.com',
@@ -57,7 +56,6 @@ describe('Support & Help Center API Verification', () => {
     const calledArgs = emailSpy.mock.calls[0][0];
     expect(calledArgs.ticketNumber).toBe(res.body.ticket.ticketNumber);
     expect(calledArgs.subject).toBe(ticketPayload.subject);
-    expect(calledArgs.priority).toBe('HIGH');
     expect(calledArgs.category).toBe('ATTENDANCE_WAGES');
 
     // Clean up

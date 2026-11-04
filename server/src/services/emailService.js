@@ -380,7 +380,6 @@ export const sendSupportTicketEmail = async ({
   userPhone,
   userRole,
   category,
-  priority,
   subject,
   message,
   createdAt,
@@ -400,7 +399,7 @@ export const sendSupportTicketEmail = async ({
   };
   const categoryName = categoryLabels[category] || category;
 
-  const emailSubject = `[FurniCraft Support] ${ticketNumber}: ${subject} [${priority || 'MEDIUM'}]`;
+  const emailSubject = `[FurniCraft Support] ${ticketNumber}: ${subject}`;
 
   const formattedDate = new Date(createdAt || Date.now()).toLocaleString('en-IN', {
     timeZone: 'Asia/Kolkata',
@@ -435,11 +434,6 @@ export const sendSupportTicketEmail = async ({
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
         .brand-badge { background: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #ffffff; margin-left: 8px; vertical-align: middle; }
-        .badge-priority { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
-        .p-URGENT { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
-        .p-HIGH { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
-        .p-MEDIUM { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-        .p-LOW { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .content { padding: 28px 24px; }
         .ticket-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
         .message-box { background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #d97706; border-radius: 8px; padding: 16px; margin: 20px 0; }
@@ -460,9 +454,6 @@ export const sendSupportTicketEmail = async ({
           <h1 class="brand-title">
             <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
           </h1>
-          <div>
-            <span class="badge-priority p-${priority || 'MEDIUM'}">${priority || 'MEDIUM'} PRIORITY</span>
-          </div>
         </div>
 
         <div class="content">
@@ -487,13 +478,9 @@ export const sendSupportTicketEmail = async ({
                 <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Email:</td>
                 <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userEmail || 'Not provided'}</td>
               </tr>
-              <tr style="border-bottom: 1px solid #e2e8f0;">
+              <tr>
                 <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Category:</td>
                 <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${categoryName}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Priority Level:</td>
-                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${priority}</td>
               </tr>
             </table>
           </div>
@@ -515,7 +502,6 @@ export const sendSupportTicketEmail = async ({
 
   const textContent = `
 [FurniCraft ERP Support] New Support Ticket ${ticketNumber}
-Priority: ${priority}
 Submitted by: ${userName} (${userRole})
 Contact Phone: ${userPhone || 'N/A'}
 Contact Email: ${userEmail || 'N/A'}

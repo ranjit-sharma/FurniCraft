@@ -32,7 +32,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
 
   const [activeTab, setActiveTab] = useState('new'); // 'new' | 'history'
   const [category, setCategory] = useState('ATTENDANCE_WAGES');
-  const [priority, setPriority] = useState('MEDIUM');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -71,7 +70,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
 
   const handleReset = () => {
     setCategory('ATTENDANCE_WAGES');
-    setPriority('MEDIUM');
     setSubject('');
     setMessage('');
     setError(null);
@@ -95,7 +93,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
     try {
       const res = await api.post('/support/tickets', {
         category,
-        priority,
         subject: subject.trim(),
         message: message.trim(),
         contactEmail: (user?.email || '').trim(),
@@ -173,16 +170,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
       case 'ACCOUNT_LOGIN': return t('help.catAccount', 'Account & Access');
       case 'GENERAL_INQUIRY': return t('help.catGeneral', 'General Inquiry');
       default: return catId ? catId.replace(/_/g, ' ') : 'General';
-    }
-  };
-
-  const getPriorityLabel = (pri) => {
-    switch (pri) {
-      case 'LOW': return t('help.priorityLow', 'Low');
-      case 'MEDIUM': return t('help.priorityMedium', 'Normal');
-      case 'HIGH': return t('help.priorityHigh', 'High');
-      case 'URGENT': return t('help.priorityUrgent', 'Urgent');
-      default: return pri || 'Normal';
     }
   };
 
@@ -320,9 +307,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-1.5 text-[11px]">
                     <span className="font-semibold text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-lg border border-slate-200">
                       {getCategoryLabel(submittedTicket.category)}
-                    </span>
-                    <span className="font-semibold text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                      {getPriorityLabel(submittedTicket.priority)}
                     </span>
                     <span className="font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">
                       furnicraft.erp@gmail.com
@@ -481,7 +465,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                 {myTickets.map((tkt) => {
                   const isExpanded = expandedTicketId === tkt._id;
                   const categoryLabel = getCategoryLabel(tkt.category);
-                  const priorityLabel = getPriorityLabel(tkt.priority);
 
                   return (
                     <div
@@ -551,17 +534,11 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                             </div>
                             <div>
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                                {t('help.priority', 'Priority')}
-                              </span>
-                              <span className="font-bold text-slate-800">{priorityLabel}</span>
-                            </div>
-                            <div>
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                                 {t('help.selectCategory', 'Category')}
                               </span>
                               <span className="font-medium text-slate-800">{categoryLabel}</span>
                             </div>
-                            <div>
+                            <div className="col-span-2">
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                                 Submitted At
                               </span>
