@@ -106,10 +106,8 @@ export const submitAttendance = async ({ data, user, req }) => {
   const applicableWage = await getEffectiveWage(workerId, projectId);
   const calculatedEarnings = multiplyMoney(applicableWage, multiplier);
 
-  // Initial approval status:
-  // If submitter is Thekedar managing this worker/project, auto-approve; if Worker, set to SUBMITTED
-  const isThekedarSelf = user.role === ROLES.THEKEDAR && thekedarId.toString() === user._id.toString();
-  const initialStatus = isThekedarSelf ? ATTENDANCE_STATUS.APPROVED : ATTENDANCE_STATUS.SUBMITTED;
+  // Shift attendance is directly recorded by the supervising Thekedar without approval queues
+  const initialStatus = ATTENDANCE_STATUS.APPROVED;
 
   const attendance = await Attendance.create({
     workerId,
@@ -121,8 +119,8 @@ export const submitAttendance = async ({ data, user, req }) => {
     submissionStatus: 'SUBMITTED',
     approvalStatus: initialStatus,
     submittedBy: user._id,
-    approvedBy: isThekedarSelf ? user._id : null,
-    approvedAt: isThekedarSelf ? new Date() : null,
+    approvedBy: user._id,
+    approvedAt: new Date(),
     checkInTime,
     checkOutTime,
     extraWorkCategory,

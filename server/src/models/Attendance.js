@@ -45,7 +45,7 @@ const attendanceSchema = new mongoose.Schema(
     approvalStatus: {
       type: String,
       enum: Object.values(ATTENDANCE_STATUS),
-      default: ATTENDANCE_STATUS.SUBMITTED,
+      default: ATTENDANCE_STATUS.APPROVED,
       index: true,
     },
     submittedBy: {

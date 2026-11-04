@@ -122,23 +122,17 @@ flowchart TD
 
 ---
 
-### B. Shift Attendance & Multiplier Calculation Lifecycle
-Attendance accurately records daily work multipliers and calculates daily earned wages:
+### B. Direct Shopfloor Shift Attendance & Wage Multiplier Lifecycle
+All craftsman shifts and attendance are managed **exclusively by the supervising Thekedar** with single-tap direct logging. Workers have no system accounts, and shifts are immediately recorded and active without any multi-stage approval queues or pending reviews:
 
 $$\text{Calculated Earnings} = \text{Wage Multiplier} \times \text{Default Daily Wage}$$
 
 ```mermaid
 flowchart LR
-    WMark["Thekedar Logs Shift from Worker Card<br/>(P=1.0x, HALF=0.5x, P1/5=1.5x, PP=2.0x)"] --> StatusPending["Attendance Status: PENDING"]
-    StatusPending --> TReview["Thekedar Reviews on Calendar / List"]
-    
-    TReview --> TAction{Approval Action}
-    TAction -- Approve --> Approved["Status: APPROVED"]
-    TAction -- Reject --> Rejected["Status: REJECTED"]
-    
-    Approved --> CalcEarn["Compute Calculated Earnings:<br/>Multiplier × Daily Wage"]
+    WMark["Thekedar Directly Marks Shift on Worker Card<br/>(1-Tap: P=1.0x, HALF=0.5x, P1/5=1.5x, PP=2.0x, ABSENT=0x, LEAVE=0x)"] --> DirectConfirm["Instant Shift Recording & Wage Calculation<br/>(Immediate Active Record)"]
+    DirectConfirm --> CalcEarn["Compute Calculated Earnings:<br/>Multiplier × Daily Wage"]
     CalcEarn --> Unprocessed["isPayrollProcessed: false"]
-    Unprocessed --> TotalIncome["Accrues to Worker's Total Income"]
+    Unprocessed --> TotalIncome["Accrues Directly to Worker's Total Income & Net Balance"]
 ```
 
 ---
@@ -146,14 +140,14 @@ flowchart LR
 ### C. Financial Balance & "Pay Net Wages" Settlement Engine
 All financial balances strictly obey the golden accounting formula:
 
-$$\text{Net Balance} = \text{Total Income (Approved Earnings)} - \text{Outstanding Advance Balance}$$
+$$\text{Net Balance} = \text{Total Income (Earned Shift Wages)} - \text{Outstanding Advance Balance}$$
 
 When paying net wages, contractors can deduct outstanding advances directly from both base earnings and bonuses:
 
 ```mermaid
 flowchart TD
     subgraph LedgerStatus["Live Worker Card Metrics"]
-        TI["Total Income: Approved Attendance Shifts (₹)"]
+        TI["Total Income: Earned Shift Wages (₹)"]
         ADV["Outstanding Advance Balance (₹)"]
         NB["Net Balance = Total Income − Advance"]
         TI --- NB
@@ -313,7 +307,7 @@ FurniCraft/
 │       │   └── translations.js          # Tri-lingual localization dictionaries (EN / HI / HINGLISH)
 │       ├── components/
 │       │   ├── common/                  # Reusable UI component library
-│       │   │   ├── Badge.jsx            # Status indicators (Approved, Pending, Suspended)
+│       │   │   ├── Badge.jsx            # Status indicators (Active, Suspended, Shift Multipliers)
 │       │   │   ├── BrandLogo.jsx        # Responsive official FurniCraft emblem
 │       │   │   ├── Button.jsx           # Accessible button with loading spinners & variants
 │       │   │   ├── Card.jsx             # Themed content card container
@@ -384,12 +378,12 @@ FurniCraft/
         │   ├── User.js                  # User credentials, role, status & failed login tracking
         │   ├── WorkerProfile.js         # Daily wage, advance balance, skills, bank details
         │   ├── WageAgreement.js         # Historical & contractual daily wage agreements
-        │   ├── Attendance.js            # Daily shifts, multiplier (1.0x, 0.5x, 1.5x, 2.0x), approval
+        │   ├── Attendance.js            # Daily shifts, multiplier (1.0x, 0.5x, 1.5x, 2.0x), earnings calculation
         │   ├── AttendanceRuleVersion.js # Audit versioning for shift multiplier rules
         │   ├── Project.js               # Furniture project details, scope & deadlines
         │   ├── ProjectAssignment.js     # Legacy worker-to-project records (read-only; wage overrides)
         │   ├── FinancialTransaction.js  # Immutable double-entry financial ledger records
-        │   ├── AdvanceRequest.js        # Worker cash advance requests & approval states
+        │   ├── AdvanceRequest.js        # Craftsman cash advance records & tracking
         │   ├── Payroll.js               # Finalized monthly payroll sheets
         │   ├── PayrollAdjustment.js     # Post-finalization debit/credit adjustments
         │   ├── ProjectExpense.js        # Hardware, laminates, fittings & site expenses
@@ -404,7 +398,7 @@ FurniCraft/
         │   ├── authRoutes.js            # /api/v1/auth (Login, Logout, Me, OTP Reset)
         │   ├── userRoutes.js            # /api/v1/users (Workers, Thekedars, Status changes)
         │   ├── projectRoutes.js         # /api/v1/projects (CRUD, money received)
-        │   ├── attendanceRoutes.js      # /api/v1/attendance (Mark, Approve, Bulk, Calendar)
+        │   ├── attendanceRoutes.js      # /api/v1/attendance (Mark, Update, Calendar)
         │   ├── payrollRoutes.js         # /api/v1/payroll (Preview, Finalize, Lock, Adjust)
         │   ├── financeRoutes.js         # /api/v1/finance (Ledger, Advances, Give Advance, Pay Net Wages)
         │   ├── expenseRoutes.js         # /api/v1/expenses (Client payments & project costs)
@@ -452,15 +446,14 @@ FurniCraft has **exactly three user roles** (no ambiguous supervisor roles):
 | **Suspend / Activate Worker Accounts** | ❌ *(Thekedar responsibility)* | ✅ *(Under their supervision)* | ❌ |
 | **Create & Manage Furniture Projects** | 👁️ *(Read-Only)* | ✅ *(Full Management)* | ❌ |
 | **Register & Wage-Rate New Workers** | ✅ | ✅ | ❌ |
-| **Log Shift Attendance** | ❌ | ✅ *(From worker cards)* | ❌ |
-| **Approve / Reject Attendance Shifts** | ❌ | ✅ *(Single & Bulk)* | ❌ |
+| **Direct 1-Tap Daily Shift Attendance Logging** | ❌ | ✅ *(Immediate recording; no approval queue)* | ❌ |
 | **Disburse Advance & Pay Net Wages** | ❌ | ✅ | ❌ |
 | **Deduct Advance Directly from Bonus** | ❌ | ✅ *(In Pay Net Modal)* | ❌ |
 | **Delete Worker Account** | ❌ | ✅ *(ONLY if Net Balance = ₹0)* | ❌ |
 | **Theme & Language Preference Toggle** | ✅ | ✅ | ❌ |
 | **Access Help & Support Center** | ✅ | ✅ | ❌ |
 
-> Workers cannot sign in (`POST /auth/login` returns 403). Their profiles, attendance, advances and payouts are managed by their Thekedar.
+> 🔒 **Craftsman (Worker) Role Isolation**: Workers cannot sign in (`POST /auth/login` returns 403) and have no access to system screens, submission actions, or approval workflows. Every operation — from daily shift recording to cash advances and net wage settlement — is directly and solely managed by their supervising Thekedar.
 
 ---
 
