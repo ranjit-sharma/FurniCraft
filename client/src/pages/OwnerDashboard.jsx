@@ -217,7 +217,14 @@ export const OwnerDashboard = () => {
                       <IndianRupee className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-bold text-slate-900 dark:text-white">{tx.workerId?.name || 'Worker'}</div>
+                      <div className="truncate text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
+                        <span>{tx.workerId?.name || 'Worker'}</span>
+                        {tx.workerWage ? (
+                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            ₹{tx.workerWage}/day
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="truncate text-xs text-slate-500 dark:text-slate-400">
                         {TXN_LABELS[tx.category] || humanize(tx.category)} · {tx.thekedarId?.name || '—'} · {timeAgo(tx.transactionDate)}
                       </div>

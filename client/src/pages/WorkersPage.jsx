@@ -811,7 +811,12 @@ export const WorkersPage = () => {
                     <User className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{w.userId?.name || 'Worker'}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{w.userId?.name || 'Worker'}</h3>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                        ₹{w.defaultDailyWage || 750}/day
+                      </span>
+                    </div>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
                   </div>
                   <ChevronRight className="h-5 w-5 shrink-0 text-slate-400" />
@@ -1104,6 +1109,9 @@ export const WorkersPage = () => {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">{activityWorker.userId?.name || 'Worker'}</h3>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                      ₹{activityWorker.defaultDailyWage || 750}/day
+                    </span>
                     <span
                       className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                         activityWorker.userId?.status === 'ACTIVE'

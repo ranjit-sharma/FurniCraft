@@ -360,11 +360,16 @@ export const MembersOverviewPage = () => {
                         <User className="h-4 w-4" />
                       </div>
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
-                          {m.name}
+                        <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5 flex-wrap">
+                          <span>{m.name}</span>
                           {m.workerCode && (
                             <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-semibold">
                               {m.workerCode}
+                            </span>
+                          )}
+                          {m.role === 'WORKER' && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              ₹{m.defaultDailyWage || 750}/day
                             </span>
                           )}
                         </div>
@@ -447,11 +452,16 @@ export const MembersOverviewPage = () => {
                           <User className="h-4 w-4" />
                         </div>
                         <div>
-                          <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
-                            {m.name}
+                          <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5 flex-wrap">
+                            <span>{m.name}</span>
                             {m.workerCode && (
                               <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-semibold">
                                 {m.workerCode}
+                              </span>
+                            )}
+                            {m.role === 'WORKER' && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                ₹{m.defaultDailyWage || 750}/day
                               </span>
                             )}
                           </div>

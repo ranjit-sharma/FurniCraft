@@ -204,7 +204,7 @@ export const getOwnerDashboardData = async () => {
 
   const [thekedars, profiles, unpaidByWorker, projectsByThekedar, monthTotals, recentAudits, recentTransactions] = await Promise.all([
     User.find({ role: ROLES.THEKEDAR }).select('name phone status lastLoginAt').sort({ name: 1 }).lean(),
-    WorkerProfile.find().select('userId thekedarId outstandingAdvanceBalance outstandingSalaryBalance').lean(),
+    WorkerProfile.find().select('userId thekedarId defaultDailyWage outstandingAdvanceBalance outstandingSalaryBalance').lean(),
     // Earned but not yet paid = approved attendance not settled by a payment (same rule as the Workers page)
     Attendance.aggregate([
       { $match: { approvalStatus: ATTENDANCE_STATUS.APPROVED, isPayrollProcessed: false } },
@@ -265,6 +265,13 @@ export const getOwnerDashboardData = async () => {
     },
     thekedars: thekedarSummaries,
     recentAudits,
-    recentTransactions,
+    recentTransactions: recentTransactions.map((tx) => {
+      const wId = tx.workerId?._id?.toString() || tx.workerId?.toString();
+      const wp = profiles.find((p) => p.userId?.toString() === wId);
+      return {
+        ...tx,
+        workerWage: wp?.defaultDailyWage || null,
+      };
+    }),
   };
 };

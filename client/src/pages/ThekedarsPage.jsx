@@ -463,9 +463,14 @@ export const ThekedarsPage = () => {
                                 key={w._id}
                                 className="flex items-center justify-between gap-2 rounded-md bg-slate-50 dark:bg-slate-800/70 border border-slate-200/90 dark:border-slate-700 px-2 py-1 text-xs"
                               >
-                                <span className="font-bold text-slate-900 dark:text-white truncate" title={w.name}>
-                                  {w.name}
-                                </span>
+                                <div className="flex items-center gap-1.5 truncate">
+                                  <span className="font-bold text-slate-900 dark:text-white truncate" title={w.name}>
+                                    {w.name}
+                                  </span>
+                                  <span className="shrink-0 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    ₹{w.defaultDailyWage || 750}/day
+                                  </span>
+                                </div>
                                 <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 font-medium shrink-0 flex items-center gap-1">
                                   <Phone className="h-2.5 w-2.5 text-slate-400 dark:text-slate-500" />
                                   {w.phone}
@@ -785,10 +790,13 @@ export const ThekedarsPage = () => {
                       className="rounded-lg border border-slate-200 dark:border-slate-700 p-2.5 bg-white dark:bg-slate-800/80 text-xs flex justify-between items-center hover:border-purple-300 dark:hover:border-purple-600 transition"
                     >
                       <div>
-                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap">
                           <span>{w.name}</span>
                           <span className="text-[10px] font-mono text-purple-800 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800">
                             {w.workerCode}
+                          </span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            ₹{w.defaultDailyWage || 750}/day
                           </span>
                         </div>
                         <div className="text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
