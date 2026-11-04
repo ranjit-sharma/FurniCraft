@@ -27,6 +27,7 @@ import {
   Trash2,
   Check,
   X,
+  CalendarOff,
 } from 'lucide-react';
 
 /**
@@ -73,6 +74,7 @@ const ATTENDANCE_CODE_OPTIONS = [
   { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
   { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
   { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
+  { code: 'LEAVE', label: 'Leave (0.0x)', desc: 'On Leave' },
 ];
 
 const MAX_ADVANCE = 10000; // mirrors MAX_ADVANCE_LIMIT on the server
@@ -179,6 +181,7 @@ export const WorkersPage = () => {
   // Monthly attendance PDF picker
   const [pdfTarget, setPdfTarget] = useState(null);
   const [pdfMonth, setPdfMonth] = useState(() => localToday().slice(0, 7));
+  const [leaveActionLoading, setLeaveActionLoading] = useState(false);
 
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [payWorker, setPayWorker] = useState(null);
@@ -346,6 +349,55 @@ export const WorkersPage = () => {
       setMessage({ type: 'error', text: err.message });
     } finally {
       setEditAttendanceSubmitting(false);
+    }
+  };
+
+  const handleToggleLeaveToday = async () => {
+    if (!activityWorker?.userId?._id && !activityWorker?._id) return;
+    const workerUserId = activityWorker?.userId?._id || activityWorker?._id;
+    const workerName = activityWorker?.userId?.name || activityWorker?.name || 'Craftsman';
+    const todayStr = localToday();
+    const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
+
+    if (todayAtt?.code === 'LEAVE') {
+      const confirmRemove = window.confirm(
+        `Remove leave for ${workerName} today (${todayStr})? This will return them to active attendance on the dashboard.`
+      );
+      if (!confirmRemove) return;
+      try {
+        setLeaveActionLoading(true);
+        await api.delete(`/attendance/${todayAtt._id}`);
+        setMessage({
+          type: 'success',
+          text: `Leave removed for ${workerName}. Worker returned to active attendance.`,
+        });
+        await refreshWorkerData(activityWorker);
+        fetchWorkers();
+      } catch (err) {
+        setMessage({ type: 'error', text: err.message || 'Failed to remove leave' });
+      } finally {
+        setLeaveActionLoading(false);
+      }
+    } else {
+      try {
+        setLeaveActionLoading(true);
+        await api.post('/attendance/submit', {
+          workerId: workerUserId,
+          date: todayStr,
+          shift: 'GENERAL',
+          code: 'LEAVE',
+        });
+        setMessage({
+          type: 'success',
+          text: `${workerName} marked on leave for today (${todayStr}). They will not appear in today's attendance list on the dashboard.`,
+        });
+        await refreshWorkerData(activityWorker);
+        fetchWorkers();
+      } catch (err) {
+        setMessage({ type: 'error', text: err.message || 'Failed to mark leave' });
+      } finally {
+        setLeaveActionLoading(false);
+      }
     }
   };
 
@@ -1064,6 +1116,16 @@ export const WorkersPage = () => {
                       />
                       {activityWorker.userId?.status === 'ACTIVE' ? 'Active' : 'Suspended'}
                     </span>
+                    {(() => {
+                      const todayStr = localToday();
+                      const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
+                      return todayAtt?.code === 'LEAVE' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                          <CalendarOff className="h-3 w-3" />
+                          On Leave Today
+                        </span>
+                      ) : null;
+                    })()}
                     {(isThekedar || isOwner) && (
                       <button
                         type="button"
@@ -1124,23 +1186,44 @@ export const WorkersPage = () => {
             </div>
 
             {/* Actions (each closes this sheet before opening its own form) */}
-            {(isOwner || isThekedar) && (
-              <div className="flex flex-wrap gap-2">
-                {isThekedar && (
-                  <Button variant="success" className="justify-center" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
-                    {t('thekedar.payWorkerNet', 'Pay Net')}
+            {(isOwner || isThekedar) && (() => {
+              const todayStr = localToday();
+              const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
+              const isOnLeaveToday = todayAtt?.code === 'LEAVE';
+              return (
+                <div className="flex flex-wrap gap-2">
+                  {isThekedar && (
+                    <Button variant="success" className="justify-center" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
+                      {t('thekedar.payWorkerNet', 'Pay Net')}
+                    </Button>
+                  )}
+                  {isThekedar && (
+                    <Button variant="outline" className="justify-center border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300" icon={Receipt} onClick={() => handleOpenGiveAdvance(activityWorker)}>
+                      Give Advance
+                    </Button>
+                  )}
+                  <Button variant="outline" className="justify-center" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
+                    {t('common.edit', 'Edit')}
                   </Button>
-                )}
-                {isThekedar && (
-                  <Button variant="outline" className="justify-center border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300" icon={Receipt} onClick={() => handleOpenGiveAdvance(activityWorker)}>
-                    Give Advance
-                  </Button>
-                )}
-                <Button variant="outline" className="justify-center" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
-                  {t('common.edit', 'Edit')}
-                </Button>
-              </div>
-            )}
+                  {isThekedar && (
+                    <Button
+                      variant={isOnLeaveToday ? 'secondary' : 'outline'}
+                      className={`justify-center ${
+                        isOnLeaveToday
+                          ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300'
+                          : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      }`}
+                      icon={CalendarOff}
+                      loading={leaveActionLoading}
+                      onClick={handleToggleLeaveToday}
+                      title={isOnLeaveToday ? 'Currently on leave today. Click to remove leave.' : 'Mark worker on leave for today'}
+                    >
+                      {isOnLeaveToday ? 'On Leave ✓' : 'On Leave'}
+                    </Button>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Tab Navigation — 3-column responsive grid: all tabs visible in single view with zero side-scroll */}
             <div className="grid grid-cols-3 border-b border-slate-200 dark:border-slate-700 text-xs font-bold shrink-0">

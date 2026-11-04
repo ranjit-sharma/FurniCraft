@@ -41,6 +41,7 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
       case 'FINALIZED':
         return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800';
       case 'purple':
+      case 'LEAVE':
       case 'CORRECTION_REQUESTED':
         return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800';
       default:

@@ -679,3 +679,38 @@ export const getMonthlyAttendanceCalendar = async ({ workerId, projectId, year, 
     },
   };
 };
+
+/**
+ * Delete / cancel unpaid attendance entry (e.g. removing leave or accidental mark)
+ */
+export const deleteAttendance = async ({ attendanceId, user, req }) => {
+  const attendance = await Attendance.findById(attendanceId);
+  if (!attendance) {
+    throw new NotFoundError('Attendance record not found');
+  }
+
+  if (attendance.isPayrollProcessed) {
+    throw new ForbiddenError('Attendance record is already paid and locked; it cannot be deleted.');
+  }
+
+  if (user.role === ROLES.THEKEDAR && attendance.thekedarId.toString() !== user._id.toString()) {
+    throw new ForbiddenError('You can only delete attendance records for workers under your management');
+  }
+
+  await Attendance.findByIdAndDelete(attendanceId);
+
+  await recordAuditLog({
+    req,
+    action: 'ATTENDANCE_DELETED',
+    targetType: 'Attendance',
+    targetId: attendanceId,
+    oldValues: {
+      workerId: attendance.workerId,
+      date: attendance.date,
+      code: attendance.code,
+      calculatedEarnings: attendance.calculatedEarnings,
+    },
+  });
+
+  return { success: true, message: 'Attendance record deleted successfully' };
+};

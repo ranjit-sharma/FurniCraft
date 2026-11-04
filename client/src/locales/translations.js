@@ -921,7 +921,8 @@ export const translations = {
       "newProject": "Create a project",
       "received": "received",
       "recentMoney": "Recent payments & advances",
-      "noPayments": "No payments yet. Pay workers from the Workers tab."
+      "noPayments": "No payments yet. Pay workers from the Workers tab.",
+      "onLeave": "on leave"
     }
   },
   "hi": {
@@ -1817,7 +1818,8 @@ export const translations = {
       "newProject": "नया प्रोजेक्ट बनाएं",
       "received": "प्राप्त",
       "recentMoney": "हाल के भुगतान एवं एडवांस",
-      "noPayments": "अभी कोई भुगतान नहीं। कारीगर टैब से भुगतान करें।"
+      "noPayments": "अभी कोई भुगतान नहीं। कारीगर टैब से भुगतान करें।",
+      "onLeave": "छुट्टी पर"
     }
   },
   "hinglish": {
@@ -2713,7 +2715,8 @@ export const translations = {
           "newProject": "Naya Project Banayein",
           "received": "prapt hua",
           "recentMoney": "Haal ke payment aur advance transactions",
-          "noPayments": "Abhi koi payment nahi hua."
+          "noPayments": "Abhi koi payment nahi hua.",
+          "onLeave": "chutti par"
       }
   }
 };

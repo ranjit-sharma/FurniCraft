@@ -25,5 +25,6 @@ router.patch('/:attendanceId/reject', requireRole(ROLES.OWNER, ROLES.THEKEDAR), 
 router.post('/:attendanceId/request-correction', validate(requestCorrectionSchema), attendanceController.requestCorrection);
 router.patch('/:attendanceId/review-correction', requireRole(ROLES.OWNER, ROLES.THEKEDAR), validate(reviewCorrectionSchema), attendanceController.reviewCorrection);
 router.post('/bulk-approve', requireRole(ROLES.OWNER, ROLES.THEKEDAR), validate(bulkApproveAttendanceSchema), attendanceController.bulkApprove);
+router.delete('/:attendanceId', requireRole(ROLES.OWNER, ROLES.THEKEDAR), attendanceController.remove);
 
 export default router;

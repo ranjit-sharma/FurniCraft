@@ -154,3 +154,20 @@ export const getMonthlyCalendar = async (req, res, next) => {
     next(error);
   }
 };
+
+export const remove = async (req, res, next) => {
+  try {
+    const result = await attendanceService.deleteAttendance({
+      attendanceId: req.params.attendanceId,
+      user: req.user,
+      req,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
