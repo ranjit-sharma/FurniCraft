@@ -334,7 +334,7 @@ FurniCraft/
 │       │   ├── ProjectDetailPage.jsx   # Project money received & site summary
 │       │   ├── WorkersPage.jsx          # Worker cards + tap-to-open sheet: Pay Net Wages, Give Advance, Edit, and attendance statement PDF
 │       │   ├── ExpensesPage.jsx         # Project money received & site material expenses
-│       │   ├── TransactionSearchPage.jsx# Search ledger: 3-card mobile viewport with vertical scroll, 2-column desktop voucher inspection
+│       │   ├── TransactionSearchPage.jsx# Transaction History: 3-card mobile viewport with vertical scroll, 2-column desktop voucher inspection
 │       │   ├── DisputesPage.jsx         # Grievances & transparent issue resolution
 │       │   ├── AuditLogsPage.jsx        # Tamper-evident immutable system security logs
 │       │   ├── MembersOverviewPage.jsx  # Organization roster & active workforce visits

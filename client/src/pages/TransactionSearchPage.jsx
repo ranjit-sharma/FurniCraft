@@ -123,7 +123,7 @@ export const TransactionSearchPage = () => {
     <div className="space-y-6 pb-12">
       <LoadError message={loadError} onRetry={fetchRecentTransactions} />
       <PageHeader
-        title={t('transactionSearch.pageTitle', 'Transactions')}
+        title={t('transactionSearch.pageTitle', 'Transaction History')}
         subtitle={`${transactions.length} ${t('transactionSearch.recordsLower', 'records')} · ${t('transactionSearch.pageSub', 'find a payment or advance and download its bill')}`}
       />
 

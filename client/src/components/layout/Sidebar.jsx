@@ -8,7 +8,7 @@ import {
   Users,
   ShieldAlert,
   IndianRupee,
-  Search,
+  History,
   HardHat,
 } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export const useNavLinks = () => {
       { to: '/projects', label: t('nav.furnitureProjects', 'Furniture Projects'), short: t('navShort.projects', 'Projects'), icon: FolderKanban },
       { to: '/workers', label: t('nav.workersAndWages', 'Workers & Wages'), short: t('navShort.workers', 'Workers'), icon: Users },
       { to: '/expenses', label: t('nav.expenses', 'Project Money Received'), short: t('navShort.money', 'Money'), icon: IndianRupee },
-      { to: '/transactions/search', label: t('nav.transactionSearch', 'Transaction Search'), short: t('navShort.payments', 'Payments'), icon: Search },
+      { to: '/transactions/search', label: t('nav.transactionHistory', t('nav.transactionSearch', 'Transaction History')), short: t('navShort.history', 'History'), icon: History },
     ];
   }
 
