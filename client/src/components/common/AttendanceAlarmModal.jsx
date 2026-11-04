@@ -13,6 +13,10 @@ import {
   ShieldCheck,
   Check,
   Play,
+  Square,
+  Smartphone,
+  Send,
+  Loader2,
   X,
 } from 'lucide-react';
 import { useAttendanceAlarm } from '../../context/AttendanceAlarmContext';
@@ -28,17 +32,28 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
     setAlarmTime,
     alarmSound,
     setAlarmSound,
+    ringDuration,
+    setRingDuration,
+    isAlarmRinging,
+    stopCurrentAlarm,
     attendanceStatus,
     notificationPermission,
     requestPermission,
+    isPushSubscribed,
+    isPushLoading,
+    enableMobilePush,
+    disableMobilePush,
+    sendTestPush,
     testAlarm,
   } = useAttendanceAlarm();
 
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const [testTriggered, setTestTriggered] = useState(false);
+  const [testPushStatus, setTestPushStatus] = useState(null);
+  const [isSendingTestPush, setIsSendingTestPush] = useState(false);
 
   const handleTakeAttendance = () => {
+    stopCurrentAlarm();
     onClose();
     navigate('/');
     setTimeout(() => {
@@ -49,14 +64,28 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
     }, 150);
   };
 
-  const handleTest = () => {
-    testAlarm();
-    setTestTriggered(true);
-    setTimeout(() => setTestTriggered(false), 3000);
+  const handleToggleMobilePush = async () => {
+    if (isPushSubscribed) {
+      await disableMobilePush();
+    } else {
+      const res = await enableMobilePush();
+      if (!res.success && res.message) {
+        alert(res.message);
+      }
+    }
   };
 
-  const handleRequestPermission = async () => {
-    await requestPermission();
+  const handleSendTestPush = async () => {
+    setIsSendingTestPush(true);
+    setTestPushStatus(null);
+    const res = await sendTestPush();
+    setIsSendingTestPush(false);
+    if (res.success) {
+      setTestPushStatus({ type: 'success', text: 'Mobile notification sent! Check your phone notification tray.' });
+    } else {
+      setTestPushStatus({ type: 'error', text: res.message || 'Failed to dispatch mobile notification.' });
+    }
+    setTimeout(() => setTestPushStatus(null), 5000);
   };
 
   const todayStr = new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', {
@@ -65,6 +94,22 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
     month: 'long',
     year: 'numeric',
   });
+
+  const QUICK_TIMES = [
+    { label: '08:00 AM', time: '08:00' },
+    { label: '09:00 AM', time: '09:00' },
+    { label: '09:30 AM', time: '09:30' },
+    { label: '10:00 AM', time: '10:00' },
+    { label: '11:00 AM', time: '11:00' },
+    { label: '06:00 PM', time: '18:00' },
+  ];
+
+  const RING_DURATIONS = [
+    { label: '10 sec', value: 10 },
+    { label: '30 sec', value: 30 },
+    { label: '1 min', value: 60 },
+    { label: 'Continuous', value: 0 },
+  ];
 
   return (
     <Modal
@@ -77,7 +122,7 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {t('alarm.modalTitle', 'Attendance Alarm & Reminder')}
+              {t('alarm.modalTitle', 'Attendance Alarm & Mobile Reminder')}
             </h3>
             <p className="text-[11px] font-normal text-slate-500 dark:text-slate-400">{todayStr}</p>
           </div>
@@ -86,6 +131,28 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
+        {/* Ringing Alarm Alert Banner (if ringing) */}
+        {isAlarmRinging && (
+          <div className="rounded-2xl bg-gradient-to-r from-rose-600 to-amber-600 text-white p-3.5 shadow-lg flex items-center justify-between gap-3 animate-pulse">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white text-lg">
+                ⏰
+              </span>
+              <div className="truncate">
+                <h4 className="font-extrabold text-sm leading-tight">Alarm Ringing!</h4>
+                <p className="text-xs text-amber-100 truncate">Time to mark craftsman attendance</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={stopCurrentAlarm}
+              className="px-3 py-1.5 rounded-xl bg-white text-rose-700 font-extrabold text-xs shadow-md hover:bg-rose-50 active:scale-95 transition cursor-pointer shrink-0 flex items-center gap-1.5"
+            >
+              <Square className="h-3.5 w-3.5 fill-current" /> Stop Alarm
+            </button>
+          </div>
+        )}
+
         {/* Today's Attendance Status Card */}
         <div
           className={`rounded-2xl p-4 border transition-all ${
@@ -139,6 +206,76 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
           )}
         </div>
 
+        {/* Mobile Background Notifications (Works Even When App is Closed) */}
+        <div className="rounded-2xl border-2 border-amber-500/40 dark:border-amber-500/30 bg-gradient-to-br from-amber-50/60 to-orange-50/30 dark:from-amber-950/30 dark:to-slate-900 p-4 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-white">
+                <Smartphone className="h-4 w-4" />
+              </div>
+              <div>
+                <span className="font-extrabold text-xs text-slate-900 dark:text-white block">
+                  Mobile Notification (App Closed)
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  Receive phone notifications even when the app is completely closed
+                </span>
+              </div>
+            </div>
+
+            {isPushSubscribed ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                <ShieldCheck className="h-3 w-3" /> Active
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                Off
+              </span>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-amber-200/60 dark:border-slate-800 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              disabled={isPushLoading}
+              onClick={handleToggleMobilePush}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                isPushSubscribed
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
+                  : 'bg-amber-600 hover:bg-amber-700 text-white active:scale-95'
+              }`}
+            >
+              {isPushLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              <span>{isPushSubscribed ? 'Subscribed on this Device' : '🔔 Enable Mobile Push Alerts'}</span>
+            </button>
+
+            {isPushSubscribed && (
+              <button
+                type="button"
+                disabled={isSendingTestPush}
+                onClick={handleSendTestPush}
+                title="Send a real test notification to this phone"
+                className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-amber-300 dark:border-slate-700 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-slate-700 transition flex items-center gap-1 cursor-pointer"
+              >
+                {isSendingTestPush ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+                <span>Test Phone Alert</span>
+              </button>
+            )}
+          </div>
+
+          {testPushStatus && (
+            <p
+              className={`text-[11px] font-medium p-2 rounded-lg ${
+                testPushStatus.type === 'success'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+              }`}
+            >
+              {testPushStatus.text}
+            </p>
+          )}
+        </div>
+
         {/* Daily Alarm Settings */}
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3.5 shadow-xs">
           <div className="flex items-center justify-between gap-2">
@@ -165,78 +302,100 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
 
           {alarmEnabled && (
             <>
-              {/* Alarm Time Picker */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
-                    {t('alarm.alarmTime', 'Alarm Time')}
-                  </label>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {t('alarm.alarmTimeSub', 'Reminder triggers at this time if attendance is pending')}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                  <input
-                    type="time"
-                    value={alarmTime}
-                    onChange={(e) => setAlarmTime(e.target.value)}
-                    className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 text-sm font-bold text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Sound Chime Toggle */}
-              <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <div>
-                  <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    {alarmSound ? <Volume2 className="h-3.5 w-3.5 text-amber-600" /> : <VolumeX className="h-3.5 w-3.5 text-slate-400" />}
-                    <span>{t('alarm.soundChime', 'Audio Alarm Chime')}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {t('alarm.soundChimeSub', 'Plays audible chime sound when alarm triggers')}
-                  </p>
-                </div>
-
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={alarmSound}
-                    onChange={(e) => setAlarmSound(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-amber-600"></div>
-                </label>
-              </div>
-
-              {/* System Notification Bar Status */}
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 border border-slate-200 dark:border-slate-700 text-xs">
-                <div className="flex items-center justify-between gap-2">
+              {/* Customized Alarm Time Selection */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="flex items-center justify-between gap-3">
                   <div>
-                    <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                      {t('alarm.osNotification', 'System Notification Bar Alerts')}
-                    </span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {notificationPermission === 'granted'
-                        ? t('alarm.osAllowed', '✓ Allowed in Android, Windows & macOS notification tray')
-                        : t('alarm.osPrompt', 'Allow to show alarms in your device notification bar')}
-                    </span>
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {t('alarm.alarmTime', 'Custom Alarm Time')}
+                    </label>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Choose exact time for mobile reminder and ringing
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <input
+                      type="time"
+                      value={alarmTime}
+                      onChange={(e) => setAlarmTime(e.target.value)}
+                      className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 text-sm font-bold text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Time Preset Chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {QUICK_TIMES.map((preset) => {
+                    const isSelected = alarmTime === preset.time;
+                    return (
+                      <button
+                        key={preset.time}
+                        type="button"
+                        onClick={() => setAlarmTime(preset.time)}
+                        className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition cursor-pointer border ${
+                          isSelected
+                            ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-amber-400'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Alarm Sound & Ring Duration */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      {alarmSound ? <Volume2 className="h-3.5 w-3.5 text-amber-600" /> : <VolumeX className="h-3.5 w-3.5 text-slate-400" />}
+                      <span>{t('alarm.soundChime', 'Audible Alarm Ring')}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Rings loudly when reminder triggers
+                    </p>
                   </div>
 
-                  {notificationPermission === 'granted' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-                      <ShieldCheck className="h-3 w-3" /> Enabled
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handleRequestPermission}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition cursor-pointer shrink-0"
-                    >
-                      {t('alarm.enableBtn', 'Enable')}
-                    </button>
-                  )}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={alarmSound}
+                      onChange={(e) => setAlarmSound(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-amber-600"></div>
+                  </label>
                 </div>
+
+                {alarmSound && (
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                      Ring Duration:
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {RING_DURATIONS.map((dur) => {
+                        const isSelected = ringDuration === dur.value;
+                        return (
+                          <button
+                            key={dur.value}
+                            type="button"
+                            onClick={() => setRingDuration(dur.value)}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition cursor-pointer border ${
+                              isSelected
+                                ? 'bg-amber-600 text-white border-amber-600'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-amber-400'
+                            }`}
+                          >
+                            {dur.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -244,22 +403,29 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
 
         {/* Action Controls */}
         <div className="flex items-center justify-between gap-2 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            icon={Play}
-            onClick={handleTest}
-            className="text-xs"
-          >
-            {testTriggered ? (
-              <span className="text-emerald-600 font-bold flex items-center gap-1">
-                <Check className="h-3 w-3" /> Alarm Tested!
-              </span>
-            ) : (
-              t('alarm.testAlarm', 'Test Alarm Now')
-            )}
-          </Button>
+          {isAlarmRinging ? (
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              icon={Square}
+              onClick={stopCurrentAlarm}
+              className="text-xs font-bold"
+            >
+              Stop Ringing
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={Play}
+              onClick={testAlarm}
+              className="text-xs"
+            >
+              Test Alarm Sound
+            </Button>
+          )}
 
           <Button type="button" variant="primary" size="sm" onClick={onClose}>
             {t('common.done', 'Done')}

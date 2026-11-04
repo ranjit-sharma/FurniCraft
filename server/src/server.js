@@ -4,6 +4,7 @@ import { createApp } from './app.js';
 import { connectDB, disconnectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { verifyEmailTransport } from './services/emailService.js';
+import { startAttendanceAlarmScheduler, stopAttendanceAlarmScheduler } from './services/attendanceAlarmScheduler.js';
 
 // Last-resort logging so a stray rejection never fails silently; uncaught exceptions leave the process unsafe, so exit and let the host restart it.
 process.on('unhandledRejection', (reason) => {
@@ -59,11 +60,15 @@ const startServer = async () => {
       console.log(` Environment: ${env.NODE_ENV}`);
       console.log(` Ready for Modern Furniture Workforce Operations`);
       console.log(`====================================================`);
+
+      // Start Attendance Alarm Background Scheduler
+      startAttendanceAlarmScheduler();
     });
 
     // 5. Graceful Shutdown Handlers (Proper zero-downtime order: stop HTTP/Sockets first, then close DB)
     const handleShutdown = async (signal) => {
       console.log(`\nReceived ${signal}. Shutting down gracefully...`);
+      stopAttendanceAlarmScheduler();
 
       // Set a hard timeout in case keep-alive connections do not drain
       const forceExitTimer = setTimeout(() => {

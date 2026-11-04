@@ -1,21 +1,29 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlarmClock, ArrowRight, X, Clock } from 'lucide-react';
+import { AlarmClock, ArrowRight, X, Clock, Square } from 'lucide-react';
 import { useAttendanceAlarm } from '../../context/AttendanceAlarmContext';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 
 export const AttendanceNotificationBar = () => {
   const { isThekedar } = useAuth();
-  const { attendanceStatus, isBannerDismissed, dismissBanner } = useAttendanceAlarm();
+  const {
+    attendanceStatus,
+    isBannerDismissed,
+    dismissBanner,
+    isAlarmRinging,
+    stopCurrentAlarm,
+  } = useAttendanceAlarm();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
-  if (!isThekedar || !attendanceStatus.isPending || isBannerDismissed) {
+  // If alarm is actively ringing, ALWAYS show the notification bar so user can stop or take action!
+  if (!isThekedar || (!isAlarmRinging && (!attendanceStatus.isPending || isBannerDismissed))) {
     return null;
   }
 
   const handleGoToAttendance = () => {
+    stopCurrentAlarm();
     navigate('/');
     // Smooth scroll down to the attendance roster if already on the page
     setTimeout(() => {
@@ -29,7 +37,11 @@ export const AttendanceNotificationBar = () => {
   return (
     <div
       role="alert"
-      className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] md:top-16 z-30 flex items-center justify-between gap-3 bg-gradient-to-r from-amber-600 via-amber-700 to-rose-700 text-white px-3 sm:px-4 py-2 text-xs font-semibold shadow-md animate-fade-in transition-all"
+      className={`sticky top-[calc(3.5rem+env(safe-area-inset-top))] md:top-16 z-30 flex items-center justify-between gap-3 text-white px-3 sm:px-4 py-2 text-xs font-semibold shadow-md animate-fade-in transition-all ${
+        isAlarmRinging
+          ? 'bg-gradient-to-r from-rose-700 via-amber-700 to-rose-700 animate-pulse'
+          : 'bg-gradient-to-r from-amber-600 via-amber-700 to-rose-700'
+      }`}
     >
       <div className="flex items-center gap-2.5 min-w-0">
         <span className="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white">
@@ -42,18 +54,31 @@ export const AttendanceNotificationBar = () => {
 
         <div className="truncate">
           <span className="font-extrabold uppercase tracking-wide text-amber-200 mr-1.5">
-            {t('alarm.barTitle', 'Attendance Alarm')}:
+            {isAlarmRinging ? '⏰ ATTENDANCE ALARM RINGING:' : `${t('alarm.barTitle', 'Attendance Alarm')}:`}
           </span>
           <span className="font-medium text-white">
-            {t(
-              'alarm.barPendingMsg',
-              `${attendanceStatus.unmarkedCount} craftsman waiting for today's attendance (${attendanceStatus.markedCount}/${attendanceStatus.totalWorkers} marked)`
-            )}
+            {isAlarmRinging
+              ? 'Reminder: Attendance is pending for today! Tap button below to mark.'
+              : t(
+                  'alarm.barPendingMsg',
+                  `${attendanceStatus.unmarkedCount} craftsman waiting for today's attendance (${attendanceStatus.markedCount}/${attendanceStatus.totalWorkers} marked)`
+                )}
           </span>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0">
+        {isAlarmRinging && (
+          <button
+            type="button"
+            onClick={stopCurrentAlarm}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-950/90 hover:bg-rose-950 text-white font-extrabold active:scale-95 transition shadow-xs cursor-pointer text-[11px]"
+          >
+            <Square className="h-3 w-3 fill-current" />
+            <span>Stop Ringing</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={handleGoToAttendance}
@@ -65,7 +90,10 @@ export const AttendanceNotificationBar = () => {
 
         <button
           type="button"
-          onClick={() => dismissBanner(2)}
+          onClick={() => {
+            stopCurrentAlarm();
+            dismissBanner(2);
+          }}
           title="Snooze reminder for 2 hours"
           className="p-1 rounded-lg hover:bg-white/10 text-amber-100 hover:text-white transition cursor-pointer"
           aria-label="Snooze attendance reminder"
@@ -75,7 +103,10 @@ export const AttendanceNotificationBar = () => {
 
         <button
           type="button"
-          onClick={() => dismissBanner(24)}
+          onClick={() => {
+            stopCurrentAlarm();
+            dismissBanner(24);
+          }}
           title="Dismiss reminder"
           className="p-1 rounded-lg hover:bg-white/10 text-amber-100 hover:text-white transition cursor-pointer"
           aria-label="Dismiss attendance reminder"
