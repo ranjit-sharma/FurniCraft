@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Trash2,
   Eye,
+  User,
 } from 'lucide-react';
 
 export const ThekedarsPage = () => {
@@ -283,7 +284,7 @@ export const ThekedarsPage = () => {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 font-bold text-xs shadow-xs">
-                        <i className="fa-solid fa-user"></i>
+                        <User className="h-4 w-4" />
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white text-sm">{th.name}</div>
@@ -394,7 +395,7 @@ export const ThekedarsPage = () => {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2.5">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-400 text-xs shadow-xs">
-                          <i className="fa-solid fa-user"></i>
+                          <User className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-slate-900 dark:text-white">{th.name}</div>

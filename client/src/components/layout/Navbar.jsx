@@ -3,7 +3,7 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { HelpCenterModal } from '../common/HelpCenterModal';
@@ -132,7 +132,7 @@ export const Navbar = () => {
                   user.role
                 )} font-black text-sm text-white shadow-inner`}
               >
-                <i className="fa-solid fa-user text-sm md:text-base"></i>
+                <User className="h-4 w-4 md:h-5 md:w-5 text-white" />
               </div>
             </button>
 
@@ -147,7 +147,7 @@ export const Navbar = () => {
                       user.role
                     )} text-lg font-black text-white shadow-md ring-2 ring-white dark:ring-slate-700`}
                   >
-                    <i className="fa-solid fa-user text-base sm:text-lg"></i>
+                    <User className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">

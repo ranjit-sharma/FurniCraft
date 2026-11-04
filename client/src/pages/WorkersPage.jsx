@@ -28,6 +28,7 @@ import {
   Check,
   X,
   CalendarOff,
+  User,
 } from 'lucide-react';
 
 /**
@@ -807,7 +808,7 @@ export const WorkersPage = () => {
 
                 <div className="mt-3 flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold text-sm">
-                    <i className="fa-solid fa-user"></i>
+                    <User className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{w.userId?.name || 'Worker'}</h3>
@@ -1098,7 +1099,7 @@ export const WorkersPage = () => {
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-amber-50 via-amber-100/40 to-slate-50 dark:from-slate-800 dark:via-amber-950/40 dark:to-slate-800 p-4 border border-amber-200/60 dark:border-amber-900/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white font-black text-lg shadow-sm">
-                  <i className="fa-solid fa-user"></i>
+                  <User className="h-6 w-6" />
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">

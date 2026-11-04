@@ -17,6 +17,7 @@ import {
   Filter,
   Activity,
   CheckCircle2,
+  User,
 } from 'lucide-react';
 
 export const MembersOverviewPage = () => {
@@ -356,7 +357,7 @@ export const MembersOverviewPage = () => {
                             : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                         }`}
                       >
-                        <i className="fa-solid fa-user text-xs"></i>
+                        <User className="h-4 w-4" />
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
@@ -443,7 +444,7 @@ export const MembersOverviewPage = () => {
                               : 'bg-blue-100 dark:bg-blue-900/60 text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
                           }`}
                         >
-                          <i className="fa-solid fa-user text-xs"></i>
+                          <User className="h-4 w-4" />
                         </div>
                         <div>
                           <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm flex items-center gap-1.5">
