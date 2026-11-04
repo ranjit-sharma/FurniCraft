@@ -369,3 +369,201 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
 
   return { success: true, mode: 'simulated' };
 };
+
+/**
+ * Dispatch Support / Helpdesk Ticket Email to the official address furnicraft.erp@gmail.com
+ */
+export const sendSupportTicketEmail = async ({
+  ticketNumber,
+  userName,
+  userEmail,
+  userPhone,
+  userRole,
+  category,
+  priority,
+  subject,
+  message,
+  createdAt,
+}) => {
+  const transporter = getEmailTransporter();
+  const smtpUser = process.env.SMTP_USER || 'furnicraft.erp@gmail.com';
+  const supportEmail = 'furnicraft.erp@gmail.com';
+
+  const categoryLabels = {
+    ATTENDANCE_WAGES: 'Attendance & Wages (Haziri aur Dehadi)',
+    PROJECT_SITE: 'Project & Site Kaam',
+    PAYMENT_BILL: 'Payment & Advance Bills',
+    TOOL_EQUIPMENT: 'Tools & Machinery',
+    ACCOUNT_LOGIN: 'Account & Login Access',
+    GENERAL_INQUIRY: 'General Inquiry / Sawal',
+    OTHER: 'Other Request',
+  };
+  const categoryName = categoryLabels[category] || category;
+
+  const emailSubject = `[FurniCraft Support] ${ticketNumber}: ${subject} [${priority || 'MEDIUM'}]`;
+
+  const formattedDate = new Date(createdAt || Date.now()).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+
+  const attachments = [];
+  let logoCid = null;
+  if (fs.existsSync(LOGO_PATH)) {
+    logoCid = 'furnicraftlogo@furnicraft.erp';
+    attachments.push({
+      filename: 'furnicraft-logo.png',
+      path: LOGO_PATH,
+      cid: logoCid,
+    });
+  }
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>New FurniCraft Support Ticket</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 28px 24px; text-align: center; color: #ffffff; }
+        .logo-container { margin-bottom: 12px; text-align: center; }
+        .logo-img { height: 48px; max-width: 200px; object-fit: contain; display: inline-block; }
+        .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; }
+        .brand-name-furni { color: #d97706; }
+        .brand-name-craft { color: #60a5fa; }
+        .brand-badge { background: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #ffffff; margin-left: 8px; vertical-align: middle; }
+        .badge-priority { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-top: 8px; }
+        .p-URGENT { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
+        .p-HIGH { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+        .p-MEDIUM { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .p-LOW { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+        .content { padding: 28px 24px; }
+        .ticket-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+        .message-box { background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #d97706; border-radius: 8px; padding: 16px; margin: 20px 0; }
+        .message-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #92400e; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .message-text { font-size: 14px; line-height: 1.6; color: #1e293b; white-space: pre-wrap; word-break: break-word; }
+        .footer { padding: 18px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo-container">
+            ${logoCid 
+              ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
+              : `<span style="font-size: 28px; font-weight: 900; color: #fff;">FurniCraft</span>`
+            }
+          </div>
+          <h1 class="brand-title">
+            <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
+          </h1>
+          <div>
+            <span class="badge-priority p-${priority || 'MEDIUM'}">${priority || 'MEDIUM'} PRIORITY</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
+            ${subject}
+          </div>
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 20px;">
+            Ticket Number: <strong style="color: #0f172a;">${ticketNumber}</strong> • Submitted: ${formattedDate}
+          </div>
+
+          <div class="ticket-banner">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Submitted By:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userName} (${userRole})</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Phone:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userPhone || 'Not provided'}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Email:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userEmail || 'Not provided'}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Category:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${categoryName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Priority Level:</td>
+                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${priority}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="message-box">
+            <div class="message-title">Issue Description / Details:</div>
+            <div class="message-text">${message}</div>
+          </div>
+        </div>
+
+        <div class="footer">
+          This is an official automated helpdesk notification from <strong>FurniCraft ERP</strong>.<br/>
+          Ticket: <strong>${ticketNumber}</strong> | Delivered to: <strong>${supportEmail}</strong>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+[FurniCraft ERP Support] New Support Ticket ${ticketNumber}
+Priority: ${priority}
+Submitted by: ${userName} (${userRole})
+Contact Phone: ${userPhone || 'N/A'}
+Contact Email: ${userEmail || 'N/A'}
+Category: ${categoryName}
+Date: ${formattedDate}
+
+Subject: ${subject}
+
+Description / Message:
+${message}
+  `.trim();
+
+  let mailResult = { success: false, mode: 'none' };
+
+  if (transporter) {
+    try {
+      const fromAddress = `"FurniCraft Helpdesk" <${smtpUser}>`;
+      const mailOptions = {
+        from: fromAddress,
+        to: supportEmail,
+        replyTo: userEmail && userEmail.includes('@') ? userEmail : smtpUser,
+        subject: emailSubject,
+        text: textContent,
+        html: htmlContent,
+      };
+      if (attachments.length > 0) {
+        mailOptions.attachments = attachments;
+      }
+
+      if (userEmail && userEmail.includes('@') && userEmail.toLowerCase() !== supportEmail.toLowerCase()) {
+        mailOptions.cc = userEmail;
+      }
+
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`[EmailService] Support ticket email delivered to ${supportEmail}: ${info.messageId}`);
+      mailResult = {
+        success: true,
+        mode: 'smtp',
+        messageId: info.messageId,
+      };
+    } catch (err) {
+      console.error(`[EmailService] Support ticket SMTP delivery failed to ${supportEmail}:`, err.message);
+      mailResult = { success: false, error: err.message };
+    }
+  } else {
+    console.log(`[EmailService - Simulated Support Email] Delivered to: ${supportEmail} | Ticket: ${ticketNumber}`);
+    mailResult = { success: true, mode: 'simulated' };
+  }
+
+  return mailResult;
+};

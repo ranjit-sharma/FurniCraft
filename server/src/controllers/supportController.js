@@ -1,5 +1,6 @@
 import { SupportTicket, AuditLog, Notification } from '../models/index.js';
 import { BadRequestError, NotFoundError } from '../utils/errors.js';
+import { sendSupportTicketEmail } from '../services/emailService.js';
 
 export const supportController = {
   /**
@@ -9,7 +10,7 @@ export const supportController = {
   async createTicket(req, res, next) {
     try {
       const user = req.user;
-      const { category, priority, subject, message } = req.body;
+      const { category, priority, subject, message, contactEmail, contactPhone } = req.body;
 
       if (!subject || !subject.trim()) {
         throw new BadRequestError('Subject is required');
@@ -43,12 +44,15 @@ export const supportController = {
       const validPriorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
       const selectedPriority = validPriorities.includes(priority) ? priority : 'MEDIUM';
 
+      const userEmail = (contactEmail || user.email || '').trim();
+      const userPhone = (contactPhone || user.phone || '').trim();
+
       const ticket = await SupportTicket.create({
         ticketNumber,
         userId: user._id,
         userName: user.name || 'FurniCraft User',
-        userEmail: user.email || '',
-        userPhone: user.phone || '',
+        userEmail,
+        userPhone,
         userRole: user.role || 'USER',
         category: selectedCategory,
         priority: selectedPriority,
@@ -56,6 +60,25 @@ export const supportController = {
         message: message.trim(),
         status: 'OPEN',
       });
+
+      // Dispatch support notification email to furnicraft.erp@gmail.com
+      let emailResult = null;
+      try {
+        emailResult = await sendSupportTicketEmail({
+          ticketNumber,
+          userName: ticket.userName,
+          userEmail: ticket.userEmail,
+          userPhone: ticket.userPhone,
+          userRole: ticket.userRole,
+          category: ticket.category,
+          priority: ticket.priority,
+          subject: ticket.subject,
+          message: ticket.message,
+          createdAt: ticket.createdAt,
+        });
+      } catch (emailErr) {
+        console.error('[Support] Non-blocking email dispatch failure to furnicraft.erp@gmail.com:', emailErr.message);
+      }
 
       // Record AuditLog
       try {
@@ -96,8 +119,9 @@ export const supportController = {
 
       return res.status(201).json({
         success: true,
-        message: 'Your help request has been submitted successfully.',
+        message: 'Your help request has been submitted successfully and delivered to furnicraft.erp@gmail.com.',
         ticket,
+        emailDispatched: emailResult?.success ?? false,
       });
     } catch (error) {
       next(error);

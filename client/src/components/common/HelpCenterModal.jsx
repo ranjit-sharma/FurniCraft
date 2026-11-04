@@ -29,9 +29,17 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   const [priority, setPriority] = useState('MEDIUM');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [contactEmail, setContactEmail] = useState(user?.email || '');
+  const [contactPhone, setContactPhone] = useState(user?.phone || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [submittedTicket, setSubmittedTicket] = useState(null);
+
+  // Update contact fields if user profile updates
+  useEffect(() => {
+    if (user?.email && !contactEmail) setContactEmail(user.email);
+    if (user?.phone && !contactPhone) setContactPhone(user.phone);
+  }, [user]);
 
   // Ticket history
   const [myTickets, setMyTickets] = useState([]);
@@ -85,6 +93,8 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
         priority,
         subject: subject.trim(),
         message: message.trim(),
+        contactEmail: contactEmail.trim(),
+        contactPhone: contactPhone.trim(),
       });
 
       if (res.data?.ticket) {
@@ -378,6 +388,23 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   />
                   <div className="mt-1 text-right text-[10px] text-slate-400">
                     {message.length} / 2000
+                  </div>
+                </div>
+
+                {/* Contact Email Field */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {t('help.contactEmail', 'Reply Contact Email (Optional)')}
+                  </label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder={user?.email || 'e.g. craftsman@furnicraft.com'}
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+                  />
+                  <div className="mt-1 text-[10px] text-slate-400 font-medium">
+                    {t('help.dispatchNotice', 'Your request will be delivered directly to furnicraft.erp@gmail.com')}
                   </div>
                 </div>
 
