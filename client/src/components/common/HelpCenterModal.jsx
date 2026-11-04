@@ -17,7 +17,6 @@ import {
   FileText,
   RotateCcw,
   Sparkles,
-  Mail,
 } from 'lucide-react';
 
 export const HelpCenterModal = ({ isOpen, onClose }) => {
@@ -262,22 +261,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   </div>
                 )}
 
-                {/* Requester Summary Card */}
-                <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-slate-50 px-3 py-2 text-xs">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-800 font-bold text-xs">
-                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <div className="truncate">
-                      <span className="font-bold text-slate-900">{user?.name}</span>
-                      <span className="ml-1.5 text-[11px] text-slate-500 font-medium">({user?.role})</span>
-                    </div>
-                  </div>
-                  <div className="text-[11px] font-semibold text-slate-500 shrink-0">
-                    {user?.email || user?.phone}
-                  </div>
-                </div>
-
                 {/* Category Selection */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
@@ -375,19 +358,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   <div className="mt-1 text-right text-[10px] text-slate-400">
                     {message.length} / 2000
                   </div>
-                </div>
-
-                {/* Automated Profile Email Notice */}
-                <div className="rounded-xl bg-slate-50 border border-slate-200/90 px-3 py-2 text-xs flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-slate-600 font-medium text-[11px]">
-                    <Mail className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                    <span>{t('help.dispatchNotice', 'Your request will be delivered directly to furnicraft.erp@gmail.com')}</span>
-                  </div>
-                  {user?.email && (
-                    <span className="text-[10px] font-semibold text-slate-600 bg-white px-2 py-0.5 rounded-lg border border-slate-200 shrink-0">
-                      {user.email}
-                    </span>
-                  )}
                 </div>
 
                 {/* Form Actions */}
