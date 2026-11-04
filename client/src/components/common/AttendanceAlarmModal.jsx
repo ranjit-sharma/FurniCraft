@@ -39,11 +39,17 @@ export const AttendanceAlarmModal = ({ isOpen, onClose }) => {
   const handleTest = () => {
     testAlarm();
     setTestTriggered(true);
+    if (isPushSubscribed) {
+      sendTestPush().catch(() => {});
+    }
     setTimeout(() => setTestTriggered(false), 3500);
   };
 
   const handleRequestPermission = async () => {
-    await requestPermission();
+    const res = await requestPermission();
+    if (res === 'granted') {
+      await enableMobilePush();
+    }
   };
 
   const todayStr = new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', {

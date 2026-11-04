@@ -89,6 +89,9 @@ export const sendAttendanceAlarmPush = async (thekedarId, { unmarkedCount, total
     tag: 'furnicraft-attendance-alarm',
     timestamp: Date.now(),
     requireInteraction: true,
+    sound: '/alarm.mp3',
+    vibrate: [600, 200, 600, 200, 600, 200, 1000],
+    silent: false,
     data: {
       url: '/?openAttendance=true',
       unmarkedCount,

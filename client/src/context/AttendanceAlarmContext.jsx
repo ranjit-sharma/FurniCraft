@@ -186,14 +186,26 @@ export const AttendanceAlarmProvider = ({ children }) => {
     return false;
   });
 
-  // Check existing push subscription on mount
+  // Check existing push subscription and auto-subscribe if permission already granted
   useEffect(() => {
     if (isThekedar && isPushSupported()) {
       getPushSubscription().then((sub) => {
-        setIsPushSubscribed(Boolean(sub));
+        if (sub) {
+          setIsPushSubscribed(true);
+        } else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          // Auto-subscribe device so closed application notifications work automatically
+          subscribeToPushNotifications({
+            alarmTime,
+            alarmEnabled,
+            alarmSound,
+            ringDuration,
+          })
+            .then(() => setIsPushSubscribed(true))
+            .catch((err) => console.warn('[Push] Auto-subscribe error:', err));
+        }
       });
     }
-  }, [isThekedar]);
+  }, [isThekedar, alarmTime, alarmEnabled, alarmSound, ringDuration]);
 
   // Sync settings with backend on mount
   useEffect(() => {

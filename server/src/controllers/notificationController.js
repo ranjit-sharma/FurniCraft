@@ -165,6 +165,9 @@ export const testPushNotification = async (req, res) => {
       tag: 'furnicraft-test-push',
       timestamp: Date.now(),
       requireInteraction: true,
+      sound: '/alarm.mp3',
+      vibrate: [600, 200, 600, 200, 600, 200, 1000],
+      silent: false,
       data: {
         url: '/?openAttendance=true',
         unmarkedCount,

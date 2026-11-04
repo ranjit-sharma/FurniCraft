@@ -28,7 +28,9 @@ self.addEventListener('push', (event) => {
     data: data.data || { url: '/?openAttendance=true' },
     renotify: true,
     requireInteraction: true,
-    vibrate: [300, 100, 300, 100, 300, 100, 400],
+    silent: false,
+    sound: '/alarm.mp3',
+    vibrate: [600, 200, 600, 200, 600, 200, 1000, 300, 600],
     actions: data.actions || [
       { action: 'open', title: '📋 Mark Attendance' },
       { action: 'dismiss', title: 'Dismiss' },
