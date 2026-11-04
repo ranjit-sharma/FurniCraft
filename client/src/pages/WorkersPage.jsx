@@ -1125,10 +1125,7 @@ export const WorkersPage = () => {
 
             {/* Actions (each closes this sheet before opening its own form) */}
             {(isOwner || isThekedar) && (
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                <Button variant="outline" className="justify-center border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200" icon={Calendar} onClick={() => { setActivityModalOpen(false); handleOpenMarkAttendance(activityWorker); }}>
-                  {t('workers.markAttendance', 'Attendance')}
-                </Button>
+              <div className="flex flex-wrap gap-2">
                 {isThekedar && (
                   <Button variant="success" className="justify-center" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
                     {t('thekedar.payWorkerNet', 'Pay Net')}
