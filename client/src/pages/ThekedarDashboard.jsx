@@ -107,7 +107,7 @@ export const ThekedarDashboard = () => {
         name: newWorkerName.trim(),
         phone: newWorkerPhone.trim(),
         trade: newWorkerTrade || 'Mistry',
-        defaultDailyWage: parseFloat(newWorkerWage) || 750,
+        defaultDailyWage: newWorkerWage !== '' && !isNaN(Number(newWorkerWage)) ? Number(newWorkerWage) : 750,
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
       setMessage({ type: 'success', text: `Craftsman ${newWorkerName} added with ID ${generatedCode}!` });
@@ -434,10 +434,11 @@ export const ThekedarDashboard = () => {
               <input
                 type="number"
                 min="0"
-                step="50"
+                step="any"
                 required
                 value={newWorkerWage}
                 onChange={(e) => setNewWorkerWage(e.target.value)}
+                placeholder="Custom rate e.g. 754"
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               />
             </div>

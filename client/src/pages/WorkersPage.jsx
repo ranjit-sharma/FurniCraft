@@ -257,7 +257,7 @@ export const WorkersPage = () => {
         name: workerName.trim(),
         phone: workerPhone.trim(),
         trade: workerTrade || 'Mistry',
-        defaultDailyWage: parseFloat(defaultWage) || 750,
+        defaultDailyWage: defaultWage !== '' && !isNaN(Number(defaultWage)) ? Number(defaultWage) : 750,
         ...(isOwner && selectedThekedarId ? { thekedarId: selectedThekedarId } : {}),
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
@@ -469,7 +469,7 @@ export const WorkersPage = () => {
         name: editName.trim(),
         phone: editPhone.trim(),
         trade: editTrade,
-        defaultDailyWage: parseFloat(editWage) || undefined,
+        defaultDailyWage: editWage !== '' && !isNaN(Number(editWage)) ? Number(editWage) : undefined,
       });
       setMessage({ type: 'success', text: `Craftsman details for ${editName} updated successfully!` });
       setEditWorkerModalOpen(false);
@@ -879,11 +879,11 @@ export const WorkersPage = () => {
             <input
               type="number"
               min="0"
-              step="50"
+              step="any"
               required
               value={defaultWage}
               onChange={(e) => setDefaultWage(e.target.value)}
-              placeholder="750"
+              placeholder="Custom rate e.g. 754"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
@@ -960,14 +960,15 @@ export const WorkersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Wage (₹/day)</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Wage (₹/day) *</label>
             <input
               type="number"
               min="0"
-              step="50"
+              step="any"
               required
               value={editWage}
               onChange={(e) => setEditWage(e.target.value)}
+              placeholder="Custom rate e.g. 754"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
