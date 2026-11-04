@@ -53,7 +53,7 @@ export const getThekedarDashboardData = async (thekedarId, date) => {
         { $match: { thekedarId, isReversed: false, transactionDate: { $gte: startOfMonth }, category: { $in: [FINANCIAL_CATEGORIES.SALARY_PAYMENT, FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT] } } },
         { $group: { _id: '$category', amount: { $sum: '$amount' } } },
       ]),
-      FinancialTransaction.find({ thekedarId, isReversed: false }).sort({ transactionDate: -1 }).limit(6).populate('workerId', 'name').lean(),
+      FinancialTransaction.find({ thekedarId, isReversed: false }).sort({ transactionDate: -1 }).limit(4).populate('workerId', 'name').lean(),
     ]);
 
   const unpaidMap = new Map(unpaidByWorker.map((u) => [u._id.toString(), u.amount]));
@@ -220,7 +220,7 @@ export const getOwnerDashboardData = async () => {
     AuditLog.find({ action: { $nin: ['USER_LOGIN', 'APP_VISIT'] } }).sort({ createdAt: -1 }).limit(6).lean(),
     FinancialTransaction.find({ isReversed: false })
       .sort({ transactionDate: -1 })
-      .limit(8)
+      .limit(4)
       .populate('workerId', 'name')
       .populate('thekedarId', 'name')
       .lean(),

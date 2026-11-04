@@ -209,7 +209,7 @@ export const OwnerDashboard = () => {
             <p className="py-4 text-center text-sm text-slate-500">{t('transactionSearch.noFound', 'No transactions recorded yet.')}</p>
           ) : (
             <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
-              {transactions.map((tx) => {
+              {transactions.slice(0, 4).map((tx) => {
                 const isAdvance = tx.category === 'ADVANCE_DISBURSEMENT';
                 return (
                   <li key={tx._id} className="flex items-center gap-3 px-1 py-3">

@@ -275,7 +275,7 @@ export const ThekedarDashboard = () => {
             </div>
           ) : (
             <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
-              {projects.map((p) => (
+              {projects.slice(0, 4).map((p) => (
                 <li key={p._id}>
                   <Link to={`/projects/${p._id}`} className="flex items-center gap-3 px-1 py-3 active:bg-slate-50 dark:active:bg-slate-800/60">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
@@ -308,7 +308,7 @@ export const ThekedarDashboard = () => {
             <p className="py-4 text-center text-sm text-slate-500">{t('thekedarDash.noPayments', 'No payments yet. Pay workers from the Workers tab.')}</p>
           ) : (
             <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800">
-              {transactions.map((tx) => {
+              {transactions.slice(0, 4).map((tx) => {
                 const isAdvance = tx.category === 'ADVANCE_DISBURSEMENT';
                 return (
                   <li key={tx._id} className="flex items-center gap-3 px-1 py-3">
