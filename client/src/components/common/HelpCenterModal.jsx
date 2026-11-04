@@ -17,6 +17,11 @@ import {
   FileText,
   RotateCcw,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Mail,
+  User,
+  Phone,
 } from 'lucide-react';
 
 export const HelpCenterModal = ({ isOpen, onClose }) => {
@@ -32,13 +37,18 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   const [error, setError] = useState(null);
   const [submittedTicket, setSubmittedTicket] = useState(null);
 
-  // Ticket history
+  // Ticket history & detail expansion
   const [myTickets, setMyTickets] = useState([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
+  const [expandedTicketId, setExpandedTicketId] = useState(null);
 
-  // Fetch past tickets when tab switches to 'history' or on mount
+  const toggleExpand = (id) => {
+    setExpandedTicketId((prev) => (prev === id ? null : id));
+  };
+
+  // Fetch past tickets whenever modal is open or tab changes
   useEffect(() => {
-    if (isOpen && activeTab === 'history') {
+    if (isOpen) {
       fetchMyTickets();
     }
   }, [isOpen, activeTab]);
@@ -145,6 +155,29 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
         return 'bg-slate-100 text-slate-700 border-slate-300';
       default:
         return 'bg-slate-100 text-slate-700 border-slate-200';
+    }
+  };
+
+  const getCategoryLabel = (catId) => {
+    const match = categories.find((c) => c.id === catId);
+    if (match) return match.label;
+    switch (catId) {
+      case 'ATTENDANCE_WAGES': return t('help.catAttendance', 'Attendance & Wages');
+      case 'PAYMENT_BILL': return t('help.catPayment', 'Payment & Advance');
+      case 'PROJECT_SITE': return t('help.catProject', 'Project & Site');
+      case 'ACCOUNT_LOGIN': return t('help.catAccount', 'Account & Access');
+      case 'GENERAL_INQUIRY': return t('help.catGeneral', 'General Inquiry');
+      default: return catId ? catId.replace(/_/g, ' ') : 'General';
+    }
+  };
+
+  const getPriorityLabel = (pri) => {
+    switch (pri) {
+      case 'LOW': return t('help.priorityLow', 'Low');
+      case 'MEDIUM': return t('help.priorityMedium', 'Normal');
+      case 'HIGH': return t('help.priorityHigh', 'High');
+      case 'URGENT': return t('help.priorityUrgent', 'Urgent');
+      default: return pri || 'Normal';
     }
   };
 
@@ -412,51 +445,164 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                 </button>
               </div>
             ) : (
-              <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-1">
-                {myTickets.map((tkt) => (
-                  <div
-                    key={tkt._id}
-                    className="rounded-xl border border-slate-200/90 bg-white p-3 text-xs transition hover:border-slate-300"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-mono text-[11px] font-black text-amber-700">
-                          {tkt.ticketNumber}
-                        </span>
-                        <span className="rounded-md border bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 uppercase">
-                          {tkt.category.replace('_', ' ')}
+              <div className="max-h-[50vh] overflow-y-auto space-y-2.5 pr-1">
+                {myTickets.map((tkt) => {
+                  const isExpanded = expandedTicketId === tkt._id;
+                  const categoryLabel = getCategoryLabel(tkt.category);
+                  const priorityLabel = getPriorityLabel(tkt.priority);
+
+                  return (
+                    <div
+                      key={tkt._id}
+                      className="rounded-2xl border border-slate-200/90 bg-white p-3.5 text-xs transition shadow-2xs hover:border-slate-300"
+                    >
+                      {/* Ticket Header */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+                          <span className="font-mono text-xs font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200">
+                            {tkt.ticketNumber}
+                          </span>
+                          <span className="rounded-md border bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+                            {categoryLabel}
+                          </span>
+                        </div>
+                        <span
+                          className={`rounded-md border px-2 py-0.5 text-[10px] font-bold tracking-wide ${getStatusBadge(
+                            tkt.status
+                          )}`}
+                        >
+                          {tkt.status}
                         </span>
                       </div>
-                      <span
-                        className={`rounded-md border px-2 py-0.5 text-[10px] font-bold ${getStatusBadge(
-                          tkt.status
-                        )}`}
-                      >
-                        {tkt.status}
-                      </span>
-                    </div>
 
-                    <h5 className="font-bold text-slate-900 mb-1">{tkt.subject}</h5>
-                    <p className="text-slate-600 leading-relaxed text-[11px] line-clamp-3">
-                      {tkt.message}
-                    </p>
+                      {/* Subject */}
+                      <h5 className="font-bold text-slate-900 text-sm mb-1.5 leading-snug">
+                        {tkt.subject}
+                      </h5>
 
-                    <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[10px] text-slate-400">
-                      <span>
-                        {new Date(tkt.createdAt).toLocaleDateString('en-IN', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                      <span className="font-semibold text-slate-500">
-                        {t('help.priority', 'Priority')}: {tkt.priority}
-                      </span>
+                      {/* Profile / Requester Details Row (Always visible) */}
+                      <div className="flex flex-wrap items-center gap-1.5 mb-2 text-[11px]">
+                        {(tkt.userEmail || user?.email) && (
+                          <span className="inline-flex items-center gap-1 font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200">
+                            <Mail className="h-3 w-3 text-amber-600 shrink-0" />
+                            <span>{tkt.userEmail || user?.email}</span>
+                          </span>
+                        )}
+                        {(tkt.userName || user?.name) && (
+                          <span className="inline-flex items-center gap-1 text-slate-600 font-medium bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
+                            <User className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span>{tkt.userName || user?.name} ({tkt.userRole || user?.role})</span>
+                          </span>
+                        )}
+                        {(tkt.userPhone || user?.phone) && (
+                          <span className="inline-flex items-center gap-1 text-slate-500 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100">
+                            <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                            <span>{tkt.userPhone || user?.phone}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Message / Query Description */}
+                      <p className={`text-slate-600 leading-relaxed text-xs ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}>
+                        {tkt.message}
+                      </p>
+
+                      {/* Expandable Full Details Section */}
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 space-y-2.5 animate-fade-in bg-slate-50/70 p-3 rounded-xl border border-slate-200/80">
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                {t('help.ticketId', 'Ticket ID')}
+                              </span>
+                              <span className="font-mono font-bold text-slate-800">{tkt.ticketNumber}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                {t('help.priority', 'Priority')}
+                              </span>
+                              <span className="font-bold text-slate-800">{priorityLabel}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                {t('help.selectCategory', 'Category')}
+                              </span>
+                              <span className="font-medium text-slate-800">{categoryLabel}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                Submitted At
+                              </span>
+                              <span className="text-slate-700 font-medium">
+                                {new Date(tkt.createdAt).toLocaleString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Profile Information Block */}
+                          <div className="rounded-lg bg-white p-2.5 border border-slate-200/80 text-[11px] space-y-1">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                              Requester Profile Information
+                            </span>
+                            <div className="flex flex-col gap-0.5 text-slate-700">
+                              <div><strong>Name:</strong> {tkt.userName || user?.name || 'N/A'} ({tkt.userRole || user?.role})</div>
+                              <div><strong>Email:</strong> {tkt.userEmail || user?.email || 'N/A'}</div>
+                              {Boolean(tkt.userPhone || user?.phone) && (
+                                <div><strong>Phone:</strong> {tkt.userPhone || user?.phone}</div>
+                              )}
+                              <div className="text-[10px] text-amber-700 font-medium mt-0.5">
+                                Notified support desk: furnicraft.erp@gmail.com
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Support Team Response Notes */}
+                          {tkt.adminNotes ? (
+                            <div className="rounded-lg bg-emerald-50 p-2.5 border border-emerald-200 text-[11px] text-emerald-900">
+                              <span className="font-bold block mb-0.5">Support Team Response:</span>
+                              <p className="whitespace-pre-wrap">{tkt.adminNotes}</p>
+                            </div>
+                          ) : (
+                            <div className="text-[10px] text-slate-400 italic">
+                              Status: {tkt.status === 'OPEN' ? 'Open — Awaiting review by FurniCraft support desk' : tkt.status}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Card Footer */}
+                      <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[10px] text-slate-400">
+                        <span>
+                          {new Date(tkt.createdAt).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(tkt._id)}
+                          className="flex items-center gap-1 font-bold text-amber-700 hover:text-amber-800 cursor-pointer"
+                        >
+                          <span>{isExpanded ? 'Hide Details' : 'View Full Details'}</span>
+                          {isExpanded ? (
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

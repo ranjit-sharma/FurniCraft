@@ -134,9 +134,15 @@ export const supportController = {
    */
   async getMyTickets(req, res, next) {
     try {
-      const tickets = await SupportTicket.find({ userId: req.user._id })
+      const orConditions = [{ userId: req.user._id }];
+      if (req.user.email) {
+        orConditions.push({ userEmail: req.user.email });
+        orConditions.push({ userEmail: req.user.email.toLowerCase() });
+      }
+
+      const tickets = await SupportTicket.find({ $or: orConditions })
         .sort({ createdAt: -1 })
-        .limit(50)
+        .limit(100)
         .lean();
 
       return res.status(200).json({
