@@ -13,23 +13,25 @@ async function restoreTestUsers() {
     process.exit(1);
   }
 
-  // 1. Owner Vikramaditya Sharma
-  let owner = await User.findOne({ email: 'owner@furnicraft.com' });
+  // 1. Owner Ranjit Sharma
+  let owner = await User.findOne({ email: 'ranjitsharma7482@gmail.com' });
   if (!owner) {
     owner = await User.create({
-      name: 'Vikramaditya Sharma',
-      email: 'owner@furnicraft.com',
-      phone: '+91 98765 43210',
-      password: 'FurniOwner@2026',
+      name: 'Ranjit Sharma',
+      email: 'ranjitsharma7482@gmail.com',
+      phone: '7482869029',
+      password: 'Ranjit@3948',
       role: ROLES.OWNER,
       status: USER_STATUS.ACTIVE,
     });
-    console.log('[Restore] Created owner@furnicraft.com');
+    console.log('[Restore] Created ranjitsharma7482@gmail.com');
   } else {
-    owner.password = 'FurniOwner@2026';
+    owner.name = 'Ranjit Sharma';
+    owner.phone = '7482869029';
+    owner.password = 'Ranjit@3948';
     owner.status = USER_STATUS.ACTIVE;
     await owner.save();
-    console.log('[Restore] Updated owner@furnicraft.com password and status');
+    console.log('[Restore] Updated ranjitsharma7482@gmail.com password and status');
   }
 
   // 2. Worker Ramesh
