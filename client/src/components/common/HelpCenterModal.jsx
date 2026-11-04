@@ -22,6 +22,8 @@ import {
   Mail,
   User,
   Phone,
+  Copy,
+  Check,
 } from 'lucide-react';
 
 export const HelpCenterModal = ({ isOpen, onClose }) => {
@@ -36,6 +38,7 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [submittedTicket, setSubmittedTicket] = useState(null);
+  const [copiedTicket, setCopiedTicket] = useState(false);
 
   // Ticket history & detail expansion
   const [myTickets, setMyTickets] = useState([]);
@@ -243,34 +246,94 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
         {activeTab === 'new' && (
           <div>
             {submittedTicket ? (
-              <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/40 p-5 text-center animate-fade-in">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
-                  <CheckCircle2 className="h-7 w-7" />
+              <div className="rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50/90 via-teal-50/50 to-amber-50/40 p-6 text-center animate-page-in shadow-xs">
+                {/* Expanding checkmark ripple */}
+                <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-25 duration-1000" />
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 transform transition-transform duration-300 hover:scale-105">
+                    <CheckCircle2 className="h-8 w-8 animate-scale-in" />
+                  </div>
                 </div>
-                <h4 className="mt-3 text-base font-black text-emerald-950">
-                  {t('help.successTitle', 'Request Submitted Successfully!')}
-                </h4>
-                <p className="mt-1 text-xs text-emerald-800">
+
+                {/* Animated Heading */}
+                <div className="mt-3.5 flex items-center justify-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
+                  <h4 className="text-base font-black text-emerald-950">
+                    {t('help.successTitle', 'Request Submitted Successfully!')}
+                  </h4>
+                  <Sparkles className="h-4 w-4 text-amber-500 animate-pulse" />
+                </div>
+                <p className="mt-1 text-xs text-emerald-800/90 max-w-md mx-auto">
                   {t(
                     'help.successDesc',
                     'Your inquiry has been registered in the system. Our team will review and resolve it promptly.'
                   )}
                 </p>
 
-                <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 shadow-2xs">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase">
-                    {t('help.ticketId', 'Ticket ID')}:
-                  </span>
-                  <span className="font-mono text-xs font-black text-emerald-700">
-                    {submittedTicket.ticketNumber}
-                  </span>
+                {/* Animated Ticket ID Voucher Card */}
+                <div className="mt-4 rounded-2xl border-2 border-emerald-400/80 bg-white p-4 shadow-sm relative overflow-hidden transition-all duration-300 animate-pop-in">
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 animate-pulse" />
+
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 pb-1.5 border-b border-slate-100">
+                    <span className="flex items-center gap-1 text-slate-600">
+                      <LifeBuoy className="h-3.5 w-3.5 text-amber-600" />
+                      {t('help.ticketId', 'Ticket Number')}
+                    </span>
+                    <span className="rounded-full bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                      Generated & Dispatched
+                    </span>
+                  </div>
+
+                  {/* Prominent Ticket ID with Animated Copy Action */}
+                  <div className="flex items-center justify-center gap-2 py-1.5">
+                    <span className="font-mono text-2xl sm:text-3xl font-black text-emerald-700 tracking-wider select-all">
+                      {submittedTicket.ticketNumber}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (navigator?.clipboard) {
+                          navigator.clipboard.writeText(submittedTicket.ticketNumber);
+                          setCopiedTicket(true);
+                          setTimeout(() => setCopiedTicket(false), 2200);
+                        }
+                      }}
+                      title="Copy Ticket ID"
+                      className="p-1.5 text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition cursor-pointer"
+                    >
+                      {copiedTicket ? (
+                        <Check className="h-4 w-4 text-emerald-600 animate-scale-in" />
+                      ) : (
+                        <Copy className="h-4 w-4 hover:scale-110 transition-transform" />
+                      )}
+                    </button>
+                  </div>
+                  {copiedTicket && (
+                    <div className="text-[10px] font-bold text-emerald-600 animate-fade-in mb-1">
+                      Copied to clipboard!
+                    </div>
+                  )}
+
+                  {/* Quick Meta Chips */}
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 flex flex-wrap items-center justify-center gap-1.5 text-[11px]">
+                    <span className="font-semibold text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-lg border border-slate-200">
+                      {getCategoryLabel(submittedTicket.category)}
+                    </span>
+                    <span className="font-semibold text-slate-700 bg-slate-50 px-2.5 py-0.5 rounded-lg border border-slate-200">
+                      {getPriorityLabel(submittedTicket.priority)}
+                    </span>
+                    <span className="font-semibold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">
+                      furnicraft.erp@gmail.com
+                    </span>
+                  </div>
                 </div>
 
+                {/* Form Actions */}
                 <div className="mt-5 flex items-center justify-center gap-2.5">
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 cursor-pointer transition"
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
                     <span>{t('help.submitAnother', 'Submit Another')}</span>
@@ -278,7 +341,7 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   <button
                     type="button"
                     onClick={() => setActiveTab('history')}
-                    className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-5 py-2 text-xs font-bold text-white shadow-md hover:bg-amber-700 cursor-pointer transition transform hover:scale-[1.02]"
                   >
                     <Clock className="h-3.5 w-3.5" />
                     <span>{t('help.viewTickets', 'View My Tickets')}</span>
