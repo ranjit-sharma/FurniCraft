@@ -387,39 +387,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
 
-                {/* Priority Selector */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('help.priority', 'Urgency / Priority')}
-                  </label>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {[
-                      { id: 'LOW', label: t('help.priorityLow', 'Low') },
-                      { id: 'MEDIUM', label: t('help.priorityMedium', 'Normal') },
-                      { id: 'HIGH', label: t('help.priorityHigh', 'High') },
-                      { id: 'URGENT', label: t('help.priorityUrgent', 'Urgent') },
-                    ].map((p) => {
-                      const isSelected = priority === p.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setPriority(p.id)}
-                          className={`py-1.5 text-xs font-bold rounded-xl border text-center transition cursor-pointer ${
-                            isSelected
-                              ? p.id === 'URGENT'
-                                ? 'border-rose-500 bg-rose-50 text-rose-800 ring-2 ring-rose-500/20'
-                                : 'border-amber-500 bg-amber-50 text-amber-950 ring-2 ring-amber-500/20'
-                              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                          }`}
-                        >
-                          {p.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Subject Input */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
