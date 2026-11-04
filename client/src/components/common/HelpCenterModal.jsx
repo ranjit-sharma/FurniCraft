@@ -31,7 +31,7 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('new'); // 'new' | 'history'
-  const [category, setCategory] = useState('ATTENDANCE_WAGES');
+  const [category, setCategory] = useState('GENERAL_INQUIRY');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -69,7 +69,7 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
   };
 
   const handleReset = () => {
-    setCategory('ATTENDANCE_WAGES');
+    setCategory('GENERAL_INQUIRY');
     setSubject('');
     setMessage('');
     setError(null);
@@ -114,6 +114,12 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
 
   const categories = [
     {
+      id: 'GENERAL_INQUIRY',
+      label: t('help.catGeneral', 'General Inquiry'),
+      icon: HelpCircle,
+      color: 'text-slate-600 bg-slate-50 border-slate-200',
+    },
+    {
       id: 'ATTENDANCE_WAGES',
       label: t('help.catAttendance', 'Attendance & Wages'),
       icon: CalendarCheck,
@@ -137,12 +143,6 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
       icon: UserCheck,
       color: 'text-purple-600 bg-purple-50 border-purple-200',
     },
-    {
-      id: 'GENERAL_INQUIRY',
-      label: t('help.catGeneral', 'General Inquiry'),
-      icon: HelpCircle,
-      color: 'text-slate-600 bg-slate-50 border-slate-200',
-    },
   ];
 
   const getStatusBadge = (status) => {
@@ -164,11 +164,11 @@ export const HelpCenterModal = ({ isOpen, onClose }) => {
     const match = categories.find((c) => c.id === catId);
     if (match) return match.label;
     switch (catId) {
+      case 'GENERAL_INQUIRY': return t('help.catGeneral', 'General Inquiry');
       case 'ATTENDANCE_WAGES': return t('help.catAttendance', 'Attendance & Wages');
       case 'PAYMENT_BILL': return t('help.catPayment', 'Payment & Advance');
       case 'PROJECT_SITE': return t('help.catProject', 'Project & Site');
       case 'ACCOUNT_LOGIN': return t('help.catAccount', 'Account & Access');
-      case 'GENERAL_INQUIRY': return t('help.catGeneral', 'General Inquiry');
       default: return catId ? catId.replace(/_/g, ' ') : 'General';
     }
   };
