@@ -531,10 +531,6 @@ ${message}
         mailOptions.attachments = attachments;
       }
 
-      if (userEmail && userEmail.includes('@') && userEmail.toLowerCase() !== supportEmail.toLowerCase()) {
-        mailOptions.cc = userEmail;
-      }
-
       const info = await transporter.sendMail(mailOptions);
       console.log(`[EmailService] Support ticket email delivered to ${supportEmail}: ${info.messageId}`);
       mailResult = {

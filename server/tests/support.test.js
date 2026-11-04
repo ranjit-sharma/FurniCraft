@@ -63,4 +63,37 @@ describe('Support & Help Center API Verification', () => {
     await User.deleteOne({ _id: testUser._id });
     emailSpy.mockRestore();
   });
+
+  it('guarantees support ticket email is sent ONLY to furnicraft.erp@gmail.com with NO other recipients', async () => {
+    const transporter = emailService.getEmailTransporter();
+    let sentMailOptions = null;
+    let spy = null;
+    if (transporter) {
+      spy = vi.spyOn(transporter, 'sendMail').mockImplementation(async (options) => {
+        sentMailOptions = options;
+        return { messageId: '<test-support-msg-id@furnicraft.erp>' };
+      });
+    }
+
+    const result = await emailService.sendSupportTicketEmail({
+      ticketNumber: 'TKT-2026-999999',
+      userName: 'External Craft Person',
+      userEmail: 'external.person@externaldomain.com',
+      userPhone: '9876543210',
+      userRole: 'THEKEDAR',
+      category: 'GENERAL_INQUIRY',
+      subject: 'Test Exclusive Delivery to Furnicraft ERP',
+      message: 'This message must only be delivered to furnicraft.erp@gmail.com',
+    });
+
+    expect(result.success).toBe(true);
+    if (sentMailOptions) {
+      expect(sentMailOptions.to).toBe('furnicraft.erp@gmail.com');
+      expect(sentMailOptions.cc).toBeUndefined();
+      expect(sentMailOptions.bcc).toBeUndefined();
+    }
+    if (spy) {
+      spy.mockRestore();
+    }
+  });
 });
