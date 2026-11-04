@@ -188,7 +188,7 @@ export const ThekedarRegisterPage = () => {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Rajesh Kumar"
+                  placeholder="e.g. Sunil Sharma"
                   className="block w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 py-2.5 sm:py-3 pl-10 pr-3.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-800 focus:border-amber-600 dark:focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all"
                 />
               </div>

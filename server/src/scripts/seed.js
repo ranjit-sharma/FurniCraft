@@ -80,17 +80,17 @@ const seedDatabase = async () => {
     });
 
     const thekedar = await User.create({
-      name: 'Rajesh Thekedar',
-      email: 'thekedar.rajesh@furnicraft.com',
-      phone: '+91 98111 22334',
+      name: 'Sunil Sharma',
+      email: 'sunilmistri38@gmail.com',
+      phone: '+91 82705 66992',
       password: 'Thekedar@2026',
       role: ROLES.THEKEDAR,
       status: USER_STATUS.ACTIVE,
     });
 
     const worker1 = await User.create({
-      name: 'Ramesh Carpenter',
-      email: 'worker.ramesh@furnicraft.com',
+      name: 'Sumit kumar',
+      email: 'worker.sumit@furnicraft.com',
       phone: '+91 99222 33445',
       password: 'Worker@2026',
       role: ROLES.WORKER,
@@ -521,13 +521,13 @@ const seedDatabase = async () => {
     console.log('===========================================================');
     console.log(' SEEDING COMPLETE! Safe Demo Credentials:');
     console.log(' 1. OWNER / ADMIN:');
-    console.log('    Email:    owner@furnicraft.com');
-    console.log('    Password: FurniOwner@2026');
+    console.log('    Email:    ranjitsharma7482@gmail.com');
+    console.log('    Password: Ranjit@3948');
     console.log(' 2. THEKEDAR:');
-    console.log('    Email:    thekedar.rajesh@furnicraft.com');
+    console.log('    Email:    sunilmistri38@gmail.com');
     console.log('    Password: Thekedar@2026');
     console.log(' 3. WORKER:');
-    console.log('    Email:    worker.ramesh@furnicraft.com');
+    console.log('    Email:    worker.sumit@furnicraft.com');
     console.log('    Password: Worker@2026');
     console.log('===========================================================');
 

@@ -6,10 +6,10 @@ async function restoreTestUsers() {
   await connectDB();
   console.log('[Restore] Connected to DB.');
 
-  // Find thekedar Rajesh
-  const thekedar = await User.findOne({ email: 'thekedar.rajesh@furnicraft.com' });
+  // Find active thekedar
+  const thekedar = (await User.findOne({ email: 'sunilmistri38@gmail.com' })) || (await User.findOne({ role: ROLES.THEKEDAR, status: USER_STATUS.ACTIVE }));
   if (!thekedar) {
-    console.error('Thekedar Rajesh not found!');
+    console.error('No active Thekedar found!');
     process.exit(1);
   }
 
