@@ -150,6 +150,22 @@ export const AttendanceAlarmProvider = ({ children }) => {
   const [isPushSubscribed, setIsPushSubscribed] = useState(false);
   const [isPushLoading, setIsPushLoading] = useState(false);
   const [isAlarmRinging, setIsAlarmRinging] = useState(false);
+  const [alarmToast, setAlarmToast] = useState(null);
+  const toastTimerRef = useRef(null);
+
+  const showAlarmToast = useCallback((msg, durationMs = 5000) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setAlarmToast(msg);
+    toastTimerRef.current = setTimeout(() => {
+      setAlarmToast(null);
+      toastTimerRef.current = null;
+    }, durationMs);
+  }, []);
+
+  const dismissAlarmToast = useCallback(() => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setAlarmToast(null);
+  }, []);
 
   // Attendance live metrics
   const [attendanceStatus, setAttendanceStatus] = useState({
@@ -274,7 +290,8 @@ export const AttendanceAlarmProvider = ({ children }) => {
   const stopCurrentAlarm = useCallback(() => {
     stopAlarmRing();
     setIsAlarmRinging(false);
-  }, []);
+    dismissAlarmToast();
+  }, [dismissAlarmToast]);
 
   // Request browser/OS notification permission
   const requestPermission = async () => {
@@ -382,12 +399,12 @@ export const AttendanceAlarmProvider = ({ children }) => {
   // Test Alarm trigger (Audio + In-app notification)
   const testAlarm = useCallback(() => {
     triggerAlarmRing();
-    const title = '⏰ FurniCraft Attendance Alarm';
-    const body = attendanceStatus.isPending
-      ? `You have ${attendanceStatus.unmarkedCount} craftsman pending attendance today! Tap to record.`
-      : "Daily Attendance Alarm is set and working! You'll be alerted if any craftsman attendance is pending.";
-    sendSystemNotification(title, body);
-  }, [triggerAlarmRing, attendanceStatus]);
+    const msg = attendanceStatus.isPending
+      ? `⏰ ${attendanceStatus.unmarkedCount} craftsman waiting for attendance today!`
+      : `⏰ Daily Attendance Alarm is active for ${alarmTime}!`;
+    showAlarmToast(msg);
+    sendSystemNotification('⏰ Attendance Alarm — FurniCraft', msg);
+  }, [triggerAlarmRing, attendanceStatus, showAlarmToast, alarmTime]);
 
   // In-Tab Alarm Clock Monitor: Checks every 20 seconds when app is in foreground
   const lastFiredRef = useRef('');
@@ -412,6 +429,9 @@ export const AttendanceAlarmProvider = ({ children }) => {
 
           triggerAlarmRing();
 
+          const toastMsg = `⏰ Time to mark attendance! ${attendanceStatus.unmarkedCount} craftsman waiting today.`;
+          showAlarmToast(toastMsg);
+
           sendSystemNotification(
             '⏰ Daily Attendance Alarm — FurniCraft',
             `Time to mark attendance! You have ${attendanceStatus.unmarkedCount} craftsman waiting to be marked today.`
@@ -428,7 +448,7 @@ export const AttendanceAlarmProvider = ({ children }) => {
 
     const intervalId = setInterval(checkAlarm, 20000);
     return () => clearInterval(intervalId);
-  }, [isThekedar, alarmEnabled, alarmTime, attendanceStatus, triggerAlarmRing]);
+  }, [isThekedar, alarmEnabled, alarmTime, attendanceStatus, triggerAlarmRing, showAlarmToast]);
 
   return (
     <AttendanceAlarmContext.Provider
@@ -443,6 +463,9 @@ export const AttendanceAlarmProvider = ({ children }) => {
         setRingDuration,
         isAlarmRinging,
         stopCurrentAlarm,
+        alarmToast,
+        showAlarmToast,
+        dismissAlarmToast,
         attendanceStatus,
         refreshAttendanceStatus,
         notificationPermission,
@@ -476,6 +499,9 @@ export const useAttendanceAlarm = () => {
       setRingDuration: () => {},
       isAlarmRinging: false,
       stopCurrentAlarm: () => {},
+      alarmToast: null,
+      showAlarmToast: () => {},
+      dismissAlarmToast: () => {},
       attendanceStatus: { isPending: false, unmarkedCount: 0, markedCount: 0, totalWorkers: 0 },
       refreshAttendanceStatus: () => {},
       notificationPermission: 'default',

@@ -23,6 +23,9 @@ describe('Attendance Alarm & Mobile Push Notification API Tests', () => {
     expect(thekedarUser).toBeDefined();
     thekedarToken = signToken({ id: thekedarUser._id, role: 'THEKEDAR' });
 
+    // Clean up any stale subscriptions for this test user
+    await PushSubscription.deleteMany({ userId: thekedarUser._id });
+
     const res = await request(app)
       .post('/api/v1/notifications/push-subscription')
       .set('Authorization', `Bearer ${thekedarToken}`)

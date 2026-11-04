@@ -87,7 +87,7 @@ export const unsubscribePush = async (req, res) => {
  */
 export const getAlarmSettings = async (req, res) => {
   try {
-    const subscriptions = await PushSubscription.find({ userId: req.user.id });
+    const subscriptions = await PushSubscription.find({ userId: req.user.id }).sort({ updatedAt: -1 });
     const primary = subscriptions[0];
 
     res.status(200).json({

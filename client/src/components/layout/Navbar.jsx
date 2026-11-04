@@ -3,7 +3,7 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, AlarmClock } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, AlarmClock, X } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { HelpCenterModal } from '../common/HelpCenterModal';
@@ -50,7 +50,7 @@ export const Navbar = () => {
   const { user, logout } = useAuth();
   const { language, t } = useLanguage();
   const { isDark } = useTheme();
-  const { attendanceStatus, alarmTime } = useAttendanceAlarm();
+  const { attendanceStatus, alarmTime, alarmToast, dismissAlarmToast } = useAttendanceAlarm();
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
@@ -121,28 +121,52 @@ export const Navbar = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Thekedar Attendance Alarm Bell */}
             {user.role === 'THEKEDAR' && (
-              <button
-                type="button"
-                onClick={() => setAlarmModalOpen(true)}
-                title={
-                  attendanceStatus.isPending
-                    ? `⏰ Attendance Alarm: ${attendanceStatus.unmarkedCount} craftsman waiting to be marked today`
-                    : 'Attendance Alarm: All marked for today'
-                }
-                aria-label="Attendance alarm and notifications"
-                className={`relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
-                  attendanceStatus.isPending
-                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-4 ring-amber-500/20 shadow-md animate-pulse scale-105'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:border-amber-400 hover:scale-105'
-                }`}
-              >
-                <AlarmClock className={`h-5 w-5 ${attendanceStatus.isPending ? 'text-amber-600 dark:text-amber-400' : ''}`} />
-                {attendanceStatus.isPending && (
-                  <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white shadow-xs">
-                    {attendanceStatus.unmarkedCount}
-                  </span>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setAlarmModalOpen(true)}
+                  title={
+                    attendanceStatus.isPending
+                      ? `⏰ Attendance Alarm: ${attendanceStatus.unmarkedCount} craftsman waiting to be marked today`
+                      : 'Attendance Alarm: All marked for today'
+                  }
+                  aria-label="Attendance alarm and notifications"
+                  className={`relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border-2 transition-all cursor-pointer ${
+                    attendanceStatus.isPending
+                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-4 ring-amber-500/20 shadow-md animate-pulse scale-105'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:border-amber-400 hover:scale-105'
+                  }`}
+                >
+                  <AlarmClock className={`h-5 w-5 ${attendanceStatus.isPending ? 'text-amber-600 dark:text-amber-400' : ''}`} />
+                  {attendanceStatus.isPending && (
+                    <span className="absolute -top-1 -right-1 flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white shadow-xs">
+                      {attendanceStatus.unmarkedCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Toast on Alarm Button */}
+                {alarmToast && (
+                  <div
+                    role="alert"
+                    onClick={() => setAlarmModalOpen(true)}
+                    className="absolute right-0 top-full mt-2.5 z-50 flex items-center gap-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-3 py-2 shadow-2xl border border-slate-700/60 dark:border-slate-200 text-xs font-bold whitespace-nowrap cursor-pointer animate-fade-in"
+                  >
+                    <AlarmClock className="h-4 w-4 text-amber-400 shrink-0 animate-bounce" />
+                    <span>{alarmToast}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissAlarmToast();
+                      }}
+                      className="ml-1 p-0.5 rounded hover:bg-white/20 dark:hover:bg-slate-200 text-slate-400 hover:text-white dark:hover:text-slate-900"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 )}
-              </button>
+              </div>
             )}
 
             <div className="relative" ref={profileRef}>
