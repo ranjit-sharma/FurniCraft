@@ -1,12 +1,20 @@
 # FurniCraft — Modern Furniture Workforce & Financial Management ERP
 
+[![Live Application](https://img.shields.io/badge/Live_App-furnicraft--erp.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp.onrender.com)
+
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-v4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-Mongoose-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-Mongoose-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-v4.8-010101?logo=socket.io&logoColor=white)](https://socket.io/)
+[![JWT](https://img.shields.io/badge/Auth-JWT_Cookies-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 [![Vitest](https://img.shields.io/badge/Testing-Vitest-FCC72B?logo=vitest&logoColor=black)](https://vitest.dev/)
+[![Render](https://img.shields.io/badge/Hosted_on-Render-46E3B7?logo=render&logoColor=black)](https://furnicraft-erp.onrender.com)
 [![License](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+
+> 🚀 **Live Production Application**: [**https://furnicraft-erp.onrender.com**](https://furnicraft-erp.onrender.com)
 
 **FurniCraft** is an enterprise-grade MERN-stack workforce, attendance, payroll, and workshop financial operations platform engineered exclusively for modern interior furniture manufacturing, cabinetry workshops, and modular installation businesses.
 
@@ -216,34 +224,60 @@ FurniCraft is designed primarily for contractors on their phones, while providin
 - **Smooth motion**: route fade-in, sheet slide-up and press feedback, all disabled under `prefers-reduced-motion`.
 - **Installable**: `manifest.webmanifest` + safe-area insets (`viewport-fit=cover`) so "Add to Home Screen" opens it full-screen like an app.
 
-To try it on a real phone on the same Wi-Fi, run the client with `npm run dev -- --host` and open the printed Network URL.
+### Comprehensive Technology Stack
 
-### Frontend Architecture
+FurniCraft is built on a modern, high-performance technology stack spanning frontend SPA delivery, reactive real-time communications, secure RESTful micro-services, and enterprise cloud data layers:
+
+#### 1. Frontend Technologies
 | Technology | Version | Purpose |
 | :--- | :--- | :--- |
-| **React** | `v18.3.1` | Declarative component UI library |
-| **Vite** | `v5.4.21` | High-speed frontend build tool & development server |
-| **Tailwind CSS** | `v3.4.13` | Utility-first CSS framework with custom slatewood palette |
-| **React Router** | `v6.26.2` | Client-side routing, protected routes, and layout hierarchies |
-| **Lucide React** | `v0.446.0` | Modern SVG iconography |
-| **FontAwesome** | `v6.5.2` | Industry-standard user & brand vector icons |
-| **Axios** | `v1.7.7` | HTTP client with automatic language headers and response interceptors |
-| **Socket.IO Client** | `v4.8.0` | Real-time WebSocket room subscriptions |
-| **Vitest & RTL** | `v1.6.1` | Unit & integration testing with JSDOM environment |
+| **React** | `v18.3.1` | Declarative component UI library for SPA rendering |
+| **Vite** | `v5.4.21` | High-speed frontend build tool, ES module bundler & dev server |
+| **Tailwind CSS** | `v3.4.13` | Utility-first CSS framework with custom slatewood palette & dark mode |
+| **React Router** | `v6.26.2` | Client-side routing, protected auth guards, and nested layouts |
+| **Lucide React** | `v0.446.0` | Comprehensive modern vector SVG icon library |
+| **FontAwesome** | `v6.5.2` | Specialized brand and user vector icons |
+| **Axios** | `v1.7.7` | Promise-based HTTP client with language headers & response interceptors |
+| **Socket.IO Client** | `v4.8.0` | Real-time WebSocket room subscriptions and live updates |
+| **Recharts** | `v2.12.7` | Responsive composable charts for real-time workshop analytics |
+| **Vitest & RTL** | `v1.6.1` | Unit and integration testing with JSDOM environment |
 
-### Backend Architecture
+#### 2. Backend & API Technologies
 | Technology | Version | Purpose |
 | :--- | :--- | :--- |
-| **Node.js** | `v18+ / v24` | Modern asynchronous JavaScript runtime (ES Modules) |
-| **Express.js** | `v4.21.0` | Web application framework for modular RESTful routing |
-| **MongoDB & Mongoose** | `v8.6.3` | Cloud NoSQL database with schema validation & aggregations |
+| **Node.js** | `v18+ / v20 / v24` | High-performance asynchronous JavaScript server runtime (ES Modules) |
+| **Express.js** | `v4.21.0` | RESTful routing, custom middleware pipeline, and static SPA serving |
 | **Zod** | `v3.23.8` | Strict runtime request schema validation |
-| **JSON Web Token (JWT)**| `v9.0.2` | Stateless authentication tokens stored in HTTP-only cookies |
-| **bcryptjs** | `v2.4.3` | Strong password hashing with salt rounds |
-| **PDFKit** | `v0.15.0` | Server-side programmatic PDF payment voucher generation |
-| **XLSX (SheetJS)** | `v0.18.5` | Exporting clean tabular attendance and ledger sheets |
-| **Nodemailer** | `v6.9.15` | Automated OTP email delivery via transactional SMTP |
-| **Helmet & Rate Limit**| `v7.1.0` | HTTP security headers and IP-based rate limiting |
+| **JSON Web Token (JWT)** | `v9.0.2` | Stateless, tamper-proof session tokens stored in HTTP-only cookies |
+| **bcryptjs** | `v2.4.3` | Cryptographic password hashing with 10 salt rounds |
+| **Helmet** | `v7.1.0` | Security headers (CSP, HSTS, X-Content-Type-Options) |
+| **express-rate-limit** | `v7.4.0` | IP-based brute-force protection on authentication and support endpoints |
+| **cookie-parser** | `v1.4.6` | Parsing HTTP-only session cookies |
+| **cors** | `v2.8.5` | Cross-Origin Resource Sharing control and origin validation |
+| **compression** | `v1.7.4` | Gzip response compression middleware for fast mobile delivery |
+
+#### 3. Database & Real-Time Communications
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **MongoDB Atlas** | `v7+ Cloud` | Scalable cloud document database for ledgers, attendance, and projects |
+| **Mongoose** | `v8.6.3` | Schema definition, model validation, and aggregation pipelines |
+| **Socket.IO Server** | `v4.8.0` | Bi-directional WebSocket communication for real-time room alerts |
+| **Nodemailer** | `v6.9.15` | Transactional email delivery for OTP password reset and Help Center tickets |
+| **Gmail SMTP** | App Passwords | Reliable transactional dispatch engine strictly routing support tickets |
+
+#### 4. Document Generation & Localization
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **PDFKit** | `v0.15.0` | Server-side programmatic vector PDF generation for official vouchers |
+| **SheetJS (XLSX)** | `v0.18.5` | Programmatic export of tabular attendance and financial ledger sheets |
+| **Google Noto Sans** | SIL OFL | Bundled open-source typography rendering Indian Rupee (`₹`) symbols cleanly |
+| **Tri-Lingual Localization** | Custom Engine | Native English, Hindi (हिंदी), and Hinglish dictionary support |
+
+#### 5. Cloud Infrastructure & Hosting
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **Render** | Cloud Platform | Single Unified Web Service running Express API & built React client |
+| **Render Blueprint (`render.yaml`)** | IaC | Automated zero-downtime continuous deployment on git push |
 
 ---
 
@@ -445,160 +479,17 @@ FurniCraft implements the standard shopfloor wage conventions of the Indian mode
 
 ---
 
-## 7. Quick Start & Installation
+## 7. Live Production Deployment & Cloud Access
 
-### Prerequisites
-- **Node.js**: v18.0.0 or later (v20+ recommended)
-- **MongoDB**: Local MongoDB community server (port 27017) or MongoDB Atlas cluster URI
-- **Package Manager**: npm (v9+) or pnpm / yarn
+FurniCraft is continuously deployed and live in production on **Render**:
 
-### Installation Steps
+🌐 **Live Application URL**: [**https://furnicraft-erp.onrender.com**](https://furnicraft-erp.onrender.com)
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/ranjit-sharma/FurniCraft.git
-   cd FurniCraft
-   ```
-
-2. **Install Root, Server & Client Dependencies**
-   ```bash
-   # Install server dependencies
-   cd server
-   npm install
-
-   # Install client dependencies
-   cd ../client
-   npm install
-   ```
-
-3. **Configure Environment Variables**
-   Create `server/.env` based on `server/.env.example`:
-   ```env
-   NODE_ENV=development
-   PORT=5001
-   MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/furnicraft_db?retryWrites=true&w=majority
-   JWT_SECRET=furnicraft_secure_jwt_secret_dev_key_must_be_long_and_robust_2026
-   JWT_EXPIRES_IN=7d
-   CLIENT_URL=http://localhost:8080
-   COOKIE_DOMAIN=localhost
-
-   # Transactional Email (Google App Password)
-   EMAIL_SERVICE=gmail
-   SMTP_USER=your_email@gmail.com
-   SMTP_PASS=your_16_character_app_password
-   EMAIL_FROM="FurniCraft ERP" <no-reply@furnicraft.com>
-   ```
-
-4. **Seed Database with Sample Data**
-   ```bash
-   cd server
-   npm run seed
-   ```
-
-5. **Start Both Services**
-   ```bash
-   # Terminal 1 — Start Backend API (Port 5001):
-   cd server
-   npm run dev
-
-   # Terminal 2 — Start Frontend Client (Port 8080):
-   cd client
-   npm run dev
-   ```
-   Open your browser at: **`http://localhost:8080`**
-
-### Deploying to Render
-
-FurniCraft is configured for zero-friction cloud deployment on [Render](https://render.com). It can be deployed in seconds as a single **Unified Web Service** (where Express serves both the REST API and the built React SPA):
-
-1. **Create a New Web Service** on Render and connect `https://github.com/ranjit-sharma/FurniCraft.git`.
-2. **Build & Start Commands** (Root defaults now work out of the box):
-   - **Root Directory**: Leave blank (defaults to repository root `.`)
-   - **Environment**: `Node`
-   - **Build Command**: `npm install && npm run build` *(or `npm run build`)*
-   - **Start Command**: `npm start`
-3. **Environment Variables** (Under the "Environment" tab):
-   - `NODE_ENV`: `production`
-   - `MONGODB_URI`: `mongodb+srv://<username>:<password>@cluster0.mongodb.net/furnicraft_db?retryWrites=true&w=majority`
-   - `JWT_SECRET`: Any random 32+ character secret string
-   - `JWT_EXPIRES_IN`: `7d`
-   - `PORT`: Leave blank (Render injects its own port automatically, typically `10000`)
-4. **Click "Deploy Web Service"**:
-   - The root build script installs both server and client packages, builds the client via Vite, and boots the backend with Express serving the React SPA and API on the same domain.
-   - Alternatively, Render will automatically detect the included [`render.yaml`](file:///c:/Users/ranji/Desktop/project/FurniCraft/render.yaml) blueprint!
+### Cloud Architecture & Deployment
+- **Unified Web Service**: Hosted on Render as a single unified service where Express serves both the secured REST API routes (`/api/v1`) and the compiled, optimized React single-page application.
+- **Continuous Deployment (CI/CD)**: Linked directly to the GitHub repository with automated zero-downtime deployments triggered on every push to the `main` branch.
+- **Infrastructure Blueprint**: Configured via [`render.yaml`](render.yaml) for automated provisioning of Node.js runtime environments, build commands, and isolated production environment secrets.
 
 ---
 
-## 8. Safe Seed Demo Accounts
-
-The seed script provides ready-to-test accounts representing all three operational roles (worker accounts exist as records only; their login is rejected):
-
-> ⚠️ `npm run seed` **deletes every collection** before inserting demo data. Never run it against a production `MONGODB_URI`.
-
-| Role | Email / Login Identifier | Password | Name & Operational Scope |
-| :--- | :--- | :--- | :--- |
-| **Owner / Director** | `ranjitsharma7520@gmail.com`<br/>*(or `+91 98765 75200`)* | `ranjit@7520` | **Ranjit Sharma** (Executive Business Owner) |
-| **Owner / Director** | `owner@furnicraft.com`<br/>*(or `+91 98765 43210`)* | `FurniOwner@2026` | **Vikramaditya Sharma** (Managing Director) |
-| **Thekedar (Contractor)** | `thekedar.rajesh@furnicraft.com`<br/>*(or `+91 98111 22334`)* | `Thekedar@2026` | **Rajesh Thekedar** (Modular & Cabinetry Contractor) |
-| **Worker (Master Craftsman)** | `worker.ramesh@furnicraft.com`<br/>*(or `+91 99222 33445`)* | `Worker@2026` | **Ramesh Carpenter** (Cabinet Maker, ₹800/day) |
-| **Worker (Modular Specialist)**| `worker.suresh@furnicraft.com`<br/>*(or `+91 99333 44556`)* | `Worker@2026` | **Suresh Specialist** (Modular Assembly, ₹750/day) |
-
----
-
-## 9. Automated Testing Suite
-
-FurniCraft includes rigorous end-to-end integration and component test suites verifying RBAC, accounting formulas, shift multipliers, and zero-blank-screen rendering.
-
-```bash
-# Run all tests (Server + Client in parallel):
-npm test
-
-# Run Server Tests Only (Vitest + Supertest):
-# ⚠️ Uses MONGODB_URI from server/.env and creates/deletes records — point it at a test database first.
-cd server
-npm test
-
-# Run Client Tests Only (Vitest + RTL + JSDOM):
-cd client
-npm test
-```
-
-### Server Integration Test Suites (`server/tests/`)
-- **`auth.test.js`**: Session lifecycle, login credentials, token blacklist on logout, suspended user blocking.
-- **`auth_rules.test.js`**: 6-digit email OTP generation, 5-minute expiration, attempt rate-limiting, secure password reset.
-- **`authorization.test.js`**: In-depth RBAC, IDOR prevention, worker ledger isolation, read-only project limits for Owner, safe worker deletion ($₹0$ net balance enforcement).
-- **`attendance.test.js`**: Precision multiplier calculations (`P`, `HALF`, `P1/5`, `PP`), single and bulk approval transitions, duplicate shift prevention.
-- **`errorHandler.test.js`**: Friendly messages for unexpected errors, database outages, malformed JSON and invalid record links (no database needed).
-- **`finance.test.js`**: Cash advance disbursement, wage settlement, bonus-to-advance offsets, immutable payment transactions.
-- **`support.test.js`**: Help & Support ticket creation, schema validation, rate-limiting, and guarantees email dispatch strictly and exclusively to `furnicraft.erp@gmail.com`.
-
-### Client Component Test Suites (`client/src/tests/`)
-- **`ThemeMode.test.jsx`**: Light, Dark (`#020617` slate), and System mode toggles, localStorage persistence, profile toggler dropdown verification.
-- **`AttendanceCalendar.test.jsx`**: Shift badge rendering, multiplier tag colors, day-wise calculations.
-- **`LoginPage.test.jsx`**: Responsive login form inputs, show/hide password toggle, contractor registration redirect.
-- **`apiErrors.test.js`**: Offline, timeout, session-expiry, 4xx/5xx and translated error messages from the API client.
-- **`AllPagesRender.test.jsx`**: 12-page comprehensive zero-blank-screen smoke test across all application views.
-
----
-
-## 10. Security & Data Integrity Highlights
-
-1. **HTTP-Only Cookie Storage**: JWTs are stored in secure HTTP-only cookies (`furnicraft_token`). Tokens cannot be stolen via Cross-Site Scripting (XSS).
-2. **Server-Side Authorization**: UI component hiding is never trusted as a security boundary. Every API endpoint checks actor identity and resource ownership (`resourceAuthMiddleware.js`).
-3. **Double-Entry Financial Transactions**: Advance disbursements and salary payments create immutable `FinancialTransaction` records with unique transaction codes (e.g. `TXN-NET-2026-001`).
-4. **Tamper-Evident Audit Logs**: All administrative actions (user suspensions, wage agreement revisions, project deletions) are logged asynchronously to the `AuditLog` collection.
-5. **Safe Worker Deletion Guard**: A worker record cannot be deleted from the system while having unrecovered cash advances or unsettled earned wages. The net balance must be resolved to exactly ₹0.
-6. **User-Friendly Error Handling**: The server never sends internal error text to users — unexpected failures return a generic message (and are logged with method + URL), a database outage returns `503`, and malformed JSON, bad record links and duplicate records get plain-language messages (`middleware/errorHandler.js`). Uncaught exceptions are logged and exit the process so the host restarts it.
-7. **Clear Errors on the Phone**: every API failure becomes an `ApiError` with a translated message (English / Hindi / Hinglish) for offline, timeout (30s), unreachable server, expired session (auto sign-out with a notice on the login screen), rate limits and server errors (`client/src/api/client.js`). Screens that fail to load show a retry card (`LoadError`), an offline banner appears when the connection drops, and a crashed or failed-to-download screen shows a friendly recovery card instead of technical details (`ErrorBoundary`).
-8. **Modern PDFs**: attendance statements (per individual craftsman statement, **one month at a time** via `?year=YYYY&month=M&workerId=...`) and payment / advance receipts share one design (`services/pdfTheme.js`) using the bundled open-source Noto Sans font (`server/src/assets/fonts`, SIL OFL), so ₹ prints correctly.
-9. **Email OTP**: password-reset codes are sent through Gmail SMTP with a Google App Password (`EMAIL_SERVICE=gmail`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`). The server checks the SMTP login at startup and logs `[EmailService] SMTP ready` or the exact failure. In production it never reports "code sent" unless Gmail accepted the email. Owner accounts are intentionally not recoverable by email. On Render, set these variables in the dashboard (they are listed in `render.yaml`).
-10. **Help & Support Privacy & Exclusive Email Routing**: Support requests submitted via the in-app Help Center are sanitized, assigned unique tracking identifiers (e.g. `TKT-2026-0001`), and routed strictly and exclusively to `furnicraft.erp@gmail.com`. No user or third-party email addresses are ever added as CC or recipients, guaranteeing data privacy.
-11. **Responsive Viewport Density & Recency Capping**: High-traffic ledger views and dashboard cards enforce strict item count thresholds (e.g. 4-item recent dashboard limit, 3-card mobile viewport ledger scroll) to prevent vertical scroll fatigue and maintain instant visibility of primary voucher action inspection cards.
-
----
-
-## 11. Contributing & License
-
-Contributions, issues, and feature requests are welcome. Feel free to open an issue or pull request on the repository.
-
-Distributed under the **ISC License**. Designed and developed for the modern furniture manufacturing and craftsmen community.
+Distributed under the **ISC License**. Designed and developed for modern interior furniture manufacturing, cabinetry workshops, and craftsman workforce operations.
