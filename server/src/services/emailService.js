@@ -1,7 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/errors.js';
 
@@ -15,187 +14,76 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 
-// Primary (Port 465 SSL) and Fallback (Port 587 STARTTLS) Transporters
-let cachedPrimaryTransporter = null;
-let cachedFallbackTransporter = null;
-
-// Reliable timeouts (4s connection, 8s greeting, 10s socket) preventing long 20s+ hangs on blocked cloud firewalls
-const SMTP_TIMEOUTS = { connectionTimeout: 4000, greetingTimeout: 8000, socketTimeout: 10000 };
 const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
+const DEFAULT_SENDER_EMAIL = 'furnicraft.erp@gmail.com';
+const DEFAULT_SENDER_NAME = 'FurniCraft ERP Security';
 
-// Standard system defaults so dispatch succeeds reliably across local, testing, and cloud environments (e.g. Render)
-const DEFAULT_SMTP_USER = 'furnicraft.erp@gmail.com';
-const DEFAULT_SMTP_PASS = 'fddskrvnkknyriik';
-const DEFAULT_EMAIL_FROM = '"FurniCraft ERP Security" <furnicraft.erp@gmail.com>';
-
-export const resetEmailTransporters = () => {
-  if (cachedPrimaryTransporter) {
-    try { cachedPrimaryTransporter.close(); } catch {}
-    cachedPrimaryTransporter = null;
-  }
-  if (cachedFallbackTransporter) {
-    try { cachedFallbackTransporter.close(); } catch {}
-    cachedFallbackTransporter = null;
-  }
-};
+export const resetEmailTransporters = () => {};
 
 /**
- * Clean & normalize sender "From" address, stripping outer quotes from dotenv if present
+ * Clean & normalize sender "From" address
  */
 export const getCleanFromAddress = () => {
-  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
-  let fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || DEFAULT_EMAIL_FROM;
-
-  if (typeof fromAddress === 'string') {
-    fromAddress = fromAddress.trim();
-    if ((fromAddress.startsWith('"') && fromAddress.endsWith('"')) || (fromAddress.startsWith("'") && fromAddress.endsWith("'"))) {
-      fromAddress = fromAddress.slice(1, -1).trim();
-    }
-  }
-
-  const isGmail = (process.env.EMAIL_SERVICE || '').toLowerCase() === 'gmail' || (smtpUser && smtpUser.includes('@gmail.com'));
-  if (!fromAddress || (isGmail && fromAddress.includes('furnicraft.com') && smtpUser)) {
-    fromAddress = `"FurniCraft ERP Security" <${smtpUser}>`;
-  }
-  return fromAddress || DEFAULT_EMAIL_FROM;
+  const senderEmail = process.env.BREVO_SENDER || process.env.SMTP_USER || DEFAULT_SENDER_EMAIL;
+  return `"${DEFAULT_SENDER_NAME}" <${senderEmail}>`;
 };
 
 /**
- * Obtain configured Primary Nodemailer Transporter
- * Supports:
- * 1. Gmail SMTP with Google App Password (EMAIL_SERVICE='gmail' or default)
- * 2. Custom Transactional SMTP (host, port, secure, user, pass)
+ * Send email via Brevo HTTPS REST API (Port 443 - Fast, reliable cloud delivery, never blocked by firewalls)
  */
-export const getEmailTransporter = () => {
-  if (cachedPrimaryTransporter) return cachedPrimaryTransporter;
-
-  const emailService = (process.env.EMAIL_SERVICE || process.env.SMTP_SERVICE || 'gmail').toLowerCase();
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 587;
-  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
-  const rawPass = process.env.SMTP_PASS || DEFAULT_SMTP_PASS;
-  const smtpPass = rawPass ? rawPass.replace(/\s+/g, '') : null;
-  const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-
-  if (emailService === 'gmail' || (!smtpHost && smtpUser && smtpPass)) {
-    cachedPrimaryTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      ...SMTP_TIMEOUTS,
-    });
-  } else if (smtpHost && smtpUser && smtpPass) {
-    cachedPrimaryTransporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpSecure,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      ...SMTP_TIMEOUTS,
-    });
-  }
-
-  return cachedPrimaryTransporter;
-};
-
-/**
- * Obtain Fallback Nodemailer Transporter (Port 587 STARTTLS)
- * Used if primary port 465 SSL connection drops or times out in cloud environments like Render
- */
-export const getFallbackEmailTransporter = () => {
-  if (cachedFallbackTransporter) return cachedFallbackTransporter;
-
-  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
-  const rawPass = process.env.SMTP_PASS || DEFAULT_SMTP_PASS;
-  const smtpPass = rawPass ? rawPass.replace(/\s+/g, '') : null;
-
-  if (smtpUser && smtpPass) {
-    cachedFallbackTransporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      ...SMTP_TIMEOUTS,
-    });
-  }
-
-  return cachedFallbackTransporter;
-};
-
-/**
- * Send email with automatic retry and multi-port resilience
- */
-/**
- * Send email via Resend HTTPS REST API (Port 443 - works everywhere, never blocked by cloud firewalls)
- */
-export const sendViaResend = async ({ to, subject, html, text, fromAddress }) => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: fromAddress || 'FurniCraft ERP <onboarding@resend.dev>',
-        to: Array.isArray(to) ? to : [to],
-        subject,
-        html,
-        text,
-      }),
-    });
-    const data = await res.json();
-    if (res.ok && data?.id) {
-      console.log(`[EmailService - Resend HTTPS] Delivered to ${to}: ${data.id}`);
-      return { success: true, mode: 'resend_https', messageId: data.id };
-    }
-    console.warn('[EmailService - Resend HTTPS Warning]', data);
-    return null;
-  } catch (err) {
-    console.warn('[EmailService - Resend HTTPS Exception]', err.message);
-    return null;
-  }
-};
-
-/**
- * Send email via Brevo HTTPS REST API (Port 443 - 300 free emails/day)
- */
-export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress }) => {
+export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress, replyTo, attachments = [] }) => {
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) return null;
 
   try {
-    const senderEmail = process.env.BREVO_SENDER || 'furnicraft.erp@gmail.com';
+    const senderEmail = process.env.BREVO_SENDER || DEFAULT_SENDER_EMAIL;
+    const senderName = DEFAULT_SENDER_NAME;
+
+    const payload = {
+      sender: { name: senderName, email: senderEmail },
+      to: Array.isArray(to)
+        ? to.map((e) => ({ email: typeof e === 'string' ? e : e.email, name: (typeof e === 'object' && e.name) || name || e }))
+        : [{ email: to, name: name || to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+    };
+
+    if (replyTo) {
+      payload.replyTo = { email: replyTo };
+    }
+
+    if (attachments && attachments.length > 0) {
+      payload.attachment = attachments
+        .map((att) => {
+          let base64Content = att.content;
+          if (!base64Content && att.path && fs.existsSync(att.path)) {
+            base64Content = fs.readFileSync(att.path).toString('base64');
+          }
+          return {
+            name: att.filename || path.basename(att.path || 'attachment'),
+            content: base64Content,
+          };
+        })
+        .filter((a) => !!a.content);
+    }
+
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'api-key': apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        sender: { name: 'FurniCraft ERP Security', email: senderEmail },
-        to: [{ email: to, name: name || to }],
-        subject,
-        htmlContent: html,
-        textContent: text,
-      }),
+      body: JSON.stringify(payload),
     });
-    const data = await res.json();
+
+    const data = await res.json().catch(() => ({}));
     if (res.ok && (data?.messageId || data?.id)) {
       const msgId = data.messageId || data.id;
       console.log(`[EmailService - Brevo HTTPS] Delivered to ${to}: ${msgId}`);
-      return { success: true, mode: 'brevo_https', messageId: msgId };
+      return { success: true, mode: 'brevo_https', messageId: msgId, info: { messageId: msgId } };
     }
+
     console.warn('[EmailService - Brevo HTTPS Warning]', data);
     return null;
   } catch (err) {
@@ -205,118 +93,65 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress 
 };
 
 /**
- * Send email via SendGrid HTTPS REST API (Port 443 - 100 free emails/day)
+ * Brevo-powered transporter adapter for test mocking and backward compatibility
  */
-export const sendViaSendGrid = async ({ to, subject, html, text, fromAddress }) => {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) return null;
-
-  try {
-    const senderEmail = process.env.SENDGRID_FROM || 'furnicraft.erp@gmail.com';
-    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: senderEmail, name: 'FurniCraft ERP Security' },
-        subject,
-        content: [
-          { type: 'text/plain', value: text },
-          { type: 'text/html', value: html },
-        ],
-      }),
-    });
-    if (res.ok || res.status === 202) {
-      const msgId = res.headers.get('x-message-id') || `sg-${Date.now()}`;
-      console.log(`[EmailService - SendGrid HTTPS] Delivered to ${to}: ${msgId}`);
-      return { success: true, mode: 'sendgrid_https', messageId: msgId };
+const brevoTransporter = {
+  sendMail: async (options) => {
+    const res = await sendMailWithResilience(options);
+    if (!res.success) {
+      throw new Error(res.lastError?.message || 'Email delivery failed');
     }
-    const data = await res.json().catch(() => ({}));
-    console.warn('[EmailService - SendGrid HTTPS Warning]', data);
-    return null;
-  } catch (err) {
-    console.warn('[EmailService - SendGrid HTTPS Exception]', err.message);
-    return null;
-  }
+    return res.info || { messageId: res.messageId };
+  },
+  verify: async () => verifyEmailTransport(),
+  close: () => {},
 };
 
+export const getEmailTransporter = () => brevoTransporter;
+export const getFallbackEmailTransporter = () => brevoTransporter;
+
 /**
- * Send email with automatic retry and multi-port / HTTPS resilience
+ * Send email with Brevo HTTPS REST API resilience
  */
 const sendMailWithResilience = async (mailOptions) => {
-  // 1. Try HTTPS APIs first if configured (Port 443 - never blocked on cloud hosts)
-  if (process.env.RESEND_API_KEY) {
-    const resendResult = await sendViaResend(mailOptions);
-    if (resendResult?.success) return resendResult;
-  }
   if (process.env.BREVO_API_KEY) {
     const brevoResult = await sendViaBrevo(mailOptions);
     if (brevoResult?.success) return brevoResult;
   }
-  if (process.env.SENDGRID_API_KEY) {
-    const sendgridResult = await sendViaSendGrid(mailOptions);
-    if (sendgridResult?.success) return sendgridResult;
-  }
 
-  // 2. Try Primary (port 465 SSL) and Fallback (port 587 STARTTLS) with fast 3.5s timeout
-  const transporters = [
-    { name: 'Primary (port 465 SSL)', get: () => getEmailTransporter() },
-    { name: 'Fallback (port 587 STARTTLS)', get: () => getFallbackEmailTransporter() },
-  ];
-
-  let lastError = null;
-  for (const { name, get } of transporters) {
-    const transporter = get();
-    if (!transporter) continue;
-    try {
-      const info = await transporter.sendMail(mailOptions);
-      return { success: true, mode: 'smtp', info, messageId: info.messageId };
-    } catch (err) {
-      lastError = err;
-      console.warn(`[EmailService] SMTP delivery attempt failed via ${name} (${err.code || err.responseCode || 'error'}): ${err.message}`);
-      resetEmailTransporters();
-    }
-  }
-
-  return { success: false, lastError };
+  return { success: false, lastError: new Error('Brevo delivery failed or BREVO_API_KEY not configured') };
 };
 
 /**
- * Check the SMTP login once at startup and log the result (never the credentials),
- * so a missing or rejected Gmail App Password is visible in the server log instead of failing silently.
+ * Check Brevo HTTPS connection at startup
  */
 export const verifyEmailTransport = async () => {
-  const primary = getEmailTransporter();
-  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
-  if (!primary) {
-    console.warn('[EmailService] Email is NOT configured. OTP emails cannot be sent.');
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    console.warn('[EmailService] BREVO_API_KEY is not configured. Email delivery will simulate in development or fail in production.');
     return false;
   }
+
   try {
-    await primary.verify();
-    console.log(`[EmailService] SMTP ready as ${smtpUser} (Primary 465)`);
-    return true;
-  } catch (err) {
-    console.error(`[EmailService] Primary SMTP (465) verification failed (${err.code || err.responseCode || 'error'}): ${err.message}`);
-    const fallback = getFallbackEmailTransporter();
-    if (fallback) {
-      try {
-        await fallback.verify();
-        console.log(`[EmailService] Fallback SMTP (587) ready as ${smtpUser}`);
-        return true;
-      } catch (fbErr) {
-        console.error(`[EmailService] Fallback SMTP (587) verification failed: ${fbErr.message}`);
-      }
+    const res = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': apiKey },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      console.log(`[EmailService] Brevo HTTPS verified as ${data.email} (${data.plan?.[0]?.type || 'Free'})`);
+      return true;
     }
+    const err = await res.json().catch(() => ({}));
+    console.warn(`[EmailService] Brevo HTTPS key verification failed:`, err.message || err.code || res.status);
+    return false;
+  } catch (err) {
+    console.warn(`[EmailService] Brevo verification network error:`, err.message);
     return false;
   }
 };
 
 /**
- * Dispatch 6-digit verification OTP email
+ * Dispatch 6-digit verification OTP email via Brevo HTTPS API
  * @param {Object} options
  * @param {string} options.to - User email
  * @param {string} options.name - User name
@@ -327,9 +162,7 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
   const isProduction = process.env.NODE_ENV === 'production';
   const fromAddress = getCleanFromAddress();
 
-  const subject = purpose === 'PASSWORD_RESET'
-    ? `FurniCraft ERP: Your Verification Code is ${otp}`
-    : `FurniCraft ERP: Your Verification Code is ${otp}`;
+  const subject = `FurniCraft ERP: Your Verification Code is ${otp}`;
 
   const attachments = [];
   let logoCid = null;
@@ -469,7 +302,7 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
 
   // If delivery failed in production, throw ServiceUnavailableError so failure is clear and no OTP is ever leaked
   if (isProduction) {
-    console.error(`[EmailService] SMTP delivery failed for ${to} (${result.lastError?.code || 'ERROR'}):`, result.lastError?.message);
+    console.error(`[EmailService] Brevo delivery failed for ${to}:`, result.lastError?.message);
     throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
   }
 
@@ -580,28 +413,30 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
             <div class="brand-subtitle">Modern Furniture Workforce &amp; Project Management</div>
           </div>
           <div class="content">
-            <div class="greeting">Hello, ${name || 'Craftsman'}!</div>
+            <div class="greeting">Hello, ${name}!</div>
             <p class="message">
-              We received a request to recover the password for your FurniCraft account linked to <strong>${to}</strong> on the <strong>FurniCraft ERP</strong> platform.
-              Your temporary access password has been generated below:
+              Your account has been created on the <strong>FurniCraft ERP</strong> management platform.
+              Below are your initial login credentials:
             </p>
 
             <div class="password-box">
-              <div class="password-label">Your New Account Password</div>
+              <div class="password-label">Temporary Account Password</div>
               <div class="password-value">${newPassword}</div>
             </div>
 
             <div class="warning-box">
-              <strong>Security Reminder:</strong> Please sign in using this password and immediately update it in your profile settings. Do not share this password with anyone.
+              <strong>Security Recommendation:</strong> Please log in and immediately update your password under your Profile / Settings. Never share your password with anyone.
             </div>
 
-            <div style="text-align: center;">
-              <a href="${env.CLIENT_URL || 'http://localhost:5173'}" class="btn">Sign In to FurniCraft ERP</a>
+            <div style="text-align: center; margin-top: 24px;">
+              <a href="${env.CLIENT_URL || 'http://localhost:5173'}/login" class="btn">
+                Log In to FurniCraft &rarr;
+              </a>
             </div>
           </div>
           <div class="footer">
-            This is an automated security email from <strong>FurniCraft ERP</strong> — Modern Furniture Workforce System.<br/>
-            If you did not request this password reset, please contact your administrator or supervisor immediately.
+            This is an automated notification from FurniCraft ERP.<br/>
+            Sent securely to ${to}
           </div>
         </div>
       </div>
@@ -609,7 +444,7 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
     </html>
   `;
 
-  const textContent = `Hello ${name || 'Craftsman'},\n\nYour FurniCraft ERP account password for ${to} is:\n\n${newPassword}\n\nPlease sign in at ${env.CLIENT_URL || 'http://localhost:5173'} and update your password immediately.\n\nFurniCraft ERP — Modern Furniture Workforce & Project Management`;
+  const textContent = `Hello ${name},\n\nYour FurniCraft ERP account has been created.\n\nYour temporary password is: ${newPassword}\n\nPlease log in at ${env.CLIENT_URL || 'http://localhost:5173'}/login and update your password immediately.\n\nFurniCraft ERP Team`;
 
   const mailOptions = {
     from: fromAddress,
@@ -626,24 +461,21 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
 
   const result = await sendMailWithResilience(mailOptions);
   if (result.success) {
-    console.log(`[EmailService] Password email delivered to ${to}: ${result.info.messageId}`);
-    return { success: true, mode: 'smtp', messageId: result.info.messageId };
+    return { success: true, mode: 'brevo_https', messageId: result.messageId || result.info?.messageId };
   }
 
-  if (!isProduction) {
-    console.log(`\n======================================================`);
-    console.log(`[EmailService - Simulated Dispatch]`);
-    console.log(`To: ${to} (${name})`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Password: ${newPassword}`);
-    console.log(`======================================================\n`);
+  if (isProduction) {
+    console.error(`[EmailService] Brevo delivery failed for ${to}:`, result.lastError?.message);
+    throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
   }
 
+  console.log(`[EmailService - Simulated Password Email] Delivered to: ${to} | Password: ${newPassword}`);
   return { success: true, mode: 'simulated' };
 };
 
 /**
- * Dispatch Support / Helpdesk Ticket Email to the official address furnicraft.erp@gmail.com
+ * Dispatch support ticket notification email to furnicraft.erp@gmail.com
+ * Guarantees zero leakage: sent ONLY to furnicraft.erp@gmail.com
  */
 export const sendSupportTicketEmail = async ({
   ticketNumber,
@@ -656,24 +488,19 @@ export const sendSupportTicketEmail = async ({
   message,
   createdAt,
 }) => {
-  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
+  const isProduction = process.env.NODE_ENV === 'production';
   const supportEmail = 'furnicraft.erp@gmail.com';
+  const emailSubject = `[FurniCraft Support] Ticket #${ticketNumber}: ${subject}`;
 
   const categoryLabels = {
-    ATTENDANCE_WAGES: 'Attendance & Wages (Haziri aur Dehadi)',
-    PROJECT_SITE: 'Project & Site Kaam',
-    PAYMENT_BILL: 'Payment & Advance Bills',
-    TOOL_EQUIPMENT: 'Tools & Machinery',
-    ACCOUNT_LOGIN: 'Account & Login Access',
-    GENERAL_INQUIRY: 'General Inquiry / Sawal',
-    OTHER: 'Other Request',
+    PAYMENT_ADVANCE: 'Payment & Advance',
+    ATTENDANCE_WAGES: 'Attendance & Wages (Haziri & Dehari)',
+    PROJECT_ISSUE: 'Project & Site Work',
+    ACCOUNT_ACCESS: 'Account Access & Security',
+    GENERAL_INQUIRY: 'General Inquiry / Madad',
   };
-  const categoryName = categoryLabels[category] || category;
-
-  const emailSubject = `[FurniCraft Support] ${ticketNumber}: ${subject}`;
-
+  const categoryName = categoryLabels[category] || category || 'General Help';
   const formattedDate = new Date(createdAt || Date.now()).toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
     dateStyle: 'medium',
     timeStyle: 'short',
   });
@@ -696,9 +523,6 @@ export const sendSupportTicketEmail = async ({
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
       <meta name="x-apple-disable-message-reformatting">
-      <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
-      <meta name="color-scheme" content="light dark">
-      <meta name="supported-color-schemes" content="light dark">
       <title>${emailSubject}</title>
       <style>
         *, *:before, *:after { box-sizing: border-box !important; }
@@ -709,141 +533,29 @@ export const sendSupportTicketEmail = async ({
           min-width: 100% !important;
           -webkit-text-size-adjust: 100% !important;
           -ms-text-size-adjust: 100% !important;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           background-color: #f1f5f9;
-          color: #1e293b;
+          color: #0f172a;
         }
-        .wrapper {
-          width: 100% !important;
-          min-width: 100% !important;
-          background-color: #f1f5f9;
-          padding: 20px 10px;
-          margin: 0;
-        }
-        .container {
-          max-width: 580px;
-          width: 100%;
-          margin: 0 auto;
-          background: #ffffff;
-          border-radius: 16px;
-          border: 1px solid #e2e8f0;
-          overflow: hidden;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        .header {
-          background: #0f172a;
-          padding: 26px 20px;
-          text-align: center;
-          color: #ffffff;
-        }
-        .logo-container {
-          margin-bottom: 12px;
-          text-align: center;
-        }
-        .logo-img {
-          height: 48px;
-          max-width: 200px;
-          object-fit: contain;
-          display: inline-block;
-        }
-        .brand-title {
-          margin: 0;
-          font-size: 24px;
-          font-weight: 900;
-          letter-spacing: -0.5px;
-          color: #ffffff;
-          line-height: 1.2;
-        }
+        .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
+        .container { max-width: 580px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 24px 20px; text-align: center; color: #ffffff; }
+        .logo-container { margin-bottom: 12px; text-align: center; }
+        .logo-img { height: 48px; max-width: 190px; object-fit: contain; display: inline-block; }
+        .brand-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
-        .brand-badge {
-          background: #d97706;
-          padding: 3px 8px;
-          border-radius: 6px;
-          font-size: 11px;
-          font-weight: 800;
-          color: #ffffff;
-          margin-left: 8px;
-          vertical-align: middle;
-          letter-spacing: 0.5px;
-        }
-        .content {
-          padding: 24px 20px;
-        }
-        .ticket-title {
-          font-size: 18px;
-          font-weight: 800;
-          color: #0f172a;
-          margin: 0 0 6px 0;
-          line-height: 1.35;
-          word-break: break-word;
-          overflow-wrap: anywhere;
-        }
-        .ticket-meta {
-          font-size: 12px;
-          color: #64748b;
-          margin-bottom: 18px;
-          line-height: 1.5;
-          word-break: break-word;
-        }
-        .ticket-banner {
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          padding: 12px 16px;
-          margin-bottom: 20px;
-          box-sizing: border-box;
-        }
-        .detail-row {
-          padding: 9px 0;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        .detail-row-last {
-          padding: 9px 0 2px 0;
-          border-bottom: none;
-        }
-        .detail-label {
-          font-size: 10.5px;
-          font-weight: 700;
-          color: #64748b;
-          text-transform: uppercase;
-          letter-spacing: 0.6px;
-          margin-bottom: 3px;
-          display: block;
-        }
-        .detail-value {
-          font-size: 13.5px;
-          font-weight: 700;
-          color: #0f172a;
-          line-height: 1.45;
-          word-break: break-word;
-          overflow-wrap: anywhere;
-          display: block;
-        }
-        .role-badge {
-          display: inline-block;
-          font-size: 10px;
-          font-weight: 800;
-          color: #92400e;
-          background: #fef3c7;
-          border: 1px solid #fde68a;
-          padding: 1px 7px;
-          border-radius: 4px;
-          margin-left: 6px;
-          text-transform: uppercase;
-          vertical-align: middle;
-        }
-        .category-badge {
-          display: inline-block;
-          font-size: 12px;
-          font-weight: 700;
-          color: #1e40af;
-          background: #eff6ff;
-          border: 1px solid #bfdbfe;
-          padding: 2px 9px;
-          border-radius: 6px;
-          word-break: break-word;
-        }
+        .brand-badge { background: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #ffffff; vertical-align: middle; margin-left: 6px; }
+        .content { padding: 24px 20px; }
+        .ticket-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 6px; line-height: 1.35; }
+        .ticket-meta { font-size: 12px; color: #64748b; margin-bottom: 18px; }
+        .ticket-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; }
+        .detail-row { display: table; width: 100%; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
+        .detail-row-last { display: table; width: 100%; padding: 6px 0; font-size: 13px; }
+        .detail-label { display: table-cell; width: 130px; font-weight: 700; color: #475569; }
+        .detail-value { display: table-cell; font-weight: 600; color: #0f172a; }
+        .role-badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 1px 7px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+        .category-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
         .message-box {
           background: #fffbeb;
           border: 1px solid #fef3c7;
@@ -1028,13 +740,13 @@ Description / Message:
 ${message}
   `.trim();
 
-  const fromAddress = `"FurniCraft Helpdesk" <${smtpUser}>`;
+  const fromAddress = getCleanFromAddress();
   const mailOptions = {
     from: fromAddress,
     fromAddress,
     to: supportEmail,
     name: 'FurniCraft ERP Owner',
-    replyTo: userEmail && userEmail.includes('@') ? userEmail : smtpUser,
+    replyTo: userEmail && userEmail.includes('@') ? userEmail : undefined,
     subject: emailSubject,
     text: textContent,
     html: htmlContent,
@@ -1045,11 +757,11 @@ ${message}
 
   const result = await sendMailWithResilience(mailOptions);
   if (result.success) {
-    console.log(`[EmailService] Support ticket #${ticketNumber} email delivered to ${supportEmail}: ${result.info.messageId}`);
+    console.log(`[EmailService] Support ticket #${ticketNumber} email delivered to ${supportEmail}: ${result.info?.messageId || result.messageId}`);
     return {
       success: true,
-      mode: 'smtp',
-      messageId: result.info.messageId,
+      mode: 'brevo_https',
+      messageId: result.info?.messageId || result.messageId,
     };
   }
 
