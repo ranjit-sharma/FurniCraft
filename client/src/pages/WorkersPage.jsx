@@ -819,27 +819,40 @@ export const WorkersPage = () => {
                       </span>
                     )}
                   </div>
-                  {w.isOnLeave ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                      <CalendarOff className="h-3 w-3" />
-                      On Leave
-                    </span>
-                  ) : !isThekedar ? (
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
-                        w.userId?.status === 'ACTIVE'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
-                      }`}
-                    >
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry') && (
                       <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          w.userId?.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${
+                          (((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry').toLowerCase() === 'helper')
+                            ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+                            : 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
                         }`}
-                      />
-                      {w.userId?.status === 'ACTIVE' ? t('workers.active', 'Active') : t('workers.suspended', 'Suspended')}
-                    </span>
-                  ) : null}
+                      >
+                        {(Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry'}
+                      </span>
+                    )}
+                    {w.isOnLeave ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                        <CalendarOff className="h-3 w-3" />
+                        On Leave
+                      </span>
+                    ) : !isThekedar ? (
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                          w.userId?.status === 'ACTIVE'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            w.userId?.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                          }`}
+                        />
+                        {w.userId?.status === 'ACTIVE' ? t('workers.active', 'Active') : t('workers.suspended', 'Suspended')}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="mt-3 flex items-center gap-3">
@@ -852,17 +865,6 @@ export const WorkersPage = () => {
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         ₹{w.defaultDailyWage || 750}/day
                       </span>
-                      {((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry') && (
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${
-                            (((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry').toLowerCase() === 'helper')
-                              ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
-                              : 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
-                          }`}
-                        >
-                          {(Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry'}
-                        </span>
-                      )}
                     </div>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
                   </div>
