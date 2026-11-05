@@ -20,8 +20,6 @@ import {
   CheckCircle2,
   Lock,
   FileText,
-  UserX,
-  UserCheck,
   RefreshCw,
   AlertTriangle,
   Trash2,
@@ -790,7 +788,8 @@ export const WorkersPage = () => {
                       </span>
                     )}
                   </div>
-                  <span
+                  {!isThekedar && (
+                    <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
                         w.userId?.status === 'ACTIVE'
                           ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
@@ -804,6 +803,7 @@ export const WorkersPage = () => {
                       />
                       {w.userId?.status === 'ACTIVE' ? t('workers.active', 'Active') : t('workers.suspended', 'Suspended')}
                     </span>
+                  )}
                 </div>
 
                 <div className="mt-3 flex items-center gap-3">
@@ -1112,20 +1112,6 @@ export const WorkersPage = () => {
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                       ₹{activityWorker.defaultDailyWage || 750}/day
                     </span>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                        activityWorker.userId?.status === 'ACTIVE'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                          : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800'
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          activityWorker.userId?.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
-                        }`}
-                      />
-                      {activityWorker.userId?.status === 'ACTIVE' ? 'Active' : 'Suspended'}
-                    </span>
                     {(() => {
                       const todayStr = localToday();
                       const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
@@ -1136,32 +1122,7 @@ export const WorkersPage = () => {
                         </span>
                       ) : null;
                     })()}
-                    {(isThekedar || isOwner) && (
-                      <button
-                        type="button"
-                        disabled={statusActionLoadingId === activityWorker.userId?._id}
-                        onClick={(e) => handleToggleWorkerStatus(activityWorker, e)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border transition cursor-pointer disabled:opacity-50 ${
-                          activityWorker.userId?.status === 'ACTIVE'
-                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/50'
-                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
-                        }`}
-                      >
-                        {statusActionLoadingId === activityWorker.userId?._id ? (
-                          <RefreshCw className="h-3 w-3 animate-spin" />
-                        ) : activityWorker.userId?.status === 'ACTIVE' ? (
-                          <>
-                            <UserX className="h-3 w-3" />
-                            <span>Deactivate Worker</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="h-3 w-3" />
-                            <span>Activate Worker</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+                    
                     <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
                       {activityWorker.workerCode}
                     </span>
