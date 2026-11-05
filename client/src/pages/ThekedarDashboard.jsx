@@ -15,6 +15,7 @@ import {
   FolderKanban,
   FileText,
   ChevronLeft,
+  Calendar,
   ChevronRight,
   ArrowUpRight,
   Lock,
@@ -48,6 +49,26 @@ export const ThekedarDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(localToday);
   const [savingWorkerId, setSavingWorkerId] = useState(null);
   const isToday = selectedDate === localToday();
+
+  const surroundingDays = React.useMemo(() => {
+    const base = new Date(selectedDate + 'T12:00:00');
+    const todayStr = localToday();
+    const days = [];
+    for (let offset = -1; offset <= 1; offset++) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + offset);
+      const dStr = d.toISOString().slice(0, 10);
+      days.push({
+        dateStr: dStr,
+        weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNum: d.getDate(),
+        month: d.toLocaleDateString('en-US', { month: 'short' }),
+        isSelected: dStr === selectedDate,
+        isFuture: dStr > todayStr,
+      });
+    }
+    return days;
+  }, [selectedDate]);
 
   const handlePrevDay = () => {
     const d = new Date(selectedDate);
@@ -285,36 +306,77 @@ export const ThekedarDashboard = () => {
               : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
           }
           action={
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 select-none">
               <button
                 type="button"
                 onClick={handlePrevDay}
                 title="Previous Day"
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+                className="p-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition cursor-pointer"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
               </button>
-              <input
-                type="date"
-                value={selectedDate}
-                max={localToday()}
-                onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
-              />
+
+              <div className="flex items-center gap-3 sm:gap-4">
+                {surroundingDays.map((d) => (
+                  <button
+                    key={d.dateStr}
+                    type="button"
+                    disabled={d.isFuture}
+                    onClick={() => setSelectedDate(d.dateStr)}
+                    className={`flex flex-col items-center justify-center transition cursor-pointer min-w-[34px] sm:min-w-[40px] text-center ${
+                      d.isSelected
+                        ? 'text-indigo-600 dark:text-indigo-400 scale-105'
+                        : d.isFuture
+                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
+                        : 'text-indigo-500/80 hover:text-indigo-700 dark:text-indigo-300/80 dark:hover:text-indigo-200'
+                    }`}
+                  >
+                    <span className={`text-[10px] sm:text-[11px] leading-tight ${d.isSelected ? 'font-black' : 'font-semibold'}`}>
+                      {d.weekday}
+                    </span>
+                    <span className={`leading-none my-0.5 ${d.isSelected ? 'text-lg sm:text-xl font-black' : 'text-base sm:text-lg font-bold'}`}>
+                      {d.dayNum}
+                    </span>
+                    <span className={`text-[10px] sm:text-[11px] leading-tight ${d.isSelected ? 'font-black' : 'font-medium'}`}>
+                      {d.month}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
               <button
                 type="button"
                 onClick={handleNextDay}
                 disabled={isToday}
                 title="Next Day"
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+                className={`p-1 transition ${
+                  isToday
+                    ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
+                    : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 cursor-pointer'
+                }`}
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-5 w-5 stroke-[2.5]" />
               </button>
+
+              <label
+                title="Pick a date"
+                className="relative p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition ml-0.5"
+              >
+                <Calendar className="h-4 w-4" />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  max={localToday()}
+                  onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                />
+              </label>
+
               {!isToday && (
                 <button
                   type="button"
                   onClick={() => setSelectedDate(localToday())}
-                  className="px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-xs font-bold hover:bg-amber-200 dark:hover:bg-amber-900 transition cursor-pointer"
+                  className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-[10px] font-bold hover:bg-amber-200 dark:hover:bg-amber-900 transition cursor-pointer"
                 >
                   Today
                 </button>
