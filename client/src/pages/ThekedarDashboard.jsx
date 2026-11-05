@@ -20,7 +20,6 @@ import {
   Lock,
   CheckCircle2,
   CalendarOff,
-  Clock,
   AlertTriangle,
 } from 'lucide-react';
 
@@ -252,38 +251,6 @@ export const ThekedarDashboard = () => {
         </Link>
       </div>
 
-      {/* Attendance Pending Alert Banner */}
-      {isAttendancePending && (
-        <div
-          role="alert"
-          onClick={() => {
-            const el = document.getElementById('attendance-card');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="rounded-xl border border-amber-300 dark:border-amber-700/80 bg-gradient-to-r from-amber-50 via-orange-50/70 to-amber-100/60 dark:from-amber-950/50 dark:via-orange-950/30 dark:to-amber-900/30 px-3 py-2 shadow-xs text-amber-950 dark:text-amber-100 flex items-center justify-between gap-2.5 transition hover:shadow-sm cursor-pointer"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white shadow-2xs">
-              <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
-              </span>
-              <Clock className="h-3.5 w-3.5" />
-            </div>
-            <div className="flex items-center gap-2 flex-wrap min-w-0">
-              <span className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white whitespace-nowrap">
-                {t('thekedarDash.attendanceAlertTitle', 'Attendance Due')}
-              </span>
-              <span className="text-[11px] text-amber-800/80 dark:text-amber-300 font-medium hidden sm:inline">
-                ({markedTodayCount}/{workers.length} marked)
-              </span>
-            </div>
-          </div>
-          <span className="inline-flex items-center rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 shadow-2xs">
-            {unmarkedWorkersCount} {t('thekedarDash.pending', 'Pending')}
-          </span>
-        </div>
-      )}
 
       {/* Attendance Completed Banner */}
       {isAttendanceComplete && (
@@ -393,6 +360,22 @@ export const ThekedarDashboard = () => {
               >
                 <ChevronRight className="h-6 w-6 stroke-[2.5]" />
               </button>
+
+              {/* Pending attendance for today badge with number in round */}
+              {isAttendancePending && (
+                <div
+                  title={`${unmarkedWorkersCount} ${t('thekedarDash.pending', 'Pending')} ${t('thekedarDash.today', 'Today')}`}
+                  className="flex items-center gap-1.5 rounded-full bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 pl-1 pr-2.5 py-0.5 ml-2 sm:ml-3 shadow-2xs shrink-0 select-none animate-fade-in"
+                >
+                  <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-[11px] font-black shadow-xs">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-60" />
+                    <span className="relative">{unmarkedWorkersCount}</span>
+                  </span>
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300">
+                    {t('thekedarDash.pending', 'Pending')}
+                  </span>
+                </div>
+              )}
             </div>
           }
         >
