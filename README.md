@@ -425,10 +425,7 @@ FurniCraft/
         ├── validators/
         │   └── schemas.js               # Zod schemas for all inbound request validation
         └── scripts/
-            ├── seed.js                  # Comprehensive database seeder with demo accounts
-            ├── restore-test-fixtures.js # Fast test user reset script
-            ├── create_owner_ranjit.js   # Standalone executive owner provisioning script
-            └── cleanup_test_data.js     # Purge ephemeral test records after execution
+            └── seed.js                  # System attendance rules initializer
 ```
 
 ---

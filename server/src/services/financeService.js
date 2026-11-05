@@ -192,7 +192,7 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
       action: 'ADVANCE_DISBURSED',
       targetType: 'FinancialTransaction',
       targetId: transaction._id,
-      newValues: { transactionId, amount: advanceRequest.amount, paymentMethod },
+      newValues: { transactionId: transaction.transactionId, amount: advanceRequest.amount, paymentMethod },
     });
 
     return transaction;
@@ -307,7 +307,7 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
     action: 'SALARY_PAYMENT_RECORDED',
     targetType: 'FinancialTransaction',
     targetId: transaction._id,
-    newValues: { transactionId, amount, remainingPayrollBalance: payroll.balanceRemaining },
+    newValues: { transactionId: transaction.transactionId, amount, remainingPayrollBalance: payroll.balanceRemaining },
   });
 
   return transaction;

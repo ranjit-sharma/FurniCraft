@@ -49,9 +49,9 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
             thekedars: [
               {
                 _id: 'th_1',
-                name: 'Sunil Sharma',
-                email: 'sunil@thekedar.com',
-                phone: '+91 82705 66992',
+                name: 'Contractor Demo',
+                email: 'demo.thekedar@example.com',
+                phone: '+91 98765 43210',
                 role: 'THEKEDAR',
                 status: 'ACTIVE',
               },
@@ -67,9 +67,9 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
                 _id: 'wp_1',
                 userId: {
                   _id: 'u_w1',
-                  name: 'Sumit kumar',
-                  email: 'sumit@furnicraft.com',
-                  phone: '+91 99222 33445',
+                  name: 'Craftsman Demo',
+                  email: 'demo.craftsman@example.com',
+                  phone: '+91 98765 00000',
                   status: 'ACTIVE',
                 },
                 workerCode: 'WRK-0001',
@@ -176,7 +176,7 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
               { userId: 'w_1', name: 'Mohan Lal', status: 'ACTIVE', workerCode: 'FC-WRK-0001', defaultDailyWage: 850, today: null },
             ],
             thekedars: [
-              { _id: 'th_1', name: 'Sunil Sharma', status: 'ACTIVE', workers: 5, activeProjects: 2, projects: 3, unpaidWages: 1600, outstandingAdvances: 500, netPayable: 1100 },
+              { _id: 'th_1', name: 'Contractor Demo', status: 'ACTIVE', workers: 5, activeProjects: 2, projects: 3, unpaidWages: 1600, outstandingAdvances: 500, netPayable: 1100 },
             ],
             recentAudits: [],
             recentTransactions: [],
@@ -248,7 +248,7 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
   it('renders OwnerDashboard without crashing or blank screen', async () => {
     const { container } = renderWithProviders(OwnerDashboard);
     expect(container).not.toBeEmptyDOMElement();
-    expect(await screen.findByText('₹1,100')).toBeInTheDocument(); // Sunil's net payable from the per-Thekedar list
+    expect(await screen.findByText('₹1,100')).toBeInTheDocument(); // Contractor net payable from the per-Thekedar list
   });
 
   it('renders ThekedarDashboard without crashing or blank screen', async () => {

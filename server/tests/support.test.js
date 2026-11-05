@@ -24,9 +24,9 @@ describe('Support & Help Center API Verification', () => {
 
     // Create test user or mock user
     const testUser = await User.create({
-      name: 'Ramesh Support Test',
+      name: 'Support Test Contractor',
       phone: '9888877771',
-      email: 'ramesh.test@furnicraft.com',
+      email: 'support.contractor.test@example.com',
       password: 'password123',
       role: 'THEKEDAR',
     });
@@ -37,7 +37,7 @@ describe('Support & Help Center API Verification', () => {
       category: 'ATTENDANCE_WAGES',
       subject: 'Urgent Wage Discrepancy on Project #102',
       message: 'Worker daily rate was calculated incorrectly for 2 shifts on Saturday.',
-      contactEmail: 'ramesh.test@furnicraft.com',
+      contactEmail: 'support.contractor.test@example.com',
     };
 
     const res = await request(app)
