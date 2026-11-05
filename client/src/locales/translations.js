@@ -178,7 +178,9 @@ export const translations = {
       "catProject": "Project & Site",
       "catTool": "Tools & Machinery",
       "catAccount": "Account & Access",
-      "catGeneral": "General Inquiry"
+      "catGeneral": "General Inquiry",
+      "ownerSubtitle": "Review, manage, and resolve Thekedar support requests",
+      "thekedarRequests": "Thekedar Requests"
     },
     "login": {
       "title": "Sign in to your account",
@@ -1077,7 +1079,9 @@ export const translations = {
       "catProject": "प्रोजेक्ट और साइट",
       "catTool": "औजार और मशीनें",
       "catAccount": "अकाउंट और लॉगिन",
-      "catGeneral": "सामान्य पूछताछ"
+      "catGeneral": "सामान्य पूछताछ",
+      "ownerSubtitle": "ठेकेदारों के सहायता अनुरोधों की समीक्षा एवं समाधान करें",
+      "thekedarRequests": "ठेकेदार अनुरोध"
     },
     "login": {
       "title": "अपने खाते में साइन इन करें",
@@ -1976,7 +1980,9 @@ export const translations = {
           "catProject": "Project aur Site Kaam",
           "catTool": "Auzar aur Machinery",
           "catAccount": "Account aur Login",
-          "catGeneral": "Aam Poochtach (General)"
+          "catGeneral": "Aam Poochtach (General)",
+          "ownerSubtitle": "Thekedaron ke support requests review aur resolve karein",
+          "thekedarRequests": "Thekedar Requests"
       },
       "login": {
           "title": "Apne account me Sign In karein",

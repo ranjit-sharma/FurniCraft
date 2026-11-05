@@ -23,10 +23,11 @@ describe('Support & Help Center API Verification', () => {
     const emailSpy = vi.spyOn(emailService, 'sendSupportTicketEmail');
 
     // Create test user or mock user
+    const testEmail = `support.contractor.${Date.now()}@example.com`;
     const testUser = await User.create({
       name: 'Support Test Contractor',
-      phone: '9888877771',
-      email: 'support.contractor.test@example.com',
+      phone: `988${Math.floor(1000000 + Math.random() * 9000000)}`,
+      email: testEmail,
       password: 'password123',
       role: 'THEKEDAR',
     });
@@ -37,7 +38,7 @@ describe('Support & Help Center API Verification', () => {
       category: 'ATTENDANCE_WAGES',
       subject: 'Urgent Wage Discrepancy on Project #102',
       message: 'Worker daily rate was calculated incorrectly for 2 shifts on Saturday.',
-      contactEmail: 'support.contractor.test@example.com',
+      contactEmail: testEmail,
     };
 
     const res = await request(app)
@@ -95,5 +96,77 @@ describe('Support & Help Center API Verification', () => {
     if (spy) {
       spy.mockRestore();
     }
+  });
+
+  it('allows Owner to view all tickets and update ticket status and notes', async () => {
+    const app = createApp();
+
+    // Create Owner user
+    const ts = Date.now();
+    const ownerUser = await User.create({
+      name: 'Owner Admin Test',
+      phone: `988${Math.floor(1000000 + Math.random() * 9000000)}`,
+      email: `owner.admin.${ts}@example.com`,
+      password: 'password123',
+      role: 'OWNER',
+    });
+
+    const thekedarUser = await User.create({
+      name: 'Thekedar Support Submitter',
+      phone: `988${Math.floor(1000000 + Math.random() * 9000000)}`,
+      email: `thekedar.submitter.${ts}@example.com`,
+      password: 'password123',
+      role: 'THEKEDAR',
+    });
+
+    const thekedarToken = signToken({ id: thekedarUser._id, role: thekedarUser.role, tokenVersion: thekedarUser.tokenVersion });
+    const ownerToken = signToken({ id: ownerUser._id, role: ownerUser.role, tokenVersion: ownerUser.tokenVersion });
+
+    // 1. Thekedar submits ticket
+    const createRes = await request(app)
+      .post('/api/v1/support/tickets')
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        category: 'PAYMENT_BILL',
+        subject: 'Weekly Advance Request Clarification',
+        message: 'Need advance released for project woodwork completion.',
+      });
+
+    expect(createRes.status).toBe(201);
+    const createdTicket = createRes.body.ticket;
+
+    // 2. Non-owner cannot view all tickets
+    const nonOwnerGetRes = await request(app)
+      .get('/api/v1/support/tickets')
+      .set('Authorization', `Bearer ${thekedarToken}`);
+    expect([401, 403]).toContain(nonOwnerGetRes.status);
+
+    // 3. Owner CAN view all tickets
+    const ownerGetRes = await request(app)
+      .get('/api/v1/support/tickets')
+      .set('Authorization', `Bearer ${ownerToken}`);
+    expect(ownerGetRes.status).toBe(200);
+    expect(ownerGetRes.body.success).toBe(true);
+    expect(Array.isArray(ownerGetRes.body.tickets)).toBe(true);
+    const found = ownerGetRes.body.tickets.find((t) => t.ticketNumber === createdTicket.ticketNumber);
+    expect(found).toBeDefined();
+
+    // 4. Owner updates ticket status and admin notes
+    const updateRes = await request(app)
+      .patch(`/api/v1/support/tickets/${createdTicket._id}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        status: 'RESOLVED',
+        adminNotes: 'Advance approved and transferred via bank transaction #TXN99881.',
+      });
+
+    expect(updateRes.status).toBe(200);
+    expect(updateRes.body.success).toBe(true);
+    expect(updateRes.body.ticket.status).toBe('RESOLVED');
+    expect(updateRes.body.ticket.adminNotes).toContain('TXN99881');
+
+    // Clean up
+    await SupportTicket.deleteMany({ userId: { $in: [thekedarUser._id, ownerUser._id] } });
+    await User.deleteMany({ _id: { $in: [thekedarUser._id, ownerUser._id] } });
   });
 });

@@ -1,7 +1,7 @@
 import { SupportTicket, AuditLog, Notification } from '../models/index.js';
 import { BadRequestError, NotFoundError } from '../utils/errors.js';
 import { sendSupportTicketEmail } from '../services/emailService.js';
-import { generateUniqueTicketNumber } from '../utils/codeGenerator.js';
+import { generateUniqueTicketNumber, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 export const supportController = {
   /**
@@ -26,9 +26,7 @@ export const supportController = {
         throw new BadRequestError('Message must be at least 5 characters long');
       }
 
-      // Generate strictly unique human-readable ticket number, e.g. TKT-2026-834912
-      const ticketNumber = await generateUniqueTicketNumber();
-
+      // Generate strictly unique human-readable ticket number with concurrency retry
       const validCategories = [
         'ATTENDANCE_WAGES',
         'PROJECT_SITE',
@@ -43,22 +41,25 @@ export const supportController = {
       const userEmail = (contactEmail || user.email || '').trim();
       const userPhone = (contactPhone || user.phone || '').trim();
 
-      const ticket = await SupportTicket.create({
-        ticketNumber,
-        userId: user._id,
-        userName: user.name || 'FurniCraft User',
-        userEmail,
-        userPhone,
-        userRole: user.role || 'USER',
-        category: selectedCategory,
-        subject: subject.trim(),
-        message: message.trim(),
-        status: 'OPEN',
+      const ticket = await withDuplicateRetry(async () => {
+        const ticketNumber = await generateUniqueTicketNumber();
+        return await SupportTicket.create({
+          ticketNumber,
+          userId: user._id,
+          userName: user.name || 'FurniCraft User',
+          userEmail,
+          userPhone,
+          userRole: user.role || 'USER',
+          category: selectedCategory,
+          subject: subject.trim(),
+          message: message.trim(),
+          status: 'OPEN',
+        });
       });
 
       // Dispatch support notification email to furnicraft.erp@gmail.com asynchronously
       sendSupportTicketEmail({
-        ticketNumber,
+        ticketNumber: ticket.ticketNumber,
         userName: ticket.userName,
         userEmail: ticket.userEmail,
         userPhone: ticket.userPhone,
@@ -79,9 +80,9 @@ export const supportController = {
         action: 'CREATE_SUPPORT_TICKET',
         targetType: 'SupportTicket',
         targetId: ticket._id.toString(),
-        reason: `Support ticket ${ticketNumber} created by ${user.name}`,
+        reason: `Support ticket ${ticket.ticketNumber} created by ${user.name}`,
         newValues: {
-          ticketNumber,
+          ticketNumber: ticket.ticketNumber,
           category: selectedCategory,
           subject: ticket.subject,
         },
@@ -92,7 +93,7 @@ export const supportController = {
       // Create confirmation notification for the user asynchronously
       Notification.create({
         recipientId: user._id,
-        title: `Support Ticket Created (${ticketNumber})`,
+        title: `Support Ticket Created (${ticket.ticketNumber})`,
         message: `Your query regarding "${ticket.subject}" has been received. Our team will review it shortly.`,
         type: 'INFO',
         relatedEntity: {
@@ -164,6 +165,72 @@ export const supportController = {
         success: true,
         count: tickets.length,
         tickets,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Update support ticket status and/or resolution notes (Owner / Admin only)
+   * PATCH /api/v1/support/tickets/:id
+   */
+  async updateTicketStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status, adminNotes } = req.body;
+
+      const ticket = await SupportTicket.findById(id);
+      if (!ticket) {
+        throw new NotFoundError('Support ticket not found');
+      }
+
+      const validStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+      if (status && !validStatuses.includes(status)) {
+        throw new BadRequestError(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
+      }
+
+      const previousStatus = ticket.status;
+      if (status) ticket.status = status;
+      if (adminNotes !== undefined) ticket.adminNotes = adminNotes.trim();
+
+      await ticket.save();
+
+      // Record AuditLog asynchronously
+      AuditLog.create({
+        actorId: req.user._id,
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: 'UPDATE_SUPPORT_TICKET',
+        targetType: 'SupportTicket',
+        targetId: ticket._id.toString(),
+        reason: `Support ticket ${ticket.ticketNumber} updated from ${previousStatus} to ${ticket.status} by Owner ${req.user.name}`,
+        newValues: {
+          status: ticket.status,
+          adminNotes: ticket.adminNotes,
+        },
+      }).catch((auditErr) => {
+        console.warn('[Support] Non-blocking audit log failure:', auditErr.message);
+      });
+
+      // Dispatch notification to requester asynchronously
+      Notification.create({
+        recipientId: ticket.userId,
+        title: `Support Ticket Updated (${ticket.ticketNumber})`,
+        message: `Your ticket regarding "${ticket.subject}" has been marked as ${ticket.status}.${ticket.adminNotes ? ` Note: ${ticket.adminNotes}` : ''}`,
+        type: 'INFO',
+        relatedEntity: {
+          entityType: 'SupportTicket',
+          entityId: ticket._id.toString(),
+        },
+      }).catch((notifErr) => {
+        console.warn('[Support] Non-blocking notification failure:', notifErr.message);
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: `Ticket ${ticket.ticketNumber} updated to ${ticket.status}`,
+        ticket,
       });
     } catch (error) {
       next(error);

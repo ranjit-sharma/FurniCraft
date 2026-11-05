@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
+import { HelpCenterModal } from '../components/common/HelpCenterModal';
 import {
   HardHat,
   Users,
@@ -17,6 +18,7 @@ import {
   RefreshCw,
   ChevronRight,
   ArrowUpRight,
+  LifeBuoy,
 } from 'lucide-react';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
@@ -58,6 +60,7 @@ export const OwnerDashboard = () => {
   const [loadError, setLoadError] = useState(null);
   const [dbHealth, setDbHealth] = useState(null);
   const [dbChecking, setDbChecking] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
 
   const fetchDashboard = async () => {
     try {
@@ -120,21 +123,31 @@ export const OwnerDashboard = () => {
               {new Date().toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={fetchDbHealth}
-            aria-label="Check database connection"
-            className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold border ${
-              dbHealth === null
-                ? 'border-white/20 text-white/70'
-                : dbOk
-                ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-                : 'border-rose-400/50 bg-rose-500/20 text-rose-100'
-            }`}
-          >
-            {dbChecking ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" />}
-            {dbHealth === null ? 'Checking…' : dbOk ? `Online${dbHealth.latencyMs != null ? ` · ${dbHealth.latencyMs}ms` : ''}` : 'Database offline'}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setHelpModalOpen(true)}
+              className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold border border-amber-400/50 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 transition cursor-pointer shadow-xs hover:scale-105"
+            >
+              <LifeBuoy className="h-3.5 w-3.5 text-amber-300" />
+              <span>{t('help.thekedarRequests', 'Thekedar Requests')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={fetchDbHealth}
+              aria-label="Check database connection"
+              className={`inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold border ${
+                dbHealth === null
+                  ? 'border-white/20 text-white/70'
+                  : dbOk
+                  ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
+                  : 'border-rose-400/50 bg-rose-500/20 text-rose-100'
+              }`}
+            >
+              {dbChecking ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" />}
+              {dbHealth === null ? 'Checking…' : dbOk ? `Online${dbHealth.latencyMs != null ? ` · ${dbHealth.latencyMs}ms` : ''}` : 'Database offline'}
+            </button>
+          </div>
         </div>
 
         {/* Money owed across all Thekedars */}
@@ -275,6 +288,9 @@ export const OwnerDashboard = () => {
           )}
         </Card>
       </div>
+
+      {/* Help & Support Center Modal (Thekedar Requests view for Owner) */}
+      <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} initialTab="all" />
     </div>
   );
 };

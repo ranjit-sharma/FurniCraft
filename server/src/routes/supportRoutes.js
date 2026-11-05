@@ -11,7 +11,9 @@ router.use(requireAuthentication);
 router.post('/tickets', supportController.createTicket);
 router.get('/tickets/my', supportController.getMyTickets);
 
-// Executive / Owner endpoint to view all tickets
+// Executive / Owner endpoint to view and manage tickets
 router.get('/tickets', requireRole(ROLES.OWNER), supportController.getAllTickets);
+router.patch('/tickets/:id', requireRole(ROLES.OWNER), supportController.updateTicketStatus);
+router.patch('/tickets/:id/status', requireRole(ROLES.OWNER), supportController.updateTicketStatus);
 
 export default router;
