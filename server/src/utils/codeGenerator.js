@@ -1,9 +1,19 @@
-import { WorkerProfile, Project, ProjectMoneyReceived, Payroll } from '../models/index.js';
+import {
+  WorkerProfile,
+  Project,
+  ProjectMoneyReceived,
+  Payroll,
+  FinancialTransaction,
+  AdvanceRequest,
+  ProjectExpense,
+  PayrollAdjustment,
+  SupportTicket,
+} from '../models/index.js';
 
 /**
  * Robustly generates the next sequential unique workerCode (e.g. FC-WRK-0021).
  * Inspects all existing worker profiles to determine the true arithmetic maximum
- * numeric suffix, preventing collisions caused by document deletions or gaps.
+ * numeric suffix, preventing collisions across all Thekedars.
  */
 export const generateUniqueWorkerCode = async (prefix = 'FC-WRK') => {
   const profiles = await WorkerProfile.find({}, 'workerCode').lean();
@@ -137,3 +147,136 @@ export const generateUniquePayrollCode = async (periodYear, periodMonth) => {
 
   return candidate;
 };
+
+/**
+ * Robustly generates the next sequential unique transactionId (e.g. TXN-DISB-753718-015).
+ * Guarantees zero collision across advance disbursements, salary payments, and net settlements.
+ */
+export const generateUniqueTransactionId = async (type = 'DISB') => {
+  const txns = await FinancialTransaction.find(
+    { transactionId: { $regex: `^TXN-${type}-` } },
+    'transactionId'
+  ).lean();
+
+  let maxNum = 0;
+  for (const t of txns) {
+    if (t.transactionId) {
+      const match = t.transactionId.match(/\d+$/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  }
+
+  let nextNum = Math.max(maxNum + 1, txns.length + 1);
+  let candidate = `TXN-${type}-${Date.now().toString().slice(-6)}-${String(nextNum).padStart(3, '0')}`;
+
+  while (await FinancialTransaction.exists({ transactionId: candidate })) {
+    nextNum++;
+    candidate = `TXN-${type}-${Date.now().toString().slice(-6)}-${String(nextNum).padStart(3, '0')}`;
+  }
+
+  return candidate;
+};
+
+/**
+ * Robustly generates the next sequential unique advance requestCode (e.g. ADV-REQ-591316-009).
+ */
+export const generateUniqueAdvanceRequestCode = async () => {
+  const reqs = await AdvanceRequest.find({}, 'requestCode').lean();
+  let maxNum = 0;
+  for (const r of reqs) {
+    if (r.requestCode) {
+      const match = r.requestCode.match(/\d+$/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  }
+
+  let nextNum = Math.max(maxNum + 1, reqs.length + 1);
+  let candidate = `ADV-REQ-${Date.now().toString().slice(-6)}-${String(nextNum).padStart(3, '0')}`;
+
+  while (await AdvanceRequest.exists({ requestCode: candidate })) {
+    nextNum++;
+    candidate = `ADV-REQ-${Date.now().toString().slice(-6)}-${String(nextNum).padStart(3, '0')}`;
+  }
+
+  return candidate;
+};
+
+/**
+ * Robustly generates the next sequential unique expenseCode (e.g. EXP-2026-001).
+ */
+export const generateUniqueExpenseCode = async () => {
+  const expenses = await ProjectExpense.find({}, 'expenseCode').lean();
+  let maxNum = 0;
+  for (const e of expenses) {
+    if (e.expenseCode) {
+      const match = e.expenseCode.match(/\d+$/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  }
+
+  let nextNum = Math.max(maxNum + 1, expenses.length + 1);
+  let candidate = `EXP-${Date.now().toString().slice(-4)}-${String(nextNum).padStart(3, '0')}`;
+
+  while (await ProjectExpense.exists({ expenseCode: candidate })) {
+    nextNum++;
+    candidate = `EXP-${Date.now().toString().slice(-4)}-${String(nextNum).padStart(3, '0')}`;
+  }
+
+  return candidate;
+};
+
+/**
+ * Robustly generates the next sequential unique adjustmentCode (e.g. ADJ-1793856000-001).
+ */
+export const generateUniqueAdjustmentCode = async () => {
+  const adjustments = await PayrollAdjustment.find({}, 'adjustmentCode').lean();
+  let maxNum = 0;
+  for (const a of adjustments) {
+    if (a.adjustmentCode) {
+      const match = a.adjustmentCode.match(/\d+$/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (!isNaN(num) && num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+  }
+
+  let nextNum = Math.max(maxNum + 1, adjustments.length + 1);
+  let candidate = `ADJ-${Date.now()}-${String(nextNum).padStart(3, '0')}`;
+
+  while (await PayrollAdjustment.exists({ adjustmentCode: candidate })) {
+    nextNum++;
+    candidate = `ADJ-${Date.now()}-${String(nextNum).padStart(3, '0')}`;
+  }
+
+  return candidate;
+};
+
+/**
+ * Robustly generates the next unique ticketNumber (e.g. TKT-2026-834912).
+ */
+export const generateUniqueTicketNumber = async (year = new Date().getFullYear()) => {
+  let candidate = `TKT-${year}-${Math.floor(100000 + Math.random() * 900000)}`;
+  while (await SupportTicket.exists({ ticketNumber: candidate })) {
+    candidate = `TKT-${year}-${Math.floor(100000 + Math.random() * 900000)}`;
+  }
+  return candidate;
+};
+

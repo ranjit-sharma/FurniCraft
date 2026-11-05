@@ -1,6 +1,7 @@
 import { SupportTicket, AuditLog, Notification } from '../models/index.js';
 import { BadRequestError, NotFoundError } from '../utils/errors.js';
 import { sendSupportTicketEmail } from '../services/emailService.js';
+import { generateUniqueTicketNumber } from '../utils/codeGenerator.js';
 
 export const supportController = {
   /**
@@ -25,10 +26,8 @@ export const supportController = {
         throw new BadRequestError('Message must be at least 5 characters long');
       }
 
-      // Generate unique human-readable ticket number, e.g. TKT-2026-834912
-      const year = new Date().getFullYear();
-      const randomSuffix = Math.floor(100000 + Math.random() * 900000);
-      const ticketNumber = `TKT-${year}-${randomSuffix}`;
+      // Generate strictly unique human-readable ticket number, e.g. TKT-2026-834912
+      const ticketNumber = await generateUniqueTicketNumber();
 
       const validCategories = [
         'ATTENDANCE_WAGES',

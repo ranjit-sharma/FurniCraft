@@ -4,6 +4,7 @@ import { ADVANCE_REQUEST_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHODS, PAYROLL_
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
 import { addMoney, subtractMoney } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
+import { generateUniqueTransactionId, generateUniqueAdvanceRequestCode } from '../utils/codeGenerator.js';
 
 /**
  * Worker submits Advance Request
@@ -26,8 +27,7 @@ export const createAdvanceRequest = async ({ workerId, projectId, amount, reason
     throw new BadRequestError(`Worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance. With current advance of ₹${currentAdvance.toLocaleString('en-IN')}, requesting ₹${amount.toLocaleString('en-IN')} pushes total to ₹${(currentAdvance + amount).toLocaleString('en-IN')}. Maximum additional advance allowed is ₹${(MAX_ADVANCE_LIMIT - currentAdvance).toLocaleString('en-IN')}.`);
   }
 
-  const count = await AdvanceRequest.countDocuments();
-  const requestCode = `ADV-REQ-${Date.now().toString().slice(-6)}-${String(count + 1).padStart(3, '0')}`;
+  const requestCode = await generateUniqueAdvanceRequestCode();
 
   const advanceRequest = await AdvanceRequest.create({
     requestCode,
@@ -160,8 +160,7 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
   }
 
   try {
-    const transCount = await FinancialTransaction.countDocuments();
-    const transactionId = `TXN-DISB-${Date.now().toString().slice(-6)}-${String(transCount + 1).padStart(3, '0')}`;
+    const transactionId = await generateUniqueTransactionId('DISB');
 
     const transaction = await FinancialTransaction.create({
       transactionId,
@@ -260,8 +259,7 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
     );
   }
 
-  const transCount = await FinancialTransaction.countDocuments();
-  const transactionId = `TXN-SAL-${Date.now().toString().slice(-6)}-${String(transCount + 1).padStart(3, '0')}`;
+  const transactionId = await generateUniqueTransactionId('SAL');
 
   const transaction = await FinancialTransaction.create({
     transactionId,
@@ -467,8 +465,7 @@ export const payWorkerNet = async ({
   const totalDeductions = addMoney(addMoney(numAdvanceDeduction, numFoodDeduction), numRoomRentDeduction);
   const netPayable = Math.max(0, subtractMoney(totalCredits, totalDeductions));
 
-  const count = await FinancialTransaction.countDocuments();
-  const txIdSalary = `TXN-NET-${Date.now().toString().slice(-6)}-${String(count + 1).padStart(3, '0')}`;
+  const txIdSalary = await generateUniqueTransactionId('NET');
 
   const remainingAdv = Math.max(0, subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction));
   const breakdown = {

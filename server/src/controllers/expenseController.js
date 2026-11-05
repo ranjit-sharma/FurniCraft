@@ -2,6 +2,7 @@ import { ProjectExpense, Project } from '../models/index.js';
 import { NotFoundError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { ROLES } from '../config/constants.js';
+import { generateUniqueExpenseCode } from '../utils/codeGenerator.js';
 
 export const listExpenses = async (req, res, next) => {
   try {
@@ -33,8 +34,7 @@ export const createExpense = async (req, res, next) => {
     const project = await Project.findById(req.body.projectId);
     if (!project) throw new NotFoundError('Project not found');
 
-    const count = await ProjectExpense.countDocuments();
-    const expenseCode = `EXP-${Date.now().toString().slice(-4)}-${String(count + 1).padStart(3, '0')}`;
+    const expenseCode = await generateUniqueExpenseCode();
 
     const expense = await ProjectExpense.create({
       ...req.body,

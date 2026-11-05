@@ -3,7 +3,7 @@ import { PAYROLL_STATUS, ATTENDANCE_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHOD
 import { BadRequestError, NotFoundError, ConflictError, ForbiddenError } from '../utils/errors.js';
 import { addMoney, subtractMoney, roundRupee } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
-import { generateUniquePayrollCode } from '../utils/codeGenerator.js';
+import { generateUniquePayrollCode, generateUniqueAdjustmentCode } from '../utils/codeGenerator.js';
 
 /**
  * Preview Payroll calculation before finalization
@@ -222,8 +222,7 @@ export const addPayrollAdjustment = async ({ payrollId, type, amount, reason, au
     throw new BadRequestError('Adjustments can only be added to finalized payrolls');
   }
 
-  const adjCount = await PayrollAdjustment.countDocuments();
-  const adjustmentCode = `ADJ-${Date.now()}-${String(adjCount + 1).padStart(3, '0')}`;
+  const adjustmentCode = await generateUniqueAdjustmentCode();
 
   const adjustment = await PayrollAdjustment.create({
     adjustmentCode,
