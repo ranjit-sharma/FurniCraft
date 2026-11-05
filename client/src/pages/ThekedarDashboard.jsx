@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
-import { HelpCenterModal } from '../components/common/HelpCenterModal';
 import { localToday } from '../utils/date';
 import { downloadPdf } from '../utils/download';
 import {
@@ -20,7 +19,6 @@ import {
   Lock,
   CheckCircle2,
   CalendarOff,
-  LifeBuoy,
   Clock,
   AlertTriangle,
 } from 'lucide-react';
@@ -51,7 +49,6 @@ export const ThekedarDashboard = () => {
 
   // Add New Craftsman Modal State
   const [addWorkerModalOpen, setAddWorkerModalOpen] = useState(false);
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [newWorkerName, setNewWorkerName] = useState('');
   const [newWorkerPhone, setNewWorkerPhone] = useState('');
   const [newWorkerTrade, setNewWorkerTrade] = useState('Mistry');
@@ -174,9 +171,6 @@ export const ThekedarDashboard = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline-white" size="sm" icon={LifeBuoy} onClick={() => setHelpModalOpen(true)}>
-              {t('profile.helpCenter', 'Help Center')}
-            </Button>
             <Button variant="outline-white" size="sm" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
               {t('thekedarDash.addWorker', 'Add Worker')}
             </Button>
@@ -543,9 +537,6 @@ export const ThekedarDashboard = () => {
           </div>
         </form>
       </Modal>
-
-      {/* Help & Support Center Modal */}
-      <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} initialTab="new" />
     </div>
   );
 };
