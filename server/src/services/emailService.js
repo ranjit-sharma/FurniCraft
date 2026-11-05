@@ -19,8 +19,8 @@ const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 let cachedPrimaryTransporter = null;
 let cachedFallbackTransporter = null;
 
-// Reliable timeouts (10s connection, 10s greeting, 15s socket) allowing Gmail SMTP TLS handshake to complete cleanly
-const SMTP_TIMEOUTS = { connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000 };
+// Reliable timeouts (4s connection, 8s greeting, 10s socket) preventing long 20s+ hangs on blocked cloud firewalls
+const SMTP_TIMEOUTS = { connectionTimeout: 4000, greetingTimeout: 8000, socketTimeout: 10000 };
 const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
 
 // Standard system defaults so dispatch succeeds reliably across local, testing, and cloud environments (e.g. Render)
@@ -175,6 +175,7 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress 
   if (!apiKey) return null;
 
   try {
+    const senderEmail = process.env.BREVO_SENDER || 'furnicraft.erp@gmail.com';
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -182,7 +183,7 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        sender: { name: 'FurniCraft ERP Security', email: 'furnicraft.erp@gmail.com' },
+        sender: { name: 'FurniCraft ERP Security', email: senderEmail },
         to: [{ email: to, name: name || to }],
         subject,
         htmlContent: html,
@@ -204,6 +205,45 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress 
 };
 
 /**
+ * Send email via SendGrid HTTPS REST API (Port 443 - 100 free emails/day)
+ */
+export const sendViaSendGrid = async ({ to, subject, html, text, fromAddress }) => {
+  const apiKey = process.env.SENDGRID_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const senderEmail = process.env.SENDGRID_FROM || 'furnicraft.erp@gmail.com';
+    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: senderEmail, name: 'FurniCraft ERP Security' },
+        subject,
+        content: [
+          { type: 'text/plain', value: text },
+          { type: 'text/html', value: html },
+        ],
+      }),
+    });
+    if (res.ok || res.status === 202) {
+      const msgId = res.headers.get('x-message-id') || `sg-${Date.now()}`;
+      console.log(`[EmailService - SendGrid HTTPS] Delivered to ${to}: ${msgId}`);
+      return { success: true, mode: 'sendgrid_https', messageId: msgId };
+    }
+    const data = await res.json().catch(() => ({}));
+    console.warn('[EmailService - SendGrid HTTPS Warning]', data);
+    return null;
+  } catch (err) {
+    console.warn('[EmailService - SendGrid HTTPS Exception]', err.message);
+    return null;
+  }
+};
+
+/**
  * Send email with automatic retry and multi-port / HTTPS resilience
  */
 const sendMailWithResilience = async (mailOptions) => {
@@ -215,6 +255,10 @@ const sendMailWithResilience = async (mailOptions) => {
   if (process.env.BREVO_API_KEY) {
     const brevoResult = await sendViaBrevo(mailOptions);
     if (brevoResult?.success) return brevoResult;
+  }
+  if (process.env.SENDGRID_API_KEY) {
+    const sendgridResult = await sendViaSendGrid(mailOptions);
+    if (sendgridResult?.success) return sendgridResult;
   }
 
   // 2. Try Primary (port 465 SSL) and Fallback (port 587 STARTTLS) with fast 3.5s timeout
@@ -399,7 +443,9 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
 
   const mailOptions = {
     from: fromAddress,
+    fromAddress,
     to,
+    name: name || 'Craftsman',
     subject,
     text: textContent,
     html: htmlContent,
@@ -567,7 +613,9 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
 
   const mailOptions = {
     from: fromAddress,
+    fromAddress,
     to,
+    name: name || 'Craftsman',
     subject,
     text: textContent,
     html: htmlContent,
@@ -983,7 +1031,9 @@ ${message}
   const fromAddress = `"FurniCraft Helpdesk" <${smtpUser}>`;
   const mailOptions = {
     from: fromAddress,
+    fromAddress,
     to: supportEmail,
+    name: 'FurniCraft ERP Owner',
     replyTo: userEmail && userEmail.includes('@') ? userEmail : smtpUser,
     subject: emailSubject,
     text: textContent,
