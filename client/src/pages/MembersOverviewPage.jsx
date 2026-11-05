@@ -232,15 +232,15 @@ export const MembersOverviewPage = () => {
         </div>
 
         {/* Workers cannot sign in, so only Thekedar and Owner sessions are counted */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/30 p-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-amber-900 dark:text-amber-300">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-amber-800 dark:text-amber-400">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-4">
+          <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/30 p-3 sm:p-3.5 min-w-0">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-semibold text-amber-900 dark:text-amber-300 truncate">{t('members.thekedarsCount', 'Thekedar')} {t('members.visits', 'Visits')}</span>
+              <span className="text-[11px] sm:text-xs font-black text-amber-800 dark:text-amber-400 shrink-0">
                 {summary.totalVisits ? Math.round(((summary.visitsByRole?.THEKEDAR || 0) / summary.totalVisits) * 100) : 0}%
               </span>
             </div>
-            <div className="text-2xl font-black text-amber-950 dark:text-amber-100 mt-1">
+            <div className="text-xl sm:text-2xl font-black text-amber-950 dark:text-amber-100 mt-1 truncate">
               {(summary.visitsByRole?.THEKEDAR || 0).toLocaleString('en-IN')}
             </div>
             <div className="w-full bg-amber-200 dark:bg-amber-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -253,14 +253,14 @@ export const MembersOverviewPage = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/30 p-3.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-purple-900 dark:text-purple-300">{t('members.ownersCount', 'Owner')} {t('members.visits', 'Visits')}</span>
-              <span className="text-xs font-black text-purple-800 dark:text-purple-400">
+          <div className="rounded-xl border border-purple-200 dark:border-purple-800/60 bg-purple-50/40 dark:bg-purple-950/30 p-3 sm:p-3.5 min-w-0">
+            <div className="flex items-center justify-between gap-1">
+              <span className="text-[11px] sm:text-xs font-semibold text-purple-900 dark:text-purple-300 truncate">{t('members.ownersCount', 'Owner')} {t('members.visits', 'Visits')}</span>
+              <span className="text-[11px] sm:text-xs font-black text-purple-800 dark:text-purple-400 shrink-0">
                 {summary.totalVisits ? Math.round(((summary.visitsByRole?.OWNER || 0) / summary.totalVisits) * 100) : 0}%
               </span>
             </div>
-            <div className="text-2xl font-black text-purple-950 dark:text-purple-100 mt-1">
+            <div className="text-xl sm:text-2xl font-black text-purple-950 dark:text-purple-100 mt-1 truncate">
               {(summary.visitsByRole?.OWNER || 0).toLocaleString('en-IN')}
             </div>
             <div className="w-full bg-purple-200 dark:bg-purple-900/50 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -281,20 +281,20 @@ export const MembersOverviewPage = () => {
         subtitle={`${t('members.allMembers', 'Complete listing of all')} ${members.length} registered system users`}
       >
         {/* Search & Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col gap-3 mb-5">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('members.searchPlaceholder', 'Search by name, email, phone, or worker code...')}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white pl-9 pr-4 py-2 text-xs focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white pl-9 pr-4 py-2 text-base sm:text-xs focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
             />
           </div>
 
-          {/* Role Filter Pills */}
-          <div className="flex flex-wrap items-center gap-1.5">
+          {/* Role Filter Pills & Status Filter */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 touch-pan-x">
             {[
               { id: 'ALL', label: `${t('common.all', 'All')} (${summary.totalMembers})` },
               { id: 'THEKEDAR', label: `${t('members.thekedarsCount', 'Thekedars')} (${summary.totalThekedars})` },
@@ -305,7 +305,7 @@ export const MembersOverviewPage = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedRole(tab.id)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   selectedRole === tab.id
                     ? 'bg-purple-900 text-white shadow-xs'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -318,7 +318,7 @@ export const MembersOverviewPage = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
+              className="shrink-0 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
             >
               <option value="ALL">{t('common.all', 'All Status')}</option>
               <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
@@ -405,7 +405,7 @@ export const MembersOverviewPage = () => {
                           type="button"
                           disabled={actionLoadingId === m._id}
                           onClick={() => handleToggleThekedarStatus(m)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer disabled:opacity-50 ${
+                          className={`min-h-[1.75rem] px-2.5 py-1 rounded-lg text-xs font-bold border transition cursor-pointer disabled:opacity-50 active:scale-95 ${
                             m.status === 'ACTIVE'
                               ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
                               : 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'

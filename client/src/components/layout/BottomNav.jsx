@@ -6,8 +6,8 @@ import { Modal } from '../common/Modal';
 import { useNavLinks } from './Sidebar';
 
 const tabClass = (active) =>
-  `flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[3.5rem] text-[11px] font-semibold transition-colors active:scale-95 ${
-    active ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'
+  `flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[3.5rem] px-0.5 text-[10px] sm:text-[11px] font-semibold transition-colors active:scale-95 min-w-0 select-none ${
+    active ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-slate-500 dark:text-slate-400'
   }`;
 
 // Phone-only tab bar: up to 5 links as tabs; with more than 5, the first 4 plus a "More" bottom sheet.
@@ -33,7 +33,7 @@ export const BottomNav = () => {
                 <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${isActive ? 'bg-amber-100 dark:bg-amber-950/70' : ''}`}>
                   <Icon className="h-5 w-5" />
                 </span>
-                {short}
+                <span className="truncate max-w-full text-center leading-tight">{short}</span>
               </>
             )}
           </NavLink>
@@ -43,7 +43,7 @@ export const BottomNav = () => {
           <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${moreActive ? 'bg-amber-100 dark:bg-amber-950/70' : ''}`}>
             <MoreHorizontal className="h-5 w-5" />
           </span>
-          {t('navShort.more', 'More')}
+          <span className="truncate max-w-full text-center leading-tight">{t('navShort.more', 'More')}</span>
         </button>
         )}
       </nav>

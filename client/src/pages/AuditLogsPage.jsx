@@ -57,17 +57,17 @@ export const AuditLogsPage = () => {
             {/* Mobile / Tablet Responsive Cards: Single View, Zero Side Scroll */}
             <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
               {logs.map((l) => (
-                <div key={l._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2 shadow-xs">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-bold text-slate-900 dark:text-white text-xs">{l.actorName}</span>
+                <div key={l._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-3.5 space-y-2 shadow-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-slate-900 dark:text-white text-xs truncate max-w-[180px] sm:max-w-none">{l.actorName}</span>
                     <Badge variant="default" size="sm">{l.actorRole}</Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-2 text-xs">
-                    <span className="font-semibold text-purple-900 dark:text-purple-300">{l.action}</span>
-                    <span className="font-mono text-[11px] text-slate-500">{new Date(l.createdAt).toLocaleString()}</span>
+                  <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
+                    <span className="font-semibold text-purple-900 dark:text-purple-300 truncate">{l.action}</span>
+                    <span className="font-mono text-[11px] text-slate-500 shrink-0">{new Date(l.createdAt).toLocaleString()}</span>
                   </div>
-                  <div className="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2 rounded-lg break-words">
-                    <span className="font-semibold">{l.targetType}: </span>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg break-all font-mono">
+                    <span className="font-semibold font-sans">{l.targetType}: </span>
                     {l.newValues ? JSON.stringify(l.newValues) : l.reason || l.targetId || '-'}
                   </div>
                 </div>
