@@ -155,21 +155,32 @@ export const TransactionSearchPage = () => {
   const getCategoryLabel = (cat) => {
     switch (cat) {
       case 'SALARY_PAYMENT':
-        return t('transactionSearch.wagePayments') || 'Wage Payments';
+        return t('transactionSearch.wagesShort', 'Wages');
       case 'ADVANCE_DISBURSEMENT':
-        return t('transactionSearch.advanceDisbursements') || 'Advance Disbursements';
+        return t('transactionSearch.advancesShort', 'Advances');
       default:
-        return t('transactionSearch.allCategories') || 'All Categories';
+        return t('transactionSearch.allShort', 'All');
     }
   };
 
   const getDateLabel = () => {
-    if (dateFilterMode === 'TODAY') return t('transactionSearch.today') || 'Today';
-    if (dateFilterMode === 'THIS_MONTH') return t('transactionSearch.thisMonth') || 'This Month';
+    if (dateFilterMode === 'TODAY') return t('transactionSearch.todayShort', 'Today');
+    if (dateFilterMode === 'THIS_MONTH') return t('transactionSearch.monthShort', 'This Month');
     if (dateFilterMode === 'CUSTOM' && customDate) {
       return new Date(customDate).toLocaleDateString();
     }
-    return t('transactionSearch.allDates') || 'All Dates';
+    return t('transactionSearch.allShort', 'All');
+  };
+
+  const getCategoryShortBadge = (cat) => {
+    switch (cat) {
+      case 'SALARY_PAYMENT':
+        return t('transactionSearch.salaryShort', 'Salary');
+      case 'ADVANCE_DISBURSEMENT':
+        return t('transactionSearch.advanceShort', 'Advance');
+      default:
+        return cat?.replace(/_/g, ' ') || 'General';
+    }
   };
 
   const isFilterActive = selectedCategory !== 'ALL' || dateFilterMode !== 'ALL' || !!customDate;
@@ -246,14 +257,14 @@ export const TransactionSearchPage = () => {
           <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 space-y-3">
             {/* Category selection */}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">
-                {t('transactionSearch.categoryLabel') || 'Category'}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 block">
+                {t('transactionSearch.filterCategory', 'Category')}
               </span>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x" role="tablist">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2" role="tablist">
                 {[
-                  { id: 'ALL', label: t('transactionSearch.allCategories', 'All Categories') },
-                  { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage Payments') },
-                  { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advanceDisbursements', 'Advance Disbursements') },
+                  { id: 'ALL', label: t('transactionSearch.allShort', 'All') },
+                  { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagesShort', 'Wages') },
+                  { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advancesShort', 'Advances') },
                 ].map((cat) => (
                   <button
                     key={cat.id}
@@ -261,7 +272,7 @@ export const TransactionSearchPage = () => {
                     role="tab"
                     aria-selected={selectedCategory === cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                       selectedCategory === cat.id
                         ? 'border-amber-600 bg-amber-600 text-white shadow-xs'
                         : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
@@ -275,10 +286,10 @@ export const TransactionSearchPage = () => {
 
             {/* Date selection */}
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">
-                {t('transactionSearch.filterDate') || 'Date'}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 block">
+                {t('transactionSearch.filterDate', 'Date')}
               </span>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => {
@@ -291,7 +302,7 @@ export const TransactionSearchPage = () => {
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                   }`}
                 >
-                  {t('transactionSearch.allDates') || 'All Dates'}
+                  {t('transactionSearch.allShort', 'All')}
                 </button>
 
                 <button
@@ -306,7 +317,7 @@ export const TransactionSearchPage = () => {
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                   }`}
                 >
-                  {t('transactionSearch.today') || 'Today'}
+                  {t('transactionSearch.todayShort', 'Today')}
                 </button>
 
                 <button
@@ -321,7 +332,7 @@ export const TransactionSearchPage = () => {
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                   }`}
                 >
-                  {t('transactionSearch.thisMonth') || 'This Month'}
+                  {t('transactionSearch.monthShort', 'This Month')}
                 </button>
 
                 {/* Custom Date Picker Pill */}
@@ -367,55 +378,54 @@ export const TransactionSearchPage = () => {
         <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} lg:col-span-5 space-y-3`}>
           <div className="flex items-center justify-between px-1">
             <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500">
-              {t('transactionSearch.matchingRecords') || 'Matching Records'} ({filteredTransactions.length})
+              {t('transactionSearch.matchingRecords', 'Matching Records')} ({filteredTransactions.length})
             </h2>
           </div>
 
           {loading ? (
             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-slate-500 dark:text-slate-400">
               <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-blue-600 border-t-transparent mb-3" />
-              <p className="text-xs font-semibold">{t('transactionSearch.loadingLedger') || 'Loading transactions ledger...'}</p>
+              <p className="text-xs font-semibold">{t('transactionSearch.loadingLedger', 'Loading transactions ledger...')}</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center text-slate-500 dark:text-slate-400">
               <AlertCircle className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{t('transactionSearch.noFound') || 'No Transactions Found'}</h3>
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{t('transactionSearch.noFound', 'No Transactions Found')}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
-                {t('transactionSearch.noFoundFiltered') || 'No transactions found for the selected category and date filter.'}
+                {t('transactionSearch.noFoundFiltered', 'No transactions found for the selected category and date filter.')}
               </p>
               <button
                 type="button"
                 onClick={handleResetFilters}
                 className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
               >
-                {t('transactionSearch.resetFilters') || 'Reset Filters'}
+                {t('transactionSearch.resetFilters', 'Reset Filters')}
               </button>
             </div>
           ) : (
             <>
-              {/* Mobile View: Out of the cards (flat list with sleek dividers) */}
+              {/* Mobile View: Out of the cards (flat list with sleek dividers - only View Voucher is clickable) */}
               <div className="lg:hidden divide-y divide-slate-200 dark:divide-slate-800">
                 {filteredTransactions.map((tx) => (
                   <div
                     key={tx._id}
-                    onClick={() => handleSelectTx(tx, true)}
-                    className="py-3 px-1 active:bg-slate-100/60 dark:active:bg-slate-800/50 transition-colors cursor-pointer"
+                    className="py-3 px-1 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                           <span className="font-mono text-xs font-black text-amber-900 dark:text-amber-400 tracking-wider">
                             {tx.transactionId}
                           </span>
                           <Badge variant={getCategoryBadgeVariant(tx.category)} size="sm">
-                            {tx.category?.replace('_', ' ')}
+                            {getCategoryShortBadge(tx.category)}
                           </Badge>
                         </div>
                         <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                           {tx.workerId ? (
-                            <span>{t('transactionSearch.craftsman') || 'Craftsman:'} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
+                            <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
                           ) : (
-                            <span>{t('transactionSearch.generalLedger') || 'Workshop General Ledger'}</span>
+                            <span>{t('transactionSearch.generalLedger', 'Workshop General Ledger')}</span>
                           )}
                         </div>
                       </div>
@@ -437,28 +447,25 @@ export const TransactionSearchPage = () => {
                       </span>
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTx(tx, true);
-                        }}
-                        className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
+                        onClick={() => handleSelectTx(tx, true)}
+                        className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5 hover:underline active:scale-95 transition-transform cursor-pointer py-1 px-1.5 -mr-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40"
                       >
-                        {t('transactionSearch.viewVoucher') || 'View Voucher'} <ArrowRight className="h-3 w-3" />
+                        <span>{t('transactionSearch.viewVoucher', 'View Voucher')}</span>
+                        <ArrowRight className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Desktop View: Keep it same as now (cards with hover & selected state) */}
+              {/* Desktop View: Keep it same as now (cards with hover & selected state - only View Voucher selects) */}
               <div className="hidden lg:block space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
                 {filteredTransactions.map((tx) => {
                   const isSelected = selectedTx?._id === tx._id;
                   return (
                     <div
                       key={tx._id}
-                      onClick={() => handleSelectTx(tx, false)}
-                      className={`rounded-2xl border p-4 transition-all cursor-pointer ${
+                      className={`rounded-2xl border p-4 transition-all ${
                         isSelected
                           ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20'
                           : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
@@ -466,19 +473,19 @@ export const TransactionSearchPage = () => {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                             <span className="font-mono text-xs font-black text-amber-900 dark:text-amber-400 tracking-wider">
                               {tx.transactionId}
                             </span>
                             <Badge variant={getCategoryBadgeVariant(tx.category)} size="sm">
-                              {tx.category?.replace('_', ' ')}
+                              {getCategoryShortBadge(tx.category)}
                             </Badge>
                           </div>
                           <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                             {tx.workerId ? (
-                              <span>{t('transactionSearch.craftsman') || 'Craftsman:'} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
+                              <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
                             ) : (
-                              <span>{t('transactionSearch.generalLedger') || 'Workshop General Ledger'}</span>
+                              <span>{t('transactionSearch.generalLedger', 'Workshop General Ledger')}</span>
                             )}
                           </div>
                         </div>
@@ -500,13 +507,10 @@ export const TransactionSearchPage = () => {
                         </span>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectTx(tx, false);
-                          }}
+                          onClick={() => handleSelectTx(tx, false)}
                           className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
                         >
-                          {t('transactionSearch.viewVoucher') || 'View Voucher'} <ArrowRight className="h-3 w-3" />
+                          {t('transactionSearch.viewVoucher', 'View Voucher')} <ArrowRight className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
