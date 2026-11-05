@@ -93,6 +93,41 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress,
 };
 
 /**
+ * Send email via Resend HTTPS REST API (Port 443 - zero-configuration option)
+ */
+export const sendViaResend = async ({ to, subject, html, text, fromAddress }) => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: fromAddress || 'FurniCraft ERP <onboarding@resend.dev>',
+        to: Array.isArray(to) ? to : [to],
+        subject,
+        html,
+        text,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data?.id) {
+      console.log(`[EmailService - Resend HTTPS] Delivered to ${to}: ${data.id}`);
+      return { success: true, mode: 'resend_https', messageId: data.id, info: { messageId: data.id } };
+    }
+    console.warn('[EmailService - Resend HTTPS Warning]', data);
+    return null;
+  } catch (err) {
+    console.warn('[EmailService - Resend HTTPS Exception]', err.message);
+    return null;
+  }
+};
+
+/**
  * Brevo-powered transporter adapter for test mocking and backward compatibility
  */
 const brevoTransporter = {
@@ -111,15 +146,19 @@ export const getEmailTransporter = () => brevoTransporter;
 export const getFallbackEmailTransporter = () => brevoTransporter;
 
 /**
- * Send email with Brevo HTTPS REST API resilience
+ * Send email with HTTPS REST API resilience (Brevo or Resend)
  */
 const sendMailWithResilience = async (mailOptions) => {
   if (process.env.BREVO_API_KEY) {
     const brevoResult = await sendViaBrevo(mailOptions);
     if (brevoResult?.success) return brevoResult;
   }
+  if (process.env.RESEND_API_KEY) {
+    const resendResult = await sendViaResend(mailOptions);
+    if (resendResult?.success) return resendResult;
+  }
 
-  return { success: false, lastError: new Error('Brevo delivery failed or BREVO_API_KEY not configured') };
+  return { success: false, lastError: new Error('Email delivery failed: please ensure BREVO_API_KEY or RESEND_API_KEY is configured') };
 };
 
 /**
