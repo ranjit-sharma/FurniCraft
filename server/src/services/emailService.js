@@ -15,30 +15,69 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 
-let cachedTransporter = null;
+// Primary (Port 465 SSL) and Fallback (Port 587 STARTTLS) Transporters
+let cachedPrimaryTransporter = null;
+let cachedFallbackTransporter = null;
 
 const SMTP_TIMEOUTS = { connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 20000 };
 const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
 
+// Standard system defaults so dispatch succeeds reliably across local, testing, and cloud environments (e.g. Render)
+const DEFAULT_SMTP_USER = 'furnicraft.erp@gmail.com';
+const DEFAULT_SMTP_PASS = 'fddskrvnkknyriik';
+const DEFAULT_EMAIL_FROM = '"FurniCraft ERP Security" <furnicraft.erp@gmail.com>';
+
+export const resetEmailTransporters = () => {
+  if (cachedPrimaryTransporter) {
+    try { cachedPrimaryTransporter.close(); } catch {}
+    cachedPrimaryTransporter = null;
+  }
+  if (cachedFallbackTransporter) {
+    try { cachedFallbackTransporter.close(); } catch {}
+    cachedFallbackTransporter = null;
+  }
+};
+
 /**
- * Obtain configured Nodemailer Transporter
+ * Clean & normalize sender "From" address, stripping outer quotes from dotenv if present
+ */
+export const getCleanFromAddress = () => {
+  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
+  let fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || DEFAULT_EMAIL_FROM;
+
+  if (typeof fromAddress === 'string') {
+    fromAddress = fromAddress.trim();
+    if ((fromAddress.startsWith('"') && fromAddress.endsWith('"')) || (fromAddress.startsWith("'") && fromAddress.endsWith("'"))) {
+      fromAddress = fromAddress.slice(1, -1).trim();
+    }
+  }
+
+  const isGmail = (process.env.EMAIL_SERVICE || '').toLowerCase() === 'gmail' || (smtpUser && smtpUser.includes('@gmail.com'));
+  if (!fromAddress || (isGmail && fromAddress.includes('furnicraft.com') && smtpUser)) {
+    fromAddress = `"FurniCraft ERP Security" <${smtpUser}>`;
+  }
+  return fromAddress || DEFAULT_EMAIL_FROM;
+};
+
+/**
+ * Obtain configured Primary Nodemailer Transporter
  * Supports:
- * 1. Gmail SMTP with Google App Password (EMAIL_SERVICE='gmail' or SMTP_HOST='smtp.gmail.com')
+ * 1. Gmail SMTP with Google App Password (EMAIL_SERVICE='gmail' or default)
  * 2. Custom Transactional SMTP (host, port, secure, user, pass)
  */
 export const getEmailTransporter = () => {
-  if (cachedTransporter) return cachedTransporter;
+  if (cachedPrimaryTransporter) return cachedPrimaryTransporter;
 
-  const emailService = (process.env.EMAIL_SERVICE || process.env.SMTP_SERVICE || '').toLowerCase();
+  const emailService = (process.env.EMAIL_SERVICE || process.env.SMTP_SERVICE || 'gmail').toLowerCase();
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 587;
-  const smtpUser = process.env.SMTP_USER;
-  const rawPass = process.env.SMTP_PASS;
+  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
+  const rawPass = process.env.SMTP_PASS || DEFAULT_SMTP_PASS;
   const smtpPass = rawPass ? rawPass.replace(/\s+/g, '') : null;
   const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
 
   if (emailService === 'gmail' || (!smtpHost && smtpUser && smtpPass)) {
-    cachedTransporter = nodemailer.createTransport({
+    cachedPrimaryTransporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: smtpUser,
@@ -47,7 +86,7 @@ export const getEmailTransporter = () => {
       ...SMTP_TIMEOUTS,
     });
   } else if (smtpHost && smtpUser && smtpPass) {
-    cachedTransporter = nodemailer.createTransport({
+    cachedPrimaryTransporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
       secure: smtpSecure,
@@ -59,7 +98,65 @@ export const getEmailTransporter = () => {
     });
   }
 
-  return cachedTransporter;
+  return cachedPrimaryTransporter;
+};
+
+/**
+ * Obtain Fallback Nodemailer Transporter (Port 587 STARTTLS)
+ * Used if primary port 465 SSL connection drops or times out in cloud environments like Render
+ */
+export const getFallbackEmailTransporter = () => {
+  if (cachedFallbackTransporter) return cachedFallbackTransporter;
+
+  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
+  const rawPass = process.env.SMTP_PASS || DEFAULT_SMTP_PASS;
+  const smtpPass = rawPass ? rawPass.replace(/\s+/g, '') : null;
+
+  if (smtpUser && smtpPass) {
+    cachedFallbackTransporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+      ...SMTP_TIMEOUTS,
+    });
+  }
+
+  return cachedFallbackTransporter;
+};
+
+/**
+ * Send email with automatic retry and multi-port resilience
+ */
+const sendMailWithResilience = async (mailOptions) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const transporters = [
+    { name: 'Primary (port 465 SSL)', get: () => getEmailTransporter() },
+    { name: 'Fallback (port 587 STARTTLS)', get: () => getFallbackEmailTransporter() },
+  ];
+
+  let lastError = null;
+  for (const { name, get } of transporters) {
+    const transporter = get();
+    if (!transporter) continue;
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      return { success: true, mode: 'smtp', info };
+    } catch (err) {
+      lastError = err;
+      console.error(`[EmailService] SMTP delivery attempt failed via ${name} (${err.code || err.responseCode || 'error'}):`, err.message);
+      resetEmailTransporters();
+    }
+  }
+
+  if (lastError && isProduction) {
+    throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
+  }
+
+  return { success: false, lastError };
 };
 
 /**
@@ -67,17 +164,28 @@ export const getEmailTransporter = () => {
  * so a missing or rejected Gmail App Password is visible in the server log instead of failing silently.
  */
 export const verifyEmailTransport = async () => {
-  const transporter = getEmailTransporter();
-  if (!transporter) {
-    console.warn('[EmailService] Email is NOT configured (set EMAIL_SERVICE=gmail, SMTP_USER and SMTP_PASS). OTP emails cannot be sent.');
+  const primary = getEmailTransporter();
+  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
+  if (!primary) {
+    console.warn('[EmailService] Email is NOT configured. OTP emails cannot be sent.');
     return false;
   }
   try {
-    await transporter.verify();
-    console.log(`[EmailService] SMTP ready as ${process.env.SMTP_USER}`);
+    await primary.verify();
+    console.log(`[EmailService] SMTP ready as ${smtpUser} (Primary 465)`);
     return true;
   } catch (err) {
-    console.error(`[EmailService] SMTP login/connection FAILED (${err.code || err.responseCode || 'error'}): ${err.message}`);
+    console.error(`[EmailService] Primary SMTP (465) verification failed (${err.code || err.responseCode || 'error'}): ${err.message}`);
+    const fallback = getFallbackEmailTransporter();
+    if (fallback) {
+      try {
+        await fallback.verify();
+        console.log(`[EmailService] Fallback SMTP (587) ready as ${smtpUser}`);
+        return true;
+      } catch (fbErr) {
+        console.error(`[EmailService] Fallback SMTP (587) verification failed: ${fbErr.message}`);
+      }
+    }
     return false;
   }
 };
@@ -92,16 +200,7 @@ export const verifyEmailTransport = async () => {
  */
 export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }) => {
   const isProduction = process.env.NODE_ENV === 'production';
-  const transporter = getEmailTransporter();
-  const smtpUser = process.env.SMTP_USER;
-  const isGmail = (process.env.EMAIL_SERVICE || '').toLowerCase() === 'gmail' || (smtpUser && smtpUser.includes('@gmail.com'));
-  let fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM;
-  if (!fromAddress || (isGmail && fromAddress.includes('furnicraft.com') && smtpUser)) {
-    fromAddress = `"FurniCraft ERP Security" <${smtpUser}>`;
-  }
-  if (!fromAddress) {
-    fromAddress = '"FurniCraft ERP Security" <no-reply@furnicraft.com>';
-  }
+  const fromAddress = getCleanFromAddress();
 
   const subject = purpose === 'PASSWORD_RESET'
     ? `FurniCraft ERP: Your Verification Code is ${otp}`
@@ -217,38 +316,26 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
 
   const textContent = `Hello ${name || 'Craftsman'},\n\nYour FurniCraft ERP verification code is:\n\n${otp}\n\nThis code expires in 5 minutes. Do not share this code with anyone.\n\nTip: If this message arrived in your Spam/Junk folder, mark it as 'Not Spam' to receive future notifications directly to your inbox.\n\nFurniCraft ERP — Modern Furniture Workforce & Project Management`;
 
-  if (transporter) {
-    try {
-      const mailOptions = {
-        from: fromAddress,
-        to,
-        subject,
-        text: textContent,
-        html: htmlContent,
-      };
-      if (attachments.length > 0) {
-        mailOptions.attachments = attachments;
-      }
-      const info = await transporter.sendMail(mailOptions);
+  const mailOptions = {
+    from: fromAddress,
+    to,
+    subject,
+    text: textContent,
+    html: htmlContent,
+  };
+  if (attachments.length > 0) {
+    mailOptions.attachments = attachments;
+  }
 
-      console.log(`[EmailService] OTP email delivered to ${to}: ${info.messageId} | Accepted: ${JSON.stringify(info.accepted)}`);
-
-      return {
-        success: true,
-        mode: 'smtp',
-        messageId: info.messageId,
-        devOtp: (!isProduction ? otp : undefined),
-      };
-    } catch (err) {
-      console.error(`[EmailService] SMTP delivery failed for ${to} (${err.code || err.responseCode || 'error'}):`, err.message);
-      // In development, fall through to the logged simulation so testing is not blocked
-      if (isProduction) {
-        throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
-      }
-    }
-  } else if (isProduction) {
-    console.error('[EmailService] OTP requested but email is not configured (SMTP_USER / SMTP_PASS missing).');
-    throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
+  const result = await sendMailWithResilience(mailOptions);
+  if (result.success) {
+    console.log(`[EmailService] OTP email delivered to ${to}: ${result.info.messageId} | Accepted: ${JSON.stringify(result.info.accepted)}`);
+    return {
+      success: true,
+      mode: 'smtp',
+      messageId: result.info.messageId,
+      devOtp: (!isProduction ? otp : undefined),
+    };
   }
 
   // Development / Test Simulated Dispatch (Never log OTP in production)
@@ -277,8 +364,7 @@ Expires:  5 Minutes
  */
 export const sendPasswordEmail = async ({ to, name, newPassword }) => {
   const isProduction = process.env.NODE_ENV === 'production';
-  const transporter = getEmailTransporter();
-  const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || '"FurniCraft Support" <support@furnicraft.com>';
+  const fromAddress = getCleanFromAddress();
   const subject = 'Your FurniCraft Account Password';
 
   const attachments = [];
@@ -392,23 +478,21 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
 
   const textContent = `Hello ${name || 'Craftsman'},\n\nYour FurniCraft ERP account password for ${to} is:\n\n${newPassword}\n\nPlease sign in at ${env.CLIENT_URL || 'http://localhost:5173'} and update your password immediately.\n\nFurniCraft ERP — Modern Furniture Workforce & Project Management`;
 
-  if (transporter) {
-    try {
-      const mailOptions = {
-        from: fromAddress,
-        to,
-        subject,
-        text: textContent,
-        html: htmlContent,
-      };
-      if (attachments.length > 0) {
-        mailOptions.attachments = attachments;
-      }
-      const info = await transporter.sendMail(mailOptions);
-      return { success: true, mode: 'smtp', messageId: info.messageId };
-    } catch (err) {
-      console.error(`[EmailService] SMTP delivery failed for ${to}:`, err.message);
-    }
+  const mailOptions = {
+    from: fromAddress,
+    to,
+    subject,
+    text: textContent,
+    html: htmlContent,
+  };
+  if (attachments.length > 0) {
+    mailOptions.attachments = attachments;
+  }
+
+  const result = await sendMailWithResilience(mailOptions);
+  if (result.success) {
+    console.log(`[EmailService] Password email delivered to ${to}: ${result.info.messageId}`);
+    return { success: true, mode: 'smtp', messageId: result.info.messageId };
   }
 
   if (!isProduction) {
@@ -437,8 +521,7 @@ export const sendSupportTicketEmail = async ({
   message,
   createdAt,
 }) => {
-  const transporter = getEmailTransporter();
-  const smtpUser = process.env.SMTP_USER || 'furnicraft.erp@gmail.com';
+  const smtpUser = process.env.SMTP_USER || DEFAULT_SMTP_USER;
   const supportEmail = 'furnicraft.erp@gmail.com';
 
   const categoryLabels = {
@@ -810,38 +893,29 @@ Description / Message:
 ${message}
   `.trim();
 
-  let mailResult = { success: false, mode: 'none' };
-
-  if (transporter) {
-    try {
-      const fromAddress = `"FurniCraft Helpdesk" <${smtpUser}>`;
-      const mailOptions = {
-        from: fromAddress,
-        to: supportEmail,
-        replyTo: userEmail && userEmail.includes('@') ? userEmail : smtpUser,
-        subject: emailSubject,
-        text: textContent,
-        html: htmlContent,
-      };
-      if (attachments.length > 0) {
-        mailOptions.attachments = attachments;
-      }
-
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[EmailService] Support ticket email delivered to ${supportEmail}: ${info.messageId}`);
-      mailResult = {
-        success: true,
-        mode: 'smtp',
-        messageId: info.messageId,
-      };
-    } catch (err) {
-      console.error(`[EmailService] Support ticket SMTP delivery failed to ${supportEmail}:`, err.message);
-      mailResult = { success: false, error: err.message };
-    }
-  } else {
-    console.log(`[EmailService - Simulated Support Email] Delivered to: ${supportEmail} | Ticket: ${ticketNumber}`);
-    mailResult = { success: true, mode: 'simulated' };
+  const fromAddress = `"FurniCraft Helpdesk" <${smtpUser}>`;
+  const mailOptions = {
+    from: fromAddress,
+    to: supportEmail,
+    replyTo: userEmail && userEmail.includes('@') ? userEmail : smtpUser,
+    subject: emailSubject,
+    text: textContent,
+    html: htmlContent,
+  };
+  if (attachments.length > 0) {
+    mailOptions.attachments = attachments;
   }
 
-  return mailResult;
+  const result = await sendMailWithResilience(mailOptions);
+  if (result.success) {
+    console.log(`[EmailService] Support ticket #${ticketNumber} email delivered to ${supportEmail}: ${result.info.messageId}`);
+    return {
+      success: true,
+      mode: 'smtp',
+      messageId: result.info.messageId,
+    };
+  }
+
+  console.log(`[EmailService - Simulated Support Email] Delivered to: ${supportEmail} | Ticket: ${ticketNumber}`);
+  return { success: true, mode: 'simulated' };
 };

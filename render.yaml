@@ -20,9 +20,9 @@ services:
       - key: EMAIL_SERVICE
         value: gmail
       - key: SMTP_USER
-        sync: false
+        value: furnicraft.erp@gmail.com
       - key: SMTP_PASS
-        sync: false
+        value: fdds krvn kkny riik
       - key: EMAIL_FROM
-        sync: false
+        value: '"FurniCraft ERP Security" <furnicraft.erp@gmail.com>'
 
