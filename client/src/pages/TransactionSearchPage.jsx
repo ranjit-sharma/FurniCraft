@@ -24,17 +24,19 @@ import {
   Home,
   AlertCircle,
   Clock,
+  Calendar,
+  X,
 } from 'lucide-react';
 
 export const TransactionSearchPage = () => {
   const { user, isWorker, isThekedar, isOwner } = useAuth();
   const { t, language } = useLanguage();
 
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [dateFilterMode, setDateFilterMode] = useState('ALL'); // 'ALL' | 'TODAY' | 'THIS_MONTH' | 'CUSTOM'
+  const [customDate, setCustomDate] = useState('');
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
   const [selectedTx, setSelectedTx] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
   const [mobileView, setMobileView] = useState('list'); // 'list' | 'voucher'
@@ -97,47 +99,55 @@ export const TransactionSearchPage = () => {
     fetchRecentTransactions();
   }, [user?._id]);
 
-  // Execute search via API or local filter
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    setMobileView('list');
-    if (!searchTerm.trim()) {
-      fetchRecentTransactions();
-      return;
-    }
-
-    try {
-      setSearching(true);
-      const res = await api.get(`/finance/transactions/search/${encodeURIComponent(searchTerm.trim())}`);
-      const results = res.data?.transactions || [];
-      setTransactions(results);
-      if (results.length > 0) {
-        setSelectedTx(results[0]);
-      } else {
-        setSelectedTx(null);
-      }
-    } catch (err) {
-      console.error('Search failed:', err);
-      // Fallback to query parameter search
-      try {
-        const fallbackRes = await api.get(`/finance/transactions?search=${encodeURIComponent(searchTerm.trim())}`);
-        const list = fallbackRes.data?.transactions || [];
-        setTransactions(list);
-        setSelectedTx(list[0] || null);
-      } catch (e2) {
-        setTransactions([]);
-        setSelectedTx(null);
-      }
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  // Filter list by category tab
+  // Filter list by category and date
   const filteredTransactions = useMemo(() => {
-    if (selectedCategory === 'ALL') return transactions;
-    return transactions.filter((tx) => tx.category === selectedCategory);
-  }, [transactions, selectedCategory]);
+    return transactions.filter((tx) => {
+      // 1. Category Filter
+      if (selectedCategory !== 'ALL' && tx.category !== selectedCategory) {
+        return false;
+      }
+
+      // 2. Date Filter
+      if (dateFilterMode === 'ALL' && !customDate) {
+        return true;
+      }
+
+      const txDate = new Date(tx.transactionDate);
+      const now = new Date();
+
+      if (dateFilterMode === 'TODAY') {
+        return (
+          txDate.getFullYear() === now.getFullYear() &&
+          txDate.getMonth() === now.getMonth() &&
+          txDate.getDate() === now.getDate()
+        );
+      }
+
+      if (dateFilterMode === 'THIS_MONTH') {
+        return (
+          txDate.getFullYear() === now.getFullYear() &&
+          txDate.getMonth() === now.getMonth()
+        );
+      }
+
+      if (dateFilterMode === 'CUSTOM' && customDate) {
+        const [year, month, day] = customDate.split('-').map(Number);
+        return (
+          txDate.getFullYear() === year &&
+          txDate.getMonth() === month - 1 &&
+          txDate.getDate() === day
+        );
+      }
+
+      return true;
+    });
+  }, [transactions, selectedCategory, dateFilterMode, customDate]);
+
+  const handleResetFilters = () => {
+    setSelectedCategory('ALL');
+    setDateFilterMode('ALL');
+    setCustomDate('');
+  };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
@@ -164,28 +174,10 @@ export const TransactionSearchPage = () => {
         subtitle={`${transactions.length} ${t('transactionSearch.recordsLower', 'records')} · ${t('transactionSearch.pageSub', 'find a payment or advance and download its bill')}`}
       />
 
-      {/* Search + category filter */}
-      <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4`}>
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (!e.target.value) fetchRecentTransactions();
-              }}
-              placeholder={t('transactionSearch.searchPlaceholder', 'Transaction ID or UPI / receipt ref')}
-              aria-label="Search transactions"
-              className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 pl-9 pr-3 text-sm text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-          <Button type="submit" loading={searching} icon={Search}>
-            {t('transactionSearch.searchBtn', 'Search')}
-          </Button>
-        </form>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 touch-pan-x" role="tablist" aria-label="Category">
+      {/* Category + Date Filter Bar */}
+      <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3 shadow-xs`}>
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x" role="tablist" aria-label="Filters">
+          {/* Category Tabs */}
           {[
             { id: 'ALL', label: t('transactionSearch.allCategories', 'All') },
             { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage payments') },
@@ -197,15 +189,98 @@ export const TransactionSearchPage = () => {
               role="tab"
               aria-selected={selectedCategory === cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold transition whitespace-nowrap ${
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat.id
-                  ? 'border-amber-600 bg-amber-600 text-white'
-                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                  ? 'border-amber-600 bg-amber-600 text-white shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
               }`}
             >
               {cat.label}
             </button>
           ))}
+
+          {/* Elegant Divider between Categories and Date */}
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0 mx-0.5" />
+
+          {/* Quick Date: All Dates */}
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilterMode('ALL');
+              setCustomDate('');
+            }}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+              dateFilterMode === 'ALL' && !customDate
+                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+            }`}
+          >
+            {t('transactionSearch.allDates') || 'All Dates'}
+          </button>
+
+          {/* Quick Date: Today */}
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilterMode('TODAY');
+              setCustomDate('');
+            }}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+              dateFilterMode === 'TODAY'
+                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+            }`}
+          >
+            {t('transactionSearch.today') || 'Today'}
+          </button>
+
+          {/* Quick Date: This Month */}
+          <button
+            type="button"
+            onClick={() => {
+              setDateFilterMode('THIS_MONTH');
+              setCustomDate('');
+            }}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+              dateFilterMode === 'THIS_MONTH'
+                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+            }`}
+          >
+            {t('transactionSearch.thisMonth') || 'This Month'}
+          </button>
+
+          {/* Custom Date Picker Pill */}
+          <div className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold transition whitespace-nowrap ${
+            dateFilterMode === 'CUSTOM' && customDate
+              ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500/30'
+              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+          }`}>
+            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <input
+              type="date"
+              value={customDate}
+              onChange={(e) => {
+                setCustomDate(e.target.value);
+                setDateFilterMode(e.target.value ? 'CUSTOM' : 'ALL');
+              }}
+              aria-label="Filter by specific date"
+              className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer border-none p-0 w-28"
+            />
+            {customDate && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomDate('');
+                  setDateFilterMode('ALL');
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer"
+                title="Clear date filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -214,14 +289,9 @@ export const TransactionSearchPage = () => {
         {/* Left Column: Transaction Matches List */}
         <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} lg:col-span-5 space-y-3`}>
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
+            <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-500">
               {t('transactionSearch.matchingRecords') || 'Matching Records'} ({filteredTransactions.length})
             </h2>
-            {searchTerm && (
-              <span className="text-xs text-blue-600 font-semibold truncate max-w-[150px] sm:max-w-none">
-                {(t('transactionSearch.searchingFor') || 'Searching for "{query}"').replace('{query}', searchTerm)}
-              </span>
-            )}
           </div>
 
           {loading ? (
@@ -234,37 +304,29 @@ export const TransactionSearchPage = () => {
               <AlertCircle className="mx-auto h-8 w-8 text-slate-400 mb-2" />
               <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{t('transactionSearch.noFound') || 'No Transactions Found'}</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
-                {(t('transactionSearch.noFoundDesc') || 'No matching financial transaction found with ID "{query}".').replace('{query}', searchTerm)}
+                {t('transactionSearch.noFoundFiltered') || 'No transactions found for the selected category and date filter.'}
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('ALL');
-                  fetchRecentTransactions();
-                }}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
+                onClick={handleResetFilters}
+                className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
               >
-                {t('transactionSearch.resetFilters') || 'Reset Search Filters'}
+                {t('transactionSearch.resetFilters') || 'Reset Filters'}
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5 max-h-[352px] lg:max-h-[700px] overflow-y-auto pr-1">
-              {filteredTransactions.map((tx) => {
-                const isSelected = selectedTx?._id === tx._id;
-                return (
+            <>
+              {/* Mobile View: Out of the cards (flat list with sleek dividers) */}
+              <div className="lg:hidden divide-y divide-slate-200 dark:divide-slate-800">
+                {filteredTransactions.map((tx) => (
                   <div
                     key={tx._id}
                     onClick={() => handleSelectTx(tx, true)}
-                    className={`rounded-2xl border p-4 transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20'
-                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
-                    }`}
+                    className="py-3 px-1 active:bg-slate-100/60 dark:active:bg-slate-800/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-mono text-xs font-black text-amber-900 dark:text-amber-400 tracking-wider">
                             {tx.transactionId}
                           </span>
@@ -281,7 +343,7 @@ export const TransactionSearchPage = () => {
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <span className="text-base font-black text-slate-900 dark:text-white">
                           ₹{(tx.breakdown?.netPaid || tx.amount)?.toLocaleString('en-IN')}
                         </span>
@@ -291,7 +353,7 @@ export const TransactionSearchPage = () => {
                       </div>
                     </div>
 
-                    <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                       <span className="flex items-center gap-1">
                         <CreditCard className="h-3 w-3 text-slate-400" />
                         {tx.paymentMethod} {tx.receiptReference ? `(${tx.receiptReference})` : ''}
@@ -308,9 +370,73 @@ export const TransactionSearchPage = () => {
                       </button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+
+              {/* Desktop View: Keep it same as now (cards with hover & selected state) */}
+              <div className="hidden lg:block space-y-2.5 max-h-[700px] overflow-y-auto pr-1">
+                {filteredTransactions.map((tx) => {
+                  const isSelected = selectedTx?._id === tx._id;
+                  return (
+                    <div
+                      key={tx._id}
+                      onClick={() => handleSelectTx(tx, false)}
+                      className={`rounded-2xl border p-4 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-black text-amber-900 dark:text-amber-400 tracking-wider">
+                              {tx.transactionId}
+                            </span>
+                            <Badge variant={getCategoryBadgeVariant(tx.category)} size="sm">
+                              {tx.category?.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                            {tx.workerId ? (
+                              <span>{t('transactionSearch.craftsman') || 'Craftsman:'} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
+                            ) : (
+                              <span>{t('transactionSearch.generalLedger') || 'Workshop General Ledger'}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-base font-black text-slate-900 dark:text-white">
+                            ₹{(tx.breakdown?.netPaid || tx.amount)?.toLocaleString('en-IN')}
+                          </span>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {new Date(tx.transactionDate).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <CreditCard className="h-3 w-3 text-slate-400" />
+                          {tx.paymentMethod} {tx.receiptReference ? `(${tx.receiptReference})` : ''}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelectTx(tx, false);
+                          }}
+                          className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
+                        >
+                          {t('transactionSearch.viewVoucher') || 'View Voucher'} <ArrowRight className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 
