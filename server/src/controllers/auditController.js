@@ -8,21 +8,23 @@ export const listAuditLogs = async (req, res, next) => {
     if (targetType) filter.targetType = targetType;
     if (targetId) filter.targetId = targetId;
 
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 100);
+    const safePage = Math.max(parseInt(page, 10) || 1, 1);
+    const skip = (safePage - 1) * safeLimit;
     const totalCount = await AuditLog.countDocuments(filter);
 
     const logs = await AuditLog.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit, 10))
+      .limit(safeLimit)
       .populate('actorId', 'name email role');
 
     res.status(200).json({
       status: 'success',
       data: {
         totalCount,
-        currentPage: parseInt(page, 10),
-        totalPages: Math.ceil(totalCount / parseInt(limit, 10)),
+        currentPage: safePage,
+        totalPages: Math.ceil(totalCount / safeLimit),
         logs,
       },
     });

@@ -198,8 +198,14 @@ export const ThekedarDashboard = () => {
       <div>
         <Card
           title={t('thekedarDash.todayAttendance', "Today's attendance")}
-        subtitle={`${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`}
-      >
+          subtitle={
+            workers.length === 0
+              ? allActiveWorkers.length === 0
+                ? 'No active craftsmen registered yet'
+                : 'All craftsmen are on leave today'
+              : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
+          }
+        >
         {onLeaveWorkers.length > 0 && (
           <div className="mb-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 p-2.5 px-3 flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium min-w-0">

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
 import { User, WorkerProfile, Payroll, AdvanceRequest, FinancialTransaction, Attendance } from '../src/models/index.js';
@@ -7,33 +7,88 @@ import { signToken } from '../src/utils/jwt.js';
 const app = createApp();
 
 describe('Finance, Ledger & Immutable Payroll API Tests', () => {
-  let workerToken, thekedarToken, workerUser, thekedarUser;
-  let initialWorkerAdvanceBalance = 0;
+  const ts = Date.now();
+  let workerToken, thekedarToken, workerUser, thekedarUser, testPayroll;
+  const testThekedarEmail = `thekedar.fin.${ts}@furnicraft.com`;
+  const testWorkerEmail = `worker.fin.${ts}@furnicraft.com`;
   const createdAdvanceIds = [];
+
+  beforeAll(async () => {
+    thekedarUser = await User.create({
+      name: 'Finance Test Thekedar',
+      email: testThekedarEmail,
+      phone: `9${String(ts).slice(-9)}`,
+      password: 'Thekedar@2026',
+      role: 'THEKEDAR',
+      status: 'ACTIVE',
+    });
+    thekedarToken = signToken({ id: thekedarUser._id, role: 'THEKEDAR' });
+
+    workerUser = await User.create({
+      name: 'Finance Test Worker',
+      email: testWorkerEmail,
+      phone: `8${String(ts).slice(-9)}`,
+      password: 'Worker@2026',
+      role: 'WORKER',
+      status: 'ACTIVE',
+    });
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
+
+    await WorkerProfile.create({
+      userId: workerUser._id,
+      thekedarId: thekedarUser._id,
+      workerCode: `WRK-${String(ts).slice(-4)}`,
+      trade: 'Mistry',
+      defaultDailyWage: 800,
+      outstandingAdvanceBalance: 0,
+      totalAdvancesDisbursed: 0,
+    });
+
+    testPayroll = await Payroll.create({
+      payrollCode: `PAY-TEST-${String(ts).slice(-4)}`,
+      workerId: workerUser._id,
+      thekedarId: thekedarUser._id,
+      periodMonth: 9,
+      periodYear: 2026,
+      startDate: '2026-09-01',
+      endDate: '2026-09-30',
+      grossWages: 20000,
+      totalPayable: 20000,
+      balanceRemaining: 5000,
+      status: 'FINALIZED',
+      totalPresentDays: 25,
+      netSalaryPayable: 20000,
+    });
+  });
+
+  afterAll(async () => {
+    if (workerUser) {
+      await AdvanceRequest.deleteMany({ workerId: workerUser._id });
+      await FinancialTransaction.deleteMany({ workerId: workerUser._id });
+      await Payroll.deleteMany({ workerId: workerUser._id });
+      await Attendance.deleteMany({ workerId: workerUser._id });
+      await WorkerProfile.deleteMany({ userId: workerUser._id });
+      await User.deleteOne({ _id: workerUser._id });
+    }
+    if (thekedarUser) {
+      await User.deleteOne({ _id: thekedarUser._id });
+    }
+  });
 
   it('should authenticate actors and enforce worker login block', async () => {
     const resW = await request(app).post('/api/v1/auth/login').send({
-      email: 'worker.ramesh@furnicraft.com',
+      email: testWorkerEmail,
       password: 'Worker@2026',
     });
     expect(resW.status).toBe(403);
     expect(resW.body.message).toContain('Worker login is disabled');
 
-    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
-    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
-
     const resT = await request(app).post('/api/v1/auth/login').send({
-      email: 'thekedar.rajesh@furnicraft.com',
+      email: testThekedarEmail,
       password: 'Thekedar@2026',
     });
+    expect(resT.status).toBe(200);
     thekedarToken = resT.body.data.token;
-    thekedarUser = resT.body.data.user;
-
-    const currentProfile = await WorkerProfile.findOne({ userId: workerUser._id });
-    initialWorkerAdvanceBalance = currentProfile?.outstandingAdvanceBalance || 0;
-
-    // Reset worker advance balance so cumulative test runs don't exceed MAX_ADVANCE_LIMIT
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 0 });
   });
 
   it('RULE: Advance request does not disburse until actual payment is recorded', async () => {
@@ -60,11 +115,12 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
     expect(reviewRes.status).toBe(200);
     expect(reviewRes.body.data.advanceRequest.status).toBe('APPROVED');
 
-    // Worker profile outstanding balance should NOT have increased yet!
-    const profileBefore = await WorkerProfile.findOne({ userId: workerUser._id });
-    const balBefore = profileBefore.outstandingAdvanceBalance;
+    // Worker outstanding advance balance MUST still be 0 (Approval alone does NOT give money)
+    const profileMid = await WorkerProfile.findOne({ userId: workerUser._id });
+    expect(profileMid.outstandingAdvanceBalance).toBe(0);
 
-    // 3. Thekedar records actual disbursement
+    // 3. Thekedar disburses actual payment
+    const balBefore = profileMid.outstandingAdvanceBalance;
     const disbRes = await request(app)
       .post(`/api/v1/finance/advance-requests/${requestId}/disburse`)
       .set('Authorization', `Bearer ${thekedarToken}`)
@@ -81,25 +137,12 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
   });
 
   it('RULE: Cannot duplicate finalization for same worker and period', async () => {
-    // Ensure payroll for period is finalized first
-    const existing = await Payroll.findOne({ workerId: workerUser._id, periodMonth: 9, periodYear: 2026 });
-    if (!existing) {
-      await request(app)
-        .post('/api/v1/payroll/finalize')
-        .set('Authorization', `Bearer ${thekedarToken}`)
-        .send({
-          workerId: workerUser._id.toString(),
-          periodMonth: 9,
-          periodYear: 2026,
-        });
-    }
-
     const res = await request(app)
       .post('/api/v1/payroll/finalize')
       .set('Authorization', `Bearer ${thekedarToken}`)
       .send({
         workerId: workerUser._id.toString(),
-        periodMonth: 9, // Sep 2026 was already seeded as finalized
+        periodMonth: 9,
         periodYear: 2026,
       });
 
@@ -108,7 +151,7 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
   });
 
   it('RULE: Partial salary payments against finalized payroll are recorded correctly', async () => {
-    let payroll = await Payroll.findOne({ workerId: workerUser._id, periodMonth: 9, periodYear: 2026 });
+    let payroll = await Payroll.findById(testPayroll._id);
     expect(payroll).toBeDefined();
 
     payroll.balanceRemaining = 5000;
@@ -165,12 +208,11 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
   });
 
   it('RULE: Thekedar can delete worker from workforce with proper cleanup', async () => {
-    // Create a temporary worker under Rajesh Thekedar
     const tempEmail = `temp.worker.${Date.now()}@furnicraft.com`;
     const tempUser = await User.create({
       name: 'Temp Carpenter',
       email: tempEmail,
-      phone: '9888877777',
+      phone: `9${String(Date.now()).slice(-9)}`,
       password: 'Worker@2026',
       role: 'WORKER',
       assignedThekedar: thekedarUser._id,
@@ -292,35 +334,5 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
     expect(res.header['content-type']).toBe('application/pdf');
     expect(res.header['content-disposition']).toContain('.pdf');
     expect(res.body.toString('utf8', 0, 4)).toBe('%PDF');
-  });
-
-  afterAll(async () => {
-    // 1. Delete all advance requests created during this test or matching test signatures
-    await AdvanceRequest.deleteMany({
-      $or: [
-        { _id: { $in: createdAdvanceIds } },
-        { reason: { $regex: /Festive season|test|cap|exceed|weekly|Automated Vitest/i } },
-      ],
-    });
-
-    // 2. Delete test transactions created with test references (do not wipe legitimate DB transactions)
-    await FinancialTransaction.deleteMany({
-      $or: [
-        { receiptReference: { $in: ['TEST-UPI-UTR-999', 'NEFT-PARTIAL-1234', 'UPI-DIRECT-NET-888'] } },
-        { notes: { $regex: /test|partial payment|direct weekly/i } },
-      ],
-    });
-
-    // 3. Restore worker advance balance and attendance state to original state
-    if (workerUser) {
-      await WorkerProfile.updateOne(
-        { userId: workerUser._id },
-        { outstandingAdvanceBalance: initialWorkerAdvanceBalance }
-      );
-      await Attendance.updateMany(
-        { workerId: workerUser._id, payrollId: null },
-        { $set: { isPayrollProcessed: false } }
-      );
-    }
   });
 });

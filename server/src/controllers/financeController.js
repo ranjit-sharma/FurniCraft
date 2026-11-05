@@ -4,6 +4,7 @@ import * as exportService from '../services/exportService.js';
 import { AdvanceRequest, FinancialTransaction, WorkerProfile } from '../models/index.js';
 import { ROLES, ADVANCE_REQUEST_STATUS, MAX_ADVANCE_LIMIT } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const createAdvanceRequest = async (req, res, next) => {
   try {
@@ -213,7 +214,7 @@ export const listTransactions = async (req, res, next) => {
     if (transactionId) {
       filter.transactionId = transactionId.toUpperCase().trim();
     } else if (search) {
-      const cleanSearch = search.trim();
+      const cleanSearch = escapeRegex(search.trim());
       filter.$or = [
         { transactionId: { $regex: cleanSearch, $options: 'i' } },
         { receiptReference: { $regex: cleanSearch, $options: 'i' } },
@@ -254,11 +255,12 @@ export const searchTransactionById = async (req, res, next) => {
     }
 
     const cleanQuery = query.trim();
+    const safeRegex = escapeRegex(cleanQuery);
     const filter = {
       $or: [
-        { transactionId: { $regex: `^${cleanQuery}$`, $options: 'i' } },
-        { transactionId: { $regex: cleanQuery, $options: 'i' } },
-        { receiptReference: { $regex: cleanQuery, $options: 'i' } },
+        { transactionId: { $regex: `^${safeRegex}$`, $options: 'i' } },
+        { transactionId: { $regex: safeRegex, $options: 'i' } },
+        { receiptReference: { $regex: safeRegex, $options: 'i' } },
       ],
     };
 

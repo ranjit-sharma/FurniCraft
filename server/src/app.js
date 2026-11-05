@@ -8,6 +8,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { apiLimiter } from './middleware/rateLimiter.js';
 import { NotFoundError } from './utils/errors.js';
 
 // Route imports
@@ -53,9 +54,10 @@ export const createApp = () => {
     })
   );
 
-  // CORS configuration
+  // CORS configuration: Restrict to explicit verified client domains
   const allowedOrigins = [
     env.CLIENT_URL,
+    'https://furnicraft-erp.onrender.com',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
     'http://localhost:5173',
@@ -66,12 +68,7 @@ export const createApp = () => {
     cors({
       origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        if (
-          allowedOrigins.includes(origin) ||
-          origin.endsWith('.onrender.com') ||
-          origin.endsWith('.vercel.app') ||
-          !env.isProduction
-        ) {
+        if (allowedOrigins.includes(origin) || !env.isProduction) {
           return callback(null, true);
         }
         return callback(null, false);
@@ -97,8 +94,9 @@ export const createApp = () => {
     });
   });
 
-  // Mount API modules
+  // Mount API modules with global API rate limiter protection
   const apiRouter = express.Router();
+  apiRouter.use(apiLimiter);
   apiRouter.use('/auth', authRoutes);
   apiRouter.use('/users', userRoutes);
   apiRouter.use('/projects', projectRoutes);

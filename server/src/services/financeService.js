@@ -110,66 +110,106 @@ export const reviewAdvanceRequest = async ({ requestId, status, reviewNotes, rev
  * Disburse Advance (records actual financial transaction and updates worker outstanding advance balance)
  */
 export const disburseAdvance = async ({ requestId, paymentMethod, receiptReference, notes, recordedBy, req }) => {
-  const advanceRequest = await AdvanceRequest.findById(requestId);
-  if (!advanceRequest) throw new NotFoundError('Advance request not found');
+  // Atomically claim the approved advance request to prevent double-disbursement race conditions
+  const advanceRequest = await AdvanceRequest.findOneAndUpdate(
+    { _id: requestId, status: ADVANCE_REQUEST_STATUS.APPROVED },
+    { status: 'PROCESSING' },
+    { new: true }
+  );
 
-  if (advanceRequest.status !== ADVANCE_REQUEST_STATUS.APPROVED) {
-    throw new BadRequestError('Only approved advance requests can be disbursed');
+  if (!advanceRequest) {
+    const existing = await AdvanceRequest.findById(requestId);
+    if (!existing) throw new NotFoundError('Advance request not found');
+    throw new BadRequestError('Only approved advance requests can be disbursed (or disbursement is already being processed)');
   }
 
   const workerProfile = await WorkerProfile.findOne({ userId: advanceRequest.workerId });
   if (workerProfile) {
     const currentAdvance = workerProfile.outstandingAdvanceBalance || 0;
     if (currentAdvance >= MAX_ADVANCE_LIMIT) {
+      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
       throw new BadRequestError(`Cannot disburse advance: worker already has ₹${currentAdvance.toLocaleString('en-IN')} advance (maximum allowed is ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')}).`);
     }
     if (addMoney(currentAdvance, advanceRequest.amount) > MAX_ADVANCE_LIMIT) {
+      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
       throw new BadRequestError(`Cannot disburse advance: worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance.`);
     }
   }
 
-  const transCount = await FinancialTransaction.countDocuments();
-  const transactionId = `TXN-DISB-${Date.now().toString().slice(-6)}-${String(transCount + 1).padStart(3, '0')}`;
-
-  const transaction = await FinancialTransaction.create({
-    transactionId,
-    category: FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT,
-    amount: advanceRequest.amount,
-    transactionDate: new Date(),
-    paymentMethod: paymentMethod || PAYMENT_METHODS.CASH,
-    receiptReference: receiptReference || null,
-    workerId: advanceRequest.workerId,
-    thekedarId: advanceRequest.thekedarId,
-    projectId: advanceRequest.projectId,
-    advanceRequestId: advanceRequest._id,
-    recordedBy: recordedBy._id,
-    notes: notes || `Disbursement for request ${advanceRequest.requestCode}`,
-  });
-
-  // Update AdvanceRequest status
-  advanceRequest.status = ADVANCE_REQUEST_STATUS.DISBURSED;
-  advanceRequest.disbursedTransactionId = transaction._id;
-  await advanceRequest.save();
-
-  // Update WorkerProfile outstanding advance balance
+  // Atomically reserve balance on WorkerProfile with max cap condition to prevent race condition
+  let updatedProfile = null;
   if (workerProfile) {
-    workerProfile.totalAdvancesDisbursed = addMoney(workerProfile.totalAdvancesDisbursed, advanceRequest.amount);
-    workerProfile.outstandingAdvanceBalance = addMoney(workerProfile.outstandingAdvanceBalance, advanceRequest.amount);
-    await workerProfile.save();
+    updatedProfile = await WorkerProfile.findOneAndUpdate(
+      {
+        userId: advanceRequest.workerId,
+        outstandingAdvanceBalance: { $lte: MAX_ADVANCE_LIMIT - advanceRequest.amount },
+      },
+      {
+        $inc: {
+          outstandingAdvanceBalance: advanceRequest.amount,
+          totalAdvancesDisbursed: advanceRequest.amount,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedProfile) {
+      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
+      throw new BadRequestError(`Cannot disburse advance: worker advance limit (₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')}) would be exceeded.`);
+    }
   }
 
-  await recordAuditLog({
-    req,
-    actorId: recordedBy._id,
-    actorName: recordedBy.name,
-    actorRole: recordedBy.role,
-    action: 'ADVANCE_DISBURSED',
-    targetType: 'FinancialTransaction',
-    targetId: transaction._id,
-    newValues: { transactionId, amount: advanceRequest.amount, paymentMethod },
-  });
+  try {
+    const transCount = await FinancialTransaction.countDocuments();
+    const transactionId = `TXN-DISB-${Date.now().toString().slice(-6)}-${String(transCount + 1).padStart(3, '0')}`;
 
-  return transaction;
+    const transaction = await FinancialTransaction.create({
+      transactionId,
+      category: FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT,
+      amount: advanceRequest.amount,
+      transactionDate: new Date(),
+      paymentMethod: paymentMethod || PAYMENT_METHODS.CASH,
+      receiptReference: receiptReference || null,
+      workerId: advanceRequest.workerId,
+      thekedarId: advanceRequest.thekedarId,
+      projectId: advanceRequest.projectId,
+      advanceRequestId: advanceRequest._id,
+      recordedBy: recordedBy._id,
+      notes: notes || `Disbursement for request ${advanceRequest.requestCode}`,
+    });
+
+    advanceRequest.status = ADVANCE_REQUEST_STATUS.DISBURSED;
+    advanceRequest.disbursedTransactionId = transaction._id;
+    await advanceRequest.save();
+
+    await recordAuditLog({
+      req,
+      actorId: recordedBy._id,
+      actorName: recordedBy.name,
+      actorRole: recordedBy.role,
+      action: 'ADVANCE_DISBURSED',
+      targetType: 'FinancialTransaction',
+      targetId: transaction._id,
+      newValues: { transactionId, amount: advanceRequest.amount, paymentMethod },
+    });
+
+    return transaction;
+  } catch (err) {
+    // Rollback atomic increment on worker profile if transaction creation failed
+    if (updatedProfile) {
+      await WorkerProfile.findOneAndUpdate(
+        { userId: advanceRequest.workerId },
+        {
+          $inc: {
+            outstandingAdvanceBalance: -advanceRequest.amount,
+            totalAdvancesDisbursed: -advanceRequest.amount,
+          },
+        }
+      );
+    }
+    await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
+    throw err;
+  }
 };
 
 /**

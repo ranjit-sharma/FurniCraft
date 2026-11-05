@@ -4,6 +4,7 @@ import { createApp } from './app.js';
 import { connectDB, disconnectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { verifyEmailTransport } from './services/emailService.js';
+import { verifyToken } from './utils/jwt.js';
 
 // Last-resort logging so a stray rejection never fails silently; uncaught exceptions leave the process unsafe, so exit and let the host restart it.
 process.on('unhandledRejection', (reason) => {
@@ -27,9 +28,23 @@ const startServer = async () => {
     const server = http.createServer(app);
 
     // 3. High-concurrency Real-time Socket.IO Server (optimized for 500+ active connections)
+    const allowedSocketOrigins = [
+      env.CLIENT_URL,
+      'https://furnicraft-erp.onrender.com',
+      'http://localhost:8080',
+      'http://127.0.0.1:8080',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+    ].filter(Boolean);
+
     const io = new SocketIOServer(server, {
       cors: {
-        origin: [env.CLIENT_URL, 'http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+        origin: (origin, callback) => {
+          if (!origin || allowedSocketOrigins.includes(origin) || !env.isProduction) {
+            return callback(null, true);
+          }
+          return callback(new Error('CORS not allowed for this origin'), false);
+        },
         credentials: true,
       },
       pingTimeout: 30000,
@@ -38,14 +53,33 @@ const startServer = async () => {
       transports: ['websocket', 'polling'],
     });
 
+    // Handshake authentication middleware for real-time WebSocket security
+    io.use((socket, next) => {
+      try {
+        const rawAuth = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+        const token = rawAuth ? rawAuth.replace(/^Bearer\s+/i, '') : null;
+        if (token) {
+          socket.user = verifyToken(token);
+        }
+        next();
+      } catch (err) {
+        return next(new Error('Unauthorized socket connection'));
+      }
+    });
+
     io.on('connection', (socket) => {
-      // Optional user room joining for live notifications
+      // Scoped user room joining: only authenticated user can join their own user room (or Owner)
       socket.on('join_user_room', (userId) => {
-        if (userId) socket.join(`user_${userId}`);
+        if (!socket.user || !userId) return;
+        if (socket.user.id === String(userId) || socket.user.role === 'OWNER') {
+          socket.join(`user_${userId}`);
+        }
       });
 
+      // Scoped project room joining: only authenticated users
       socket.on('join_project_room', (projectId) => {
-        if (projectId) socket.join(`project_${projectId}`);
+        if (!socket.user || !projectId) return;
+        socket.join(`project_${projectId}`);
       });
     });
 

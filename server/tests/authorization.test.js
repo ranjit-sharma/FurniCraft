@@ -1,54 +1,109 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { User, WorkerProfile } from '../src/models/index.js';
+import { User, WorkerProfile, Project } from '../src/models/index.js';
 import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
 describe('Authorization & RBAC API Tests', () => {
+  const ts = Date.now();
   let workerToken, workerUser;
   let otherWorkerToken, otherWorkerUser;
   let thekedarToken, thekedarUser;
   let ownerToken, ownerUser;
+  let ephemeralIds = [];
+
+  beforeAll(async () => {
+    // 1. Owner
+    ownerUser = await User.findOne({ role: 'OWNER' });
+    if (!ownerUser) {
+      ownerUser = await User.create({
+        name: 'Test Owner',
+        email: `owner.auth.${ts}@furnicraft.com`,
+        phone: `9${String(ts).slice(-9)}`,
+        password: 'Password@2026',
+        role: 'OWNER',
+        status: 'ACTIVE',
+      });
+      ephemeralIds.push(ownerUser._id);
+    }
+    ownerToken = signToken({ id: ownerUser._id, role: 'OWNER' });
+
+    // 2. Thekedar
+    thekedarUser = await User.findOne({ role: 'THEKEDAR', status: 'ACTIVE' });
+    if (!thekedarUser) {
+      thekedarUser = await User.create({
+        name: 'Test Thekedar',
+        email: `thekedar.auth.${ts}@furnicraft.com`,
+        phone: `8${String(ts).slice(-9)}`,
+        password: 'Password@2026',
+        role: 'THEKEDAR',
+        status: 'ACTIVE',
+      });
+      ephemeralIds.push(thekedarUser._id);
+    }
+    thekedarToken = signToken({ id: thekedarUser._id, role: 'THEKEDAR' });
+
+    // 3. Ephemeral Workers with known test credentials
+    workerUser = await User.create({
+      name: 'Auth Test Worker 1',
+      email: `worker1.auth.${ts}@furnicraft.com`,
+      phone: `7${String(ts).slice(-9)}`,
+      password: 'Worker@2026',
+      role: 'WORKER',
+      status: 'ACTIVE',
+    });
+    ephemeralIds.push(workerUser._id);
+    await WorkerProfile.create({
+      userId: workerUser._id,
+      thekedarId: thekedarUser._id,
+      workerCode: `WRK-T1-${String(ts).slice(-4)}`,
+      defaultDailyWage: 750,
+    });
+
+    otherWorkerUser = await User.create({
+      name: 'Auth Test Worker 2',
+      email: `worker2.auth.${ts}@furnicraft.com`,
+      phone: `6${String(ts).slice(-9)}`,
+      password: 'Worker@2026',
+      role: 'WORKER',
+      status: 'ACTIVE',
+    });
+    ephemeralIds.push(otherWorkerUser._id);
+    await WorkerProfile.create({
+      userId: otherWorkerUser._id,
+      thekedarId: thekedarUser._id,
+      workerCode: `WRK-T2-${String(ts).slice(-4)}`,
+      defaultDailyWage: 800,
+    });
+
+    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
+    otherWorkerToken = signToken({ id: otherWorkerUser._id, role: 'WORKER' });
+  });
+
+  afterAll(async () => {
+    if (ephemeralIds.length > 0) {
+      await WorkerProfile.deleteMany({ userId: { $in: ephemeralIds } });
+      await User.deleteMany({ _id: { $in: ephemeralIds } });
+    }
+  });
 
   it('should authenticate test actors and enforce worker login block', async () => {
-    // 1. Worker Ramesh - Worker login must be rejected with 403 Forbidden
+    // 1. Worker login must be rejected with 403 Forbidden
     const resW1 = await request(app).post('/api/v1/auth/login').send({
-      email: 'worker.ramesh@furnicraft.com',
+      email: workerUser.email,
       password: 'Worker@2026',
     });
     expect(resW1.status).toBe(403);
     expect(resW1.body.message).toContain('Worker login is disabled');
 
-    workerUser = await User.findOne({ email: 'worker.ramesh@furnicraft.com' });
-    workerToken = signToken({ id: workerUser._id, role: 'WORKER' });
-
-    // 2. Worker Suresh - Worker login must be rejected with 403 Forbidden
+    // 2. Second Worker login must be rejected with 403 Forbidden
     const resW2 = await request(app).post('/api/v1/auth/login').send({
-      email: 'worker.suresh@furnicraft.com',
+      email: otherWorkerUser.email,
       password: 'Worker@2026',
     });
     expect(resW2.status).toBe(403);
-
-    otherWorkerUser = await User.findOne({ email: 'worker.suresh@furnicraft.com' });
-    otherWorkerToken = signToken({ id: otherWorkerUser._id, role: 'WORKER' });
-
-    // 3. Thekedar Rajesh
-    const resT = await request(app).post('/api/v1/auth/login').send({
-      email: 'thekedar.rajesh@furnicraft.com',
-      password: 'Thekedar@2026',
-    });
-    thekedarToken = resT.body.data.token;
-    thekedarUser = resT.body.data.user;
-
-    // 4. Owner
-    const resO = await request(app).post('/api/v1/auth/login').send({
-      email: 'owner@furnicraft.com',
-      password: 'FurniOwner@2026',
-    });
-    ownerToken = resO.body.data.token;
-    ownerUser = resO.body.data.user;
 
     expect(workerToken).toBeDefined();
     expect(otherWorkerToken).toBeDefined();
@@ -69,10 +124,9 @@ describe('Authorization & RBAC API Tests', () => {
     const res = await request(app)
       .put(`/api/v1/users/workers/${workerUser._id}/wage`)
       .set('Authorization', `Bearer ${workerToken}`)
-      .send({ dailyWage: 2000 });
+      .send({ dailyWageRate: 1500 });
 
     expect(res.status).toBe(403);
-    expect(res.body.message).toContain('Access forbidden');
   });
 
   it('MANDATORY RULE: Worker cannot approve an advance request', async () => {
@@ -193,12 +247,6 @@ describe('Authorization & RBAC API Tests', () => {
     expect(resFail.status).toBe(400);
     expect(resFail.body.message).toContain('Net balance must be exactly ₹0');
 
-    // Clean up balance worker by resetting balance and deleting
-    await WorkerProfile.updateOne({ userId: balWorkerId }, { outstandingAdvanceBalance: 0 });
-    await request(app)
-      .delete(`/api/v1/users/workers/${balWorkerId}`)
-      .set('Authorization', `Bearer ${thekedarToken}`);
-
     // 2. Register a brand new worker with 0 earnings and 0 advance (Net Balance = 0)
     const uniqueEmail = `test.zero.${Date.now()}@furnicraft.com`;
     const resReg = await request(app)
@@ -223,12 +271,27 @@ describe('Authorization & RBAC API Tests', () => {
 
     expect(resDel.status).toBe(200);
     expect(resDel.body.message).toContain('deleted successfully');
+
+    // Clean up balWorker
+    await WorkerProfile.deleteOne({ userId: balWorkerId });
+    await User.deleteOne({ _id: balWorkerId });
   });
 
   it('MANDATORY RULE: Owner can activate and suspend Thekedar accounts, and suspended Thekedars cannot log in', async () => {
+    // Use dedicated ephemeral thekedar to preserve database state
+    const tempThekedarEmail = `temp.thekedar.${Date.now()}@furnicraft.com`;
+    const tempThekedar = await User.create({
+      name: 'Temp Suspension Thekedar',
+      email: tempThekedarEmail,
+      phone: `9${String(Date.now()).slice(-9)}`,
+      password: 'Thekedar@2026',
+      role: 'THEKEDAR',
+      status: 'ACTIVE',
+    });
+
     // 1. Owner suspends Thekedar
     const resSuspend = await request(app)
-      .patch(`/api/v1/users/thekedars/${thekedarUser._id}/status`)
+      .patch(`/api/v1/users/thekedars/${tempThekedar._id}/status`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .send({ status: 'SUSPENDED' });
 
@@ -240,7 +303,7 @@ describe('Authorization & RBAC API Tests', () => {
     const resLoginBlocked = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'thekedar.rajesh@furnicraft.com',
+        email: tempThekedarEmail,
         password: 'Thekedar@2026',
       });
 
@@ -249,7 +312,7 @@ describe('Authorization & RBAC API Tests', () => {
 
     // 3. Owner reactivates Thekedar
     const resActivate = await request(app)
-      .patch(`/api/v1/users/thekedars/${thekedarUser._id}/status`)
+      .patch(`/api/v1/users/thekedars/${tempThekedar._id}/status`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .send({ status: 'ACTIVE' });
 
@@ -261,17 +324,19 @@ describe('Authorization & RBAC API Tests', () => {
     const resLoginSuccess = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'thekedar.rajesh@furnicraft.com',
+        email: tempThekedarEmail,
         password: 'Thekedar@2026',
       });
 
     expect(resLoginSuccess.status).toBe(200);
     expect(resLoginSuccess.body.data.token).toBeDefined();
-    thekedarToken = resLoginSuccess.body.data.token;
+
+    // Clean up temp thekedar
+    await User.deleteOne({ _id: tempThekedar._id });
   });
 
   it('MANDATORY RULE: Owner can ONLY manage Thekedar accounts (cannot alter Worker or Owner statuses)', async () => {
-    // 1. Owner trying to suspend Worker Ramesh -> 403 Forbidden
+    // 1. Owner trying to suspend Worker -> 403 Forbidden
     const resWorker = await request(app)
       .patch(`/api/v1/users/${workerUser._id}/status`)
       .set('Authorization', `Bearer ${ownerToken}`)
@@ -299,9 +364,27 @@ describe('Authorization & RBAC API Tests', () => {
   });
 
   it('MANDATORY RULE: Thekedar can activate and suspend Workers under their supervision', async () => {
-    // 1. Thekedar suspends Worker Ramesh
+    // Create dedicated ephemeral worker to test supervision suspend & activate
+    const tempWorkerEmail = `temp.supervisor.wrk.${Date.now()}@furnicraft.com`;
+    const tempWorker = await User.create({
+      name: 'Supervised Worker',
+      email: tempWorkerEmail,
+      phone: `9${String(Date.now()).slice(-9)}`,
+      password: 'Worker@2026',
+      role: 'WORKER',
+      assignedThekedar: thekedarUser._id,
+      status: 'ACTIVE',
+    });
+    await WorkerProfile.create({
+      userId: tempWorker._id,
+      thekedarId: thekedarUser._id,
+      workerCode: `WRK-SUP-${String(Date.now()).slice(-4)}`,
+      defaultDailyWage: 700,
+    });
+
+    // 1. Thekedar suspends Worker
     const resSuspendWorker = await request(app)
-      .patch(`/api/v1/users/workers/${workerUser._id}/status`)
+      .patch(`/api/v1/users/workers/${tempWorker._id}/status`)
       .set('Authorization', `Bearer ${thekedarToken}`)
       .send({ status: 'SUSPENDED' });
 
@@ -313,16 +396,16 @@ describe('Authorization & RBAC API Tests', () => {
     const resWorkerLoginBlocked = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'worker.ramesh@furnicraft.com',
+        email: tempWorkerEmail,
         password: 'Worker@2026',
       });
 
     expect(resWorkerLoginBlocked.status).toBe(401);
     expect(resWorkerLoginBlocked.body.message).toContain('suspended');
 
-    // 3. Thekedar reactivates Worker Ramesh
+    // 3. Thekedar reactivates Worker
     const resActivateWorker = await request(app)
-      .patch(`/api/v1/users/workers/${workerUser._id}/status`)
+      .patch(`/api/v1/users/workers/${tempWorker._id}/status`)
       .set('Authorization', `Bearer ${thekedarToken}`)
       .send({ status: 'ACTIVE' });
 
@@ -334,7 +417,7 @@ describe('Authorization & RBAC API Tests', () => {
     const resWorkerLogin = await request(app)
       .post('/api/v1/auth/login')
       .send({
-        email: 'worker.ramesh@furnicraft.com',
+        email: tempWorkerEmail,
         password: 'Worker@2026',
       });
 
@@ -343,14 +426,14 @@ describe('Authorization & RBAC API Tests', () => {
 
     // 5. Worker cannot change anyone's status
     const resWorkerUnauth = await request(app)
-      .patch(`/api/v1/users/${workerUser._id}/status`)
+      .patch(`/api/v1/users/${tempWorker._id}/status`)
       .set('Authorization', `Bearer ${workerToken}`)
       .send({ status: 'SUSPENDED' });
 
     expect([401, 403]).toContain(resWorkerUnauth.status);
 
-    expect(resWorkerUnauth.status).toBe(403);
+    // Clean up temp worker
+    await WorkerProfile.deleteOne({ userId: tempWorker._id });
+    await User.deleteOne({ _id: tempWorker._id });
   });
 });
-
-

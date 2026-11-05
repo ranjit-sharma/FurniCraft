@@ -3,6 +3,7 @@ import { Project, ProjectAssignment, ProjectMoneyReceived, WorkerProfile } from 
 import { ROLES, PROJECT_STATUS } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 const PRIORITY_ORDER = {
   CRITICAL: 4,
@@ -32,7 +33,7 @@ export const listProjects = async (req, res, next) => {
     if (type && type !== 'ALL') filter.projectType = type;
     if (priority && priority !== 'ALL') filter.priority = priority;
     if (search && search.trim()) {
-      const q = search.trim();
+      const q = escapeRegex(search.trim());
       filter.$or = [
         { name: { $regex: q, $options: 'i' } },
         { projectCode: { $regex: q, $options: 'i' } },

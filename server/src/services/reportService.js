@@ -1,5 +1,6 @@
 import { User, WorkerProfile, Project, ProjectAssignment, ProjectMoneyReceived, Attendance, Payroll, FinancialTransaction, AdvanceRequest, AuditLog, Notification } from '../models/index.js';
 import { ROLES, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS, PAYROLL_STATUS, MAX_ADVANCE_LIMIT, FINANCIAL_CATEGORIES } from '../config/constants.js';
+import { escapeRegex } from '../utils/sanitize.js';
 
 export const getWorkerDashboardData = async (workerId) => {
   const todayStr = new Date().toISOString().split('T')[0];
@@ -114,8 +115,8 @@ export const getMembersOverview = async ({ role, search } = {}) => {
   if (role && role !== 'ALL') {
     filter.role = role;
   }
-  if (search) {
-    const regex = new RegExp(search.trim(), 'i');
+  if (search && search.trim()) {
+    const regex = new RegExp(escapeRegex(search.trim()), 'i');
     filter.$or = [{ name: regex }, { email: regex }, { phone: regex }];
   }
 
