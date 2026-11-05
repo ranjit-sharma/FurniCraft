@@ -120,69 +120,95 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
 
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <meta name="x-apple-disable-message-reformatting">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
       <title>${subject}</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 24px; }
-        .container { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .header { background: #0f172a; padding: 32px 24px; text-align: center; color: #ffffff; }
+        *, *:before, *:after { box-sizing: border-box !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          min-width: 100% !important;
+          -webkit-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: #f1f5f9;
+          color: #1e293b;
+        }
+        .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
+        .container { max-width: 540px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 28px 20px; text-align: center; color: #ffffff; }
         .logo-container { margin-bottom: 14px; text-align: center; }
-        .logo-img { height: 56px; max-width: 220px; object-fit: contain; display: inline-block; }
-        .brand-title { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; }
+        .logo-img { height: 52px; max-width: 200px; object-fit: contain; display: inline-block; }
+        .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
-        .brand-badge-erp { background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 13px; color: #fbbf24; vertical-align: middle; margin-left: 6px; }
-        .brand-subtitle { font-size: 11px; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
-        .security-badge { display: inline-block; background: #1e293b; border: 1px solid #334155; padding: 5px 16px; border-radius: 9999px; font-size: 11px; font-weight: 700; color: #38bdf8; margin-top: 12px; letter-spacing: 0.5px; }
-        .content { padding: 32px 24px; }
-        .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
-        .message { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
-        .otp-box { background: #f8fafc; border: 2px dashed #2563eb; border-radius: 12px; padding: 22px; text-align: center; margin-bottom: 24px; }
+        .brand-badge-erp { background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 12px; color: #fbbf24; vertical-align: middle; margin-left: 6px; }
+        .brand-subtitle { font-size: 11px; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; line-height: 1.4; }
+        .security-badge { display: inline-block; background: #1e293b; border: 1px solid #334155; padding: 5px 14px; border-radius: 9999px; font-size: 11px; font-weight: 700; color: #38bdf8; margin-top: 12px; letter-spacing: 0.5px; }
+        .content { padding: 28px 20px; }
+        .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 12px; line-height: 1.3; }
+        .message { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; word-break: break-word; overflow-wrap: anywhere; }
+        .otp-box { background: #f8fafc; border: 2px dashed #2563eb; border-radius: 12px; padding: 20px 14px; text-align: center; margin-bottom: 24px; }
         .otp-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .otp-code { font-family: Consolas, 'Courier New', monospace; font-size: 40px; font-weight: 900; color: #1d4ed8; letter-spacing: 8px; margin: 0; }
+        .otp-code { font-family: Consolas, 'Courier New', monospace; font-size: 38px; font-weight: 900; color: #1d4ed8; letter-spacing: 6px; margin: 0; }
         .expiry-note { font-size: 12px; font-weight: 600; color: #b45309; margin-top: 8px; }
-        .warning-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 12px; line-height: 1.5; color: #92400e; margin-bottom: 24px; }
-        .footer { padding: 20px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+        .warning-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 12px; line-height: 1.5; color: #92400e; margin-bottom: 24px; word-break: break-word; }
+        .footer { padding: 18px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.5; word-break: break-word; }
+        @media only screen and (max-width: 480px) {
+          .wrapper { padding: 8px 4px !important; }
+          .container { border-radius: 12px !important; }
+          .header { padding: 20px 14px !important; }
+          .content { padding: 20px 14px !important; }
+          .otp-code { font-size: 30px !important; letter-spacing: 4px !important; }
+          .brand-title { font-size: 20px !important; }
+        }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo-container">
-            ${logoCid 
-              ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-              : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="56" alt="FurniCraft ERP Logo" class="logo-img" />`
-            }
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="logo-container">
+              ${logoCid 
+                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
+                : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="52" alt="FurniCraft ERP Logo" class="logo-img" />`
+              }
+            </div>
+            <h1 class="brand-title">
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
+            </h1>
+            <div class="brand-subtitle">Modern Furniture Workforce &amp; Project Management</div>
+            <div class="security-badge">🛡️ Official Account Verification Code</div>
           </div>
-          <h1 class="brand-title">
-            <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
-          </h1>
-          <div class="brand-subtitle">Modern Furniture Workforce &amp; Project Management</div>
-          <div class="security-badge">🛡️ Official Account Verification Code</div>
-        </div>
-        <div class="content">
-          <div class="greeting">Hello, ${name || 'Craftsman'}!</div>
-          <p class="message">
-            We received a request to verify access for your account associated with <strong>${to}</strong> on the <strong>FurniCraft ERP</strong> platform.
-            Please use your official single-use verification code below:
-          </p>
+          <div class="content">
+            <div class="greeting">Hello, ${name || 'Craftsman'}!</div>
+            <p class="message">
+              We received a request to verify access for your account associated with <strong>${to}</strong> on the <strong>FurniCraft ERP</strong> platform.
+              Please use your official single-use verification code below:
+            </p>
 
-          <div class="otp-box">
-            <div class="otp-label">Your 6-Digit Verification Code</div>
-            <div class="otp-code">${otp}</div>
-            <div class="expiry-note">⏱ Valid for 5 minutes</div>
-          </div>
+            <div class="otp-box">
+              <div class="otp-label">Your 6-Digit Verification Code</div>
+              <div class="otp-code">${otp}</div>
+              <div class="expiry-note">⏱ Valid for 5 minutes</div>
+            </div>
 
-          <div class="warning-box">
-            <strong>Security Notice:</strong> Never share this OTP with anyone, including supervisors or administrators. FurniCraft ERP staff will never ask for your verification code. If you did not make this request, please secure your account immediately.<br/><br/>
-            💡 <em>Tip: If this email arrived in your Spam or Junk folder, please click "Report not spam" or "Move to Inbox" to ensure future account notifications arrive directly in your inbox.</em>
+            <div class="warning-box">
+              <strong>Security Notice:</strong> Never share this OTP with anyone, including supervisors or administrators. FurniCraft ERP staff will never ask for your verification code. If you did not make this request, please secure your account immediately.<br/><br/>
+              💡 <em>Tip: If this email arrived in your Spam or Junk folder, please click "Report not spam" or "Move to Inbox" to ensure future account notifications arrive directly in your inbox.</em>
+            </div>
           </div>
-        </div>
-        <div class="footer">
-          This is an automated verification email from <strong>FurniCraft ERP</strong> — Modern Furniture Workforce System.<br/>
-          Sent securely to ${to}
+          <div class="footer">
+            This is an automated verification email from <strong>FurniCraft ERP</strong> — Modern Furniture Workforce System.<br/>
+            Sent securely to ${to}
+          </div>
         </div>
       </div>
     </body>
@@ -268,69 +294,96 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
 
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <meta name="x-apple-disable-message-reformatting">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
       <title>FurniCraft ERP Account Password</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-        .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .header { background: #0f172a; padding: 32px 24px; text-align: center; color: #ffffff; }
+        *, *:before, *:after { box-sizing: border-box !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          min-width: 100% !important;
+          -webkit-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background-color: #f8fafc;
+          color: #1e293b;
+        }
+        .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f8fafc; padding: 20px 10px; margin: 0; }
+        .container { max-width: 560px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 28px 20px; text-align: center; color: #ffffff; }
         .logo-container { margin-bottom: 14px; text-align: center; }
-        .logo-img { height: 56px; max-width: 220px; object-fit: contain; display: inline-block; }
-        .brand-title { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; }
+        .logo-img { height: 52px; max-width: 200px; object-fit: contain; display: inline-block; }
+        .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
-        .brand-badge-erp { background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 13px; color: #fbbf24; vertical-align: middle; margin-left: 6px; }
-        .brand-subtitle { font-size: 11px; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
-        .content { padding: 32px 24px; }
-        .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
-        .message { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; }
-        .password-box { background: #f8fafc; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px; }
+        .brand-badge-erp { background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 12px; color: #fbbf24; vertical-align: middle; margin-left: 6px; }
+        .brand-subtitle { font-size: 11px; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; line-height: 1.4; }
+        .content { padding: 28px 20px; }
+        .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 12px; line-height: 1.3; }
+        .message { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px; word-break: break-word; overflow-wrap: anywhere; }
+        .password-box { background: #f8fafc; border: 2px dashed #3b82f6; border-radius: 12px; padding: 18px 12px; text-align: center; margin-bottom: 24px; }
         .password-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .password-value { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 24px; font-weight: 900; color: #1d4ed8; letter-spacing: 2px; }
-        .warning-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 14px; font-size: 12px; line-height: 1.5; color: #92400e; margin-bottom: 24px; }
-        .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 12px 28px; font-size: 14px; font-weight: 700; border-radius: 10px; margin-top: 8px; }
-        .footer { padding: 20px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+        .password-value { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 22px; font-weight: 900; color: #1d4ed8; letter-spacing: 2px; word-break: break-all; }
+        .warning-box { background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 14px; font-size: 12px; line-height: 1.5; color: #92400e; margin-bottom: 24px; word-break: break-word; }
+        .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 12px 28px; font-size: 14px; font-weight: 700; border-radius: 10px; margin-top: 8px; text-align: center; }
+        .footer { padding: 18px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.5; word-break: break-word; }
+        @media only screen and (max-width: 480px) {
+          .wrapper { padding: 8px 4px !important; }
+          .container { border-radius: 12px !important; }
+          .header { padding: 20px 14px !important; }
+          .content { padding: 20px 14px !important; }
+          .password-value { font-size: 18px !important; }
+          .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+          .brand-title { font-size: 20px !important; }
+        }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo-container">
-            ${logoCid 
-              ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-              : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="56" alt="FurniCraft ERP Logo" class="logo-img" />`
-            }
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="logo-container">
+              ${logoCid 
+                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
+                : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="52" alt="FurniCraft ERP Logo" class="logo-img" />`
+              }
+            </div>
+            <h1 class="brand-title">
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
+            </h1>
+            <div class="brand-subtitle">Modern Furniture Workforce &amp; Project Management</div>
           </div>
-          <h1 class="brand-title">
-            <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
-          </h1>
-          <div class="brand-subtitle">Modern Furniture Workforce &amp; Project Management</div>
-        </div>
-        <div class="content">
-          <div class="greeting">Hello, ${name || 'Craftsman'}!</div>
-          <p class="message">
-            We received a request to recover the password for your FurniCraft account linked to <strong>${to}</strong> on the <strong>FurniCraft ERP</strong> platform.
-            Your temporary access password has been generated below:
-          </p>
+          <div class="content">
+            <div class="greeting">Hello, ${name || 'Craftsman'}!</div>
+            <p class="message">
+              We received a request to recover the password for your FurniCraft account linked to <strong>${to}</strong> on the <strong>FurniCraft ERP</strong> platform.
+              Your temporary access password has been generated below:
+            </p>
 
-          <div class="password-box">
-            <div class="password-label">Your New Account Password</div>
-            <div class="password-value">${newPassword}</div>
-          </div>
+            <div class="password-box">
+              <div class="password-label">Your New Account Password</div>
+              <div class="password-value">${newPassword}</div>
+            </div>
 
-          <div class="warning-box">
-            <strong>Security Reminder:</strong> Please sign in using this password and immediately update it in your profile settings. Do not share this password with anyone.
-          </div>
+            <div class="warning-box">
+              <strong>Security Reminder:</strong> Please sign in using this password and immediately update it in your profile settings. Do not share this password with anyone.
+            </div>
 
-          <div style="text-align: center;">
-            <a href="${env.CLIENT_URL || 'http://localhost:5173'}" class="btn">Sign In to FurniCraft ERP</a>
+            <div style="text-align: center;">
+              <a href="${env.CLIENT_URL || 'http://localhost:5173'}" class="btn">Sign In to FurniCraft ERP</a>
+            </div>
           </div>
-        </div>
-        <div class="footer">
-          This is an automated security email from <strong>FurniCraft ERP</strong> — Modern Furniture Workforce System.<br/>
-          If you did not request this password reset, please contact your administrator or supervisor immediately.
+          <div class="footer">
+            This is an automated security email from <strong>FurniCraft ERP</strong> — Modern Furniture Workforce System.<br/>
+            If you did not request this password reset, please contact your administrator or supervisor immediately.
+          </div>
         </div>
       </div>
     </body>
@@ -420,80 +473,323 @@ export const sendSupportTicketEmail = async ({
 
   const htmlContent = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
-      <title>New FurniCraft Support Ticket</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <meta name="x-apple-disable-message-reformatting">
+      <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
+      <title>${emailSubject}</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 24px; }
-        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .header { background: #0f172a; padding: 28px 24px; text-align: center; color: #ffffff; }
-        .logo-container { margin-bottom: 12px; text-align: center; }
-        .logo-img { height: 48px; max-width: 200px; object-fit: contain; display: inline-block; }
-        .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; }
+        *, *:before, *:after { box-sizing: border-box !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          min-width: 100% !important;
+          -webkit-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: #f1f5f9;
+          color: #1e293b;
+        }
+        .wrapper {
+          width: 100% !important;
+          min-width: 100% !important;
+          background-color: #f1f5f9;
+          padding: 20px 10px;
+          margin: 0;
+        }
+        .container {
+          max-width: 580px;
+          width: 100%;
+          margin: 0 auto;
+          background: #ffffff;
+          border-radius: 16px;
+          border: 1px solid #e2e8f0;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .header {
+          background: #0f172a;
+          padding: 26px 20px;
+          text-align: center;
+          color: #ffffff;
+        }
+        .logo-container {
+          margin-bottom: 12px;
+          text-align: center;
+        }
+        .logo-img {
+          height: 48px;
+          max-width: 200px;
+          object-fit: contain;
+          display: inline-block;
+        }
+        .brand-title {
+          margin: 0;
+          font-size: 24px;
+          font-weight: 900;
+          letter-spacing: -0.5px;
+          color: #ffffff;
+          line-height: 1.2;
+        }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
-        .brand-badge { background: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #ffffff; margin-left: 8px; vertical-align: middle; }
-        .content { padding: 28px 24px; }
-        .ticket-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
-        .message-box { background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #d97706; border-radius: 8px; padding: 16px; margin: 20px 0; }
-        .message-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: #92400e; margin-bottom: 8px; letter-spacing: 0.5px; }
-        .message-text { font-size: 14px; line-height: 1.6; color: #1e293b; white-space: pre-wrap; word-break: break-word; }
-        .footer { padding: 18px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }
+        .brand-badge {
+          background: #d97706;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 800;
+          color: #ffffff;
+          margin-left: 8px;
+          vertical-align: middle;
+          letter-spacing: 0.5px;
+        }
+        .content {
+          padding: 24px 20px;
+        }
+        .ticket-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 6px 0;
+          line-height: 1.35;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+        }
+        .ticket-meta {
+          font-size: 12px;
+          color: #64748b;
+          margin-bottom: 18px;
+          line-height: 1.5;
+          word-break: break-word;
+        }
+        .ticket-banner {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 12px 16px;
+          margin-bottom: 20px;
+          box-sizing: border-box;
+        }
+        .detail-row {
+          padding: 9px 0;
+          border-bottom: 1px solid #e2e8f0;
+        }
+        .detail-row-last {
+          padding: 9px 0 2px 0;
+          border-bottom: none;
+        }
+        .detail-label {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+          margin-bottom: 3px;
+          display: block;
+        }
+        .detail-value {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #0f172a;
+          line-height: 1.45;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+          display: block;
+        }
+        .role-badge {
+          display: inline-block;
+          font-size: 10px;
+          font-weight: 800;
+          color: #92400e;
+          background: #fef3c7;
+          border: 1px solid #fde68a;
+          padding: 1px 7px;
+          border-radius: 4px;
+          margin-left: 6px;
+          text-transform: uppercase;
+          vertical-align: middle;
+        }
+        .category-badge {
+          display: inline-block;
+          font-size: 12px;
+          font-weight: 700;
+          color: #1e40af;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          padding: 2px 9px;
+          border-radius: 6px;
+          word-break: break-word;
+        }
+        .message-box {
+          background: #fffbeb;
+          border: 1px solid #fef3c7;
+          border-left: 4px solid #d97706;
+          border-radius: 8px;
+          padding: 14px 16px;
+          margin: 18px 0;
+          box-sizing: border-box;
+        }
+        .message-title {
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          color: #92400e;
+          margin-bottom: 8px;
+          letter-spacing: 0.6px;
+        }
+        .message-text {
+          font-size: 13.5px;
+          line-height: 1.6;
+          color: #1e293b;
+          white-space: pre-wrap;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+        }
+        .actions-box {
+          margin: 20px 0 8px 0;
+          text-align: center;
+        }
+        .action-btn-reply {
+          display: inline-block;
+          background: #d97706;
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 800;
+          padding: 10px 18px;
+          border-radius: 10px;
+          margin: 4px;
+          text-align: center;
+        }
+        .action-btn-dashboard {
+          display: inline-block;
+          background: #0f172a;
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 800;
+          padding: 10px 18px;
+          border-radius: 10px;
+          margin: 4px;
+          text-align: center;
+        }
+        .footer {
+          padding: 18px 20px;
+          background: #f8fafc;
+          border-top: 1px solid #e2e8f0;
+          font-size: 11px;
+          color: #94a3b8;
+          text-align: center;
+          line-height: 1.5;
+          word-break: break-word;
+        }
+        @media only screen and (max-width: 480px) {
+          .wrapper { padding: 8px 4px !important; }
+          .container { border-radius: 12px !important; width: 100% !important; max-width: 100% !important; }
+          .header { padding: 20px 14px !important; }
+          .content { padding: 16px 12px !important; }
+          .ticket-title { font-size: 16px !important; }
+          .ticket-banner { padding: 10px 12px !important; }
+          .message-box { padding: 12px !important; }
+          .action-btn-reply, .action-btn-dashboard {
+            display: block !important;
+            width: 100% !important;
+            margin: 6px 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
       </style>
     </head>
     <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo-container">
-            ${logoCid 
-              ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-              : `<span style="font-size: 28px; font-weight: 900; color: #fff;">FurniCraft</span>`
-            }
-          </div>
-          <h1 class="brand-title">
-            <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
-          </h1>
-        </div>
-
-        <div class="content">
-          <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
-            ${subject}
-          </div>
-          <div style="font-size: 12px; color: #64748b; margin-bottom: 20px;">
-            Ticket Number: <strong style="color: #0f172a;">${ticketNumber}</strong> • Submitted: ${formattedDate}
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <div class="logo-container">
+              ${logoCid 
+                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
+                : `<span style="font-size: 26px; font-weight: 900; color: #fff;">FurniCraft</span>`
+              }
+            </div>
+            <h1 class="brand-title">
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
+            </h1>
           </div>
 
-          <div class="ticket-banner">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-              <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Submitted By:</td>
-                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userName} (${userRole})</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Phone:</td>
-                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userPhone || 'Not provided'}</td>
-              </tr>
-              <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Contact Email:</td>
-                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${userEmail || 'Not provided'}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #64748b; font-weight: 600;">Category:</td>
-                <td style="padding: 8px 0; color: #0f172a; font-weight: 700; text-align: right;">${categoryName}</td>
-              </tr>
-            </table>
+          <div class="content">
+            <div class="ticket-title">${subject}</div>
+            <div class="ticket-meta">
+              Ticket Number: <strong style="color: #0f172a; font-family: monospace;">${ticketNumber}</strong> &bull; Submitted: ${formattedDate}
+            </div>
+
+            <div class="ticket-banner">
+              <!-- Submitted By -->
+              <div class="detail-row">
+                <div class="detail-label">Submitted By</div>
+                <div class="detail-value">
+                  ${userName}
+                  <span class="role-badge">${userRole}</span>
+                </div>
+              </div>
+
+              <!-- Contact Phone -->
+              <div class="detail-row">
+                <div class="detail-label">Contact Phone</div>
+                <div class="detail-value">
+                  ${userPhone
+                    ? `<a href="tel:${userPhone}" style="color: #2563eb; text-decoration: none; font-weight: 700;">📞 ${userPhone}</a>`
+                    : '<span style="color: #94a3b8; font-weight: 500;">Not provided</span>'
+                  }
+                </div>
+              </div>
+
+              <!-- Contact Email -->
+              <div class="detail-row">
+                <div class="detail-label">Contact Email</div>
+                <div class="detail-value">
+                  ${userEmail
+                    ? `<a href="mailto:${userEmail}" style="color: #2563eb; text-decoration: none; word-break: break-all; overflow-wrap: anywhere; font-weight: 700;">✉️ ${userEmail}</a>`
+                    : '<span style="color: #94a3b8; font-weight: 500;">Not provided</span>'
+                  }
+                </div>
+              </div>
+
+              <!-- Category -->
+              <div class="detail-row-last">
+                <div class="detail-label">Category</div>
+                <div class="detail-value">
+                  <span class="category-badge">${categoryName}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="message-box">
+              <div class="message-title">Issue Description / Details:</div>
+              <div class="message-text">${message}</div>
+            </div>
+
+            <!-- Fast Action Buttons for Owner / Admin -->
+            <div class="actions-box">
+              ${userEmail && userEmail.includes('@') ? `
+                <a href="mailto:${userEmail}?subject=Re:%20[FurniCraft%20Support]%20${ticketNumber}:%20${encodeURIComponent(subject)}" class="action-btn-reply">
+                  ✉️ Reply to ${userName}
+                </a>
+              ` : ''}
+              <a href="${env.CLIENT_URL || 'http://localhost:5173'}" class="action-btn-dashboard">
+                🏢 Open FurniCraft App
+              </a>
+            </div>
           </div>
 
-          <div class="message-box">
-            <div class="message-title">Issue Description / Details:</div>
-            <div class="message-text">${message}</div>
+          <div class="footer">
+            This is an official automated helpdesk notification from <strong>FurniCraft ERP</strong>.<br/>
+            Ticket: <strong style="font-family: monospace;">${ticketNumber}</strong> &bull; Delivered to: <strong>${supportEmail}</strong>
           </div>
-        </div>
-
-        <div class="footer">
-          This is an official automated helpdesk notification from <strong>FurniCraft ERP</strong>.<br/>
-          Ticket: <strong>${ticketNumber}</strong> | Delivered to: <strong>${supportEmail}</strong>
         </div>
       </div>
     </body>

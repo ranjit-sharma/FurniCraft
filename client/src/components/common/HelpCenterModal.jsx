@@ -966,7 +966,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                       {/* Expandable Details */}
                       {isExpanded && (
                         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 animate-fade-in text-[11px]">
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                                 Submitted At
@@ -985,7 +985,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                                 Support Notification
                               </span>
-                              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                              <span className="text-slate-700 dark:text-slate-300 font-medium break-all">
                                 furnicraft.erp@gmail.com
                               </span>
                             </div>
