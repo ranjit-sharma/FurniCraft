@@ -1,11 +1,10 @@
 import { connectDB, disconnectDB } from '../config/db.js';
-import { User, AttendanceRuleVersion } from '../models/index.js';
-import { ROLES, USER_STATUS } from '../config/constants.js';
+import { AttendanceRuleVersion } from '../models/index.js';
 
 const seedDatabase = async () => {
   try {
     await connectDB();
-    console.log('[Init] Ensuring essential system rules and accounts exist...');
+    console.log('[Init] Ensuring essential system attendance rules exist...');
 
     // 1. Ensure Attendance Rule Version 1 exists (never deletes existing data)
     let rule = await AttendanceRuleVersion.findOne({ versionNumber: 1 });
@@ -29,23 +28,7 @@ const seedDatabase = async () => {
       console.log('[Init] Attendance Rule Version 1 verified.');
     }
 
-    // 2. Ensure Owner Admin exists
-    let owner = await User.findOne({ email: 'furnicraft.erp@gmail.com' });
-    if (!owner) {
-      owner = await User.create({
-        name: 'Admin',
-        email: 'furnicraft.erp@gmail.com',
-        phone: '7482869029',
-        password: 'Furnicraft@3948',
-        role: ROLES.OWNER,
-        status: USER_STATUS.ACTIVE,
-      });
-      console.log('[Init] Created Owner Admin account.');
-    } else {
-      console.log('[Init] Owner Admin account verified.');
-    }
-
-    console.log('[Init] System initialization complete. Real user data preserved.');
+    console.log('[Init] System initialization complete.');
     await disconnectDB();
     process.exit(0);
   } catch (err) {
