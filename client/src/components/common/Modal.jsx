@@ -55,12 +55,18 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' 
           </div>
 
           {/* Dialog Header — ALWAYS pinned at the top with shrink-0 */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3 sm:px-6 sm:py-4 bg-white dark:bg-slate-900 z-10">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate pr-2">{title}</h3>
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3 sm:px-6 sm:py-4 bg-white dark:bg-slate-900 z-10">
+            <div className="min-w-0 flex-1 pr-2">
+              {typeof title === 'string' ? (
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 truncate">{title}</h3>
+              ) : (
+                title
+              )}
+            </div>
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition shrink-0 -mr-2 cursor-pointer"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition shrink-0 cursor-pointer"
               aria-label="Close dialog"
             >
               <X className="h-5 w-5" />
@@ -70,7 +76,7 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' 
           {/* Dialog Body — Scrollable with min-h-0 so overflow-y-auto is strictly contained */}
           <div
             ref={contentRef}
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3.5 py-3.5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-5"
           >
             {children}
           </div>

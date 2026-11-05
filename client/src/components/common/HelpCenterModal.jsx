@@ -316,13 +316,13 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
         onClose();
       }}
       title={
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
             <LifeBuoy className="h-5 w-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight">
                 {isOwner ? t('help.thekedarRequests', 'Thekedar Requests') : t('help.title', 'Help & Support Center')}
               </h3>
               {isOwner && openTicketsCount > 0 && (
@@ -331,7 +331,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                 </span>
               )}
             </div>
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 line-clamp-1 sm:line-clamp-none">
               {isOwner
                 ? t('help.ownerSubtitle', 'Review, manage, and resolve Thekedar support requests')
                 : t('help.subtitle', 'Submit a query, report an issue, or track help requests')}
@@ -341,7 +341,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
       }
       maxWidth="max-w-2xl"
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3.5">
         {/* Navigation Tabs (Only for Thekedars/Workers, removed from Owner side) */}
         {!isOwner && (
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5 flex-wrap">
@@ -386,7 +386,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
         {isOwner && (
           <div className="space-y-3">
             {/* Owner Filter & Search Header */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
               {/* Search input */}
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -394,19 +394,19 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                   type="text"
                   value={ownerSearch}
                   onChange={(e) => setOwnerSearch(e.target.value)}
-                  placeholder="Search Thekedar, ticket number, or issue..."
+                  placeholder="Search Thekedar, ticket #, or issue..."
                   className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
 
               {/* Status Filter Buttons */}
-              <div className="flex items-center gap-1 overflow-x-auto text-[11px]">
+              <div className="flex items-center gap-1 overflow-x-auto text-[11px] no-scrollbar py-0.5">
                 {['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'].map((st) => (
                   <button
                     key={st}
                     type="button"
                     onClick={() => setStatusFilter(st)}
-                    className={`px-2 py-1 rounded-lg font-bold transition whitespace-nowrap cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
                       statusFilter === st
                         ? 'bg-amber-600 text-white shadow-2xs'
                         : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100'
@@ -421,7 +421,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                   onClick={fetchAllTickets}
                   title="Refresh tickets"
                   disabled={loadingTickets}
-                  className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+                  className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 transition cursor-pointer shrink-0"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${loadingTickets ? 'animate-spin' : ''}`} />
                 </button>
@@ -447,7 +447,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                 </p>
               </div>
             ) : (
-              <div className="max-h-[55vh] overflow-y-auto space-y-3 pr-1">
+              <div className="space-y-3">
                 {filteredOwnerTickets.map((tkt) => {
                   const isExpanded = expandedTicketId === tkt._id;
                   const currentDraftStatus = ticketStatusDraft[tkt._id] || tkt.status;
@@ -536,11 +536,11 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                       {/* Expandable Details & Owner Resolution Controls */}
                       {isExpanded && (
                         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3 animate-fade-in">
-                          {/* Submission timestamp */}
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                          {/* Submission timestamp & notification status */}
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1 leading-snug">
                             <span>
                               Submitted on:{' '}
-                              <strong>
+                              <strong className="text-slate-700 dark:text-slate-300">
                                 {new Date(tkt.createdAt).toLocaleString('en-IN', {
                                   day: 'numeric',
                                   month: 'short',
@@ -550,20 +550,20 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                                 })}
                               </strong>
                             </span>
-                            <span className="text-amber-700 dark:text-amber-400 font-semibold">
-                              Notification email routed to furnicraft.erp@gmail.com
+                            <span className="text-amber-700 dark:text-amber-400 font-semibold break-all">
+                              Routed to: furnicraft.erp@gmail.com
                             </span>
                           </div>
 
                           {/* Owner Interactive Status & Response Editor */}
-                          <div className="rounded-xl border border-amber-300/80 bg-gradient-to-br from-amber-50/70 to-orange-50/40 dark:border-amber-800/80 dark:from-slate-800/90 dark:to-slate-800/60 p-3 space-y-2.5">
-                            <div className="flex items-center justify-between">
+                          <div className="rounded-xl border border-amber-300/80 bg-gradient-to-br from-amber-50/70 to-orange-50/40 dark:border-amber-800/80 dark:from-slate-800/90 dark:to-slate-800/60 p-3 sm:p-3.5 space-y-2.5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <span className="text-xs font-black text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
-                                <ShieldCheck className="h-4 w-4 text-amber-600" />
+                                <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
                                 Owner Resolution & Response
                               </span>
-                              <div className="flex items-center gap-1.5">
-                                <label className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                              <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400 shrink-0">
                                   Status:
                                 </label>
                                 <select
@@ -574,7 +574,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                                       [tkt._id]: e.target.value,
                                     }))
                                   }
-                                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                  className="flex-1 sm:flex-none rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-black text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 shadow-2xs cursor-pointer"
                                 >
                                   <option value="OPEN">OPEN</option>
                                   <option value="IN_PROGRESS">IN PROGRESS</option>
@@ -599,14 +599,14 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                                   }))
                                 }
                                 placeholder="Type response note for the contractor (e.g. Approved wage adjustment; payment transferred via UPI ref #1234)..."
-                                className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none shadow-2xs"
                               />
                             </div>
 
                             {/* Feedback message */}
                             {feedback && (
                               <div
-                                className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
+                                className={`text-[11px] font-bold px-2.5 py-1.5 rounded-lg ${
                                   feedback.type === 'success'
                                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                                     : 'bg-rose-100 text-rose-800 border border-rose-300'
@@ -622,11 +622,11 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                                 type="button"
                                 disabled={isUpdating}
                                 onClick={() => handleOwnerUpdateTicket(tkt._id)}
-                                className="flex items-center gap-1.5 rounded-lg bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-700 disabled:opacity-60 cursor-pointer transition"
+                                className="w-full sm:w-auto justify-center flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 active:scale-95 disabled:opacity-60 cursor-pointer transition"
                               >
                                 {isUpdating ? (
                                   <>
-                                    <div className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+                                    <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                                     <span>Saving...</span>
                                   </>
                                 ) : (
@@ -909,7 +909,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                 </button>
               </div>
             ) : (
-              <div className="max-h-[50vh] overflow-y-auto space-y-2.5 pr-1">
+              <div className="space-y-2.5">
                 {myTickets.map((tkt) => {
                   const isExpanded = expandedTicketId === tkt._id;
                   const categoryLabel = getCategoryLabel(tkt.category);
