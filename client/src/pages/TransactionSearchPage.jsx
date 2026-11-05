@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import api from '../api/client';
 import { Button } from '../components/common/Button';
 import { PageHeader } from '../components/common/PageHeader';
@@ -18,6 +18,7 @@ import {
   Copy,
   Check,
   ArrowRight,
+  ArrowLeft,
   CreditCard,
   Utensils,
   Home,
@@ -36,6 +37,41 @@ export const TransactionSearchPage = () => {
   const [searching, setSearching] = useState(false);
   const [selectedTx, setSelectedTx] = useState(null);
   const [copiedId, setCopiedId] = useState(false);
+  const [mobileView, setMobileView] = useState('list'); // 'list' | 'voucher'
+  const voucherRef = useRef(null);
+
+  // Handle popstate for native mobile back button navigation
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (e.state?.view !== 'voucher') {
+        setMobileView('list');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleSelectTx = (tx, navigateOnMobile = true) => {
+    setSelectedTx(tx);
+    if (navigateOnMobile) {
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        window.history.pushState({ view: 'voucher' }, '');
+        setMobileView('voucher');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (voucherRef.current) {
+        voucherRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  };
+
+  const handleBackToList = () => {
+    if (typeof window !== 'undefined' && window.history.state?.view === 'voucher') {
+      window.history.back();
+    } else {
+      setMobileView('list');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Fetch initial recent transactions
   const [loadError, setLoadError] = useState(null);
@@ -64,6 +100,7 @@ export const TransactionSearchPage = () => {
   // Execute search via API or local filter
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
+    setMobileView('list');
     if (!searchTerm.trim()) {
       fetchRecentTransactions();
       return;
@@ -128,7 +165,7 @@ export const TransactionSearchPage = () => {
       />
 
       {/* Search + category filter */}
-      <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4">
+      <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} space-y-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4`}>
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -175,7 +212,7 @@ export const TransactionSearchPage = () => {
       {/* Main Grid: Results List (Left) + Detail Card (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Transaction Matches List */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} lg:col-span-5 space-y-3`}>
           <div className="flex items-center justify-between px-1">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
               {t('transactionSearch.matchingRecords') || 'Matching Records'} ({filteredTransactions.length})
@@ -218,7 +255,7 @@ export const TransactionSearchPage = () => {
                 return (
                   <div
                     key={tx._id}
-                    onClick={() => setSelectedTx(tx)}
+                    onClick={() => handleSelectTx(tx, true)}
                     className={`rounded-2xl border p-4 transition-all cursor-pointer ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/40 shadow-md ring-2 ring-blue-500/20'
@@ -259,9 +296,16 @@ export const TransactionSearchPage = () => {
                         <CreditCard className="h-3 w-3 text-slate-400" />
                         {tx.paymentMethod} {tx.receiptReference ? `(${tx.receiptReference})` : ''}
                       </span>
-                      <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTx(tx, true);
+                        }}
+                        className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-0.5 hover:underline cursor-pointer"
+                      >
                         {t('transactionSearch.viewVoucher') || 'View Voucher'} <ArrowRight className="h-3 w-3" />
-                      </span>
+                      </button>
                     </div>
                   </div>
                 );
@@ -271,9 +315,28 @@ export const TransactionSearchPage = () => {
         </div>
 
         {/* Right Column: Full Detailed Voucher & Statement Inspection */}
-        <div className="lg:col-span-7">
+        <div
+          ref={voucherRef}
+          className={`${mobileView === 'list' ? 'hidden lg:block' : 'block'} lg:col-span-7 scroll-mt-20`}
+        >
           {selectedTx ? (
-            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
+            <div className="space-y-3">
+              {/* Mobile Back Navigation */}
+              <div className="lg:hidden flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={handleBackToList}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition cursor-pointer"
+                >
+                  <ArrowLeft className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <span>{t('transactionSearch.backToList') || 'Back to Transactions'}</span>
+                </button>
+                <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 truncate">
+                  {selectedTx.transactionId}
+                </span>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
               {/* Card Top Title Banner */}
               <div className="bg-slate-900 p-6 text-white flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -482,6 +545,7 @@ export const TransactionSearchPage = () => {
                 )}
               </div>
             </div>
+          </div>
           ) : (
             <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-slate-400 dark:text-slate-500">
               <Receipt className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
