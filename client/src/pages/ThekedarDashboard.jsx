@@ -257,7 +257,7 @@ export const ThekedarDashboard = () => {
             </div>
             <div className="flex items-center gap-2 flex-wrap min-w-0">
               <span className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white truncate">
-                {t('thekedarDash.attendanceAlertTitle', 'Attendance Action Required Today!')}
+                {t('thekedarDash.attendanceAlertTitle', 'Attendance Due Today')}
               </span>
               <span className="text-[11px] text-amber-800/80 dark:text-amber-300 font-medium hidden sm:inline">
                 ({markedTodayCount}/{workers.length} marked)
@@ -311,7 +311,7 @@ export const ThekedarDashboard = () => {
                 type="button"
                 onClick={handlePrevDay}
                 title="Previous Day"
-                className="p-1 text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition cursor-pointer"
+                className="p-1 text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 transition cursor-pointer"
               >
                 <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
               </button>
@@ -325,10 +325,10 @@ export const ThekedarDashboard = () => {
                     onClick={() => setSelectedDate(d.dateStr)}
                     className={`flex flex-col items-center justify-center transition cursor-pointer min-w-[34px] sm:min-w-[40px] text-center ${
                       d.isSelected
-                        ? 'text-indigo-600 dark:text-indigo-400 scale-105'
+                        ? 'text-amber-800 dark:text-amber-300 scale-105'
                         : d.isFuture
                         ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
-                        : 'text-indigo-500/80 hover:text-indigo-700 dark:text-indigo-300/80 dark:hover:text-indigo-200'
+                        : 'text-amber-700/70 hover:text-amber-900 dark:text-amber-400/70 dark:hover:text-amber-200'
                     }`}
                   >
                     <span className={`text-[10px] sm:text-[11px] leading-tight ${d.isSelected ? 'font-black' : 'font-semibold'}`}>
@@ -352,7 +352,7 @@ export const ThekedarDashboard = () => {
                 className={`p-1 transition ${
                   isToday
                     ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
-                    : 'text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 cursor-pointer'
+                    : 'text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 cursor-pointer'
                 }`}
               >
                 <ChevronRight className="h-5 w-5 stroke-[2.5]" />
@@ -360,7 +360,7 @@ export const ThekedarDashboard = () => {
 
               <label
                 title="Pick a date"
-                className="relative p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition ml-0.5"
+                className="relative p-1 text-slate-400 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer transition ml-0.5"
               >
                 <Calendar className="h-4 w-4" />
                 <input
@@ -371,16 +371,6 @@ export const ThekedarDashboard = () => {
                   className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
                 />
               </label>
-
-              {!isToday && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(localToday())}
-                  className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-[10px] font-bold hover:bg-amber-200 dark:hover:bg-amber-900 transition cursor-pointer"
-                >
-                  Today
-                </button>
-              )}
             </div>
           }
         >
