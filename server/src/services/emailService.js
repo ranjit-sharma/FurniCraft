@@ -83,11 +83,12 @@ export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress,
       return { success: true, mode: 'brevo_https', messageId: msgId, info: { messageId: msgId } };
     }
 
+    const errorMsg = data?.message || data?.code || `HTTP ${res.status}`;
     console.warn('[EmailService - Brevo HTTPS Warning]', data);
-    return null;
+    return { success: false, error: new Error(`Brevo API Error: ${errorMsg}`) };
   } catch (err) {
     console.warn('[EmailService - Brevo HTTPS Exception]', err.message);
-    return null;
+    return { success: false, error: err };
   }
 };
 
@@ -118,11 +119,12 @@ export const sendViaResend = async ({ to, subject, html, text, fromAddress }) =>
       console.log(`[EmailService - Resend HTTPS] Delivered to ${to}: ${data.id}`);
       return { success: true, mode: 'resend_https', messageId: data.id, info: { messageId: data.id } };
     }
+    const errorMsg = data?.message || `HTTP ${res.status}`;
     console.warn('[EmailService - Resend HTTPS Warning]', data);
-    return null;
+    return { success: false, error: new Error(`Resend API Error: ${errorMsg}`) };
   } catch (err) {
     console.warn('[EmailService - Resend HTTPS Exception]', err.message);
-    return null;
+    return { success: false, error: err };
   }
 };
 
@@ -148,16 +150,22 @@ export const getFallbackEmailTransporter = () => brevoTransporter;
  * Send email with HTTPS REST API resilience (Brevo or Resend)
  */
 const sendMailWithResilience = async (mailOptions) => {
+  let lastErr = null;
   if (process.env.BREVO_API_KEY) {
     const brevoResult = await sendViaBrevo(mailOptions);
     if (brevoResult?.success) return brevoResult;
+    if (brevoResult?.error) lastErr = brevoResult.error;
   }
   if (process.env.RESEND_API_KEY) {
     const resendResult = await sendViaResend(mailOptions);
     if (resendResult?.success) return resendResult;
+    if (resendResult?.error) lastErr = resendResult.error;
   }
 
-  return { success: false, lastError: new Error('Email delivery failed: please ensure BREVO_API_KEY or RESEND_API_KEY is configured') };
+  return {
+    success: false,
+    lastError: lastErr || new Error('Email delivery failed: please ensure BREVO_API_KEY or RESEND_API_KEY is configured'),
+  };
 };
 
 /**
@@ -171,16 +179,15 @@ export const verifyEmailTransport = async () => {
   }
 
   try {
-    const res = await fetch('https://api.brevo.com/v3/account', {
+    const res = await fetch('https://api.brevo.com/v3/smtp/templates', {
       headers: { 'api-key': apiKey },
     });
     if (res.ok) {
-      const data = await res.json();
-      console.log(`[EmailService] Brevo HTTPS verified as ${data.email} (${data.plan?.[0]?.type || 'Free'})`);
+      console.log(`[EmailService] Brevo HTTPS REST API connection verified successfully`);
       return true;
     }
     const err = await res.json().catch(() => ({}));
-    console.warn(`[EmailService] Brevo HTTPS key verification failed:`, err.message || err.code || res.status);
+    console.warn(`[EmailService] Brevo HTTPS key verification note:`, err.message || err.code || res.status);
     return false;
   } catch (err) {
     console.warn(`[EmailService] Brevo verification network error:`, err.message);
@@ -522,40 +529,21 @@ export const sendSupportTicketEmail = async ({
         }
         .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
         .container { max-width: 580px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .header { background: #0f172a; padding: 24px 20px; text-align: center; color: #ffffff; }
+        .header { background: #0f172a; padding: 22px 20px; text-align: center; color: #ffffff; }
         .brand-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
         .brand-badge { background: #d97706; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #ffffff; vertical-align: middle; margin-left: 6px; }
         .content { padding: 24px 20px; }
-        .ticket-title { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 6px; line-height: 1.35; }
-        .ticket-meta { font-size: 12px; color: #64748b; margin-bottom: 18px; }
-        .ticket-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; }
-        .detail-row { display: table; width: 100%; padding: 6px 0; border-bottom: 1px dashed #e2e8f0; font-size: 13px; }
-        .detail-row-last { display: table; width: 100%; padding: 6px 0; font-size: 13px; }
-        .detail-label { display: table-cell; width: 130px; font-weight: 700; color: #475569; }
-        .detail-value { display: table-cell; font-weight: 600; color: #0f172a; }
-        .role-badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 1px 7px; border-radius: 9999px; font-size: 11px; font-weight: 700; margin-left: 6px; }
-        .category-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+        .sender-meta { font-size: 13px; color: #64748b; margin-bottom: 6px; }
+        .ticket-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 16px; line-height: 1.35; }
         .message-box {
           background: #fffbeb;
           border: 1px solid #fef3c7;
           border-left: 4px solid #d97706;
           border-radius: 8px;
-          padding: 14px 16px;
-          margin: 18px 0;
-          box-sizing: border-box;
-        }
-        .message-title {
-          font-size: 11px;
-          font-weight: 800;
-          text-transform: uppercase;
-          color: #92400e;
-          margin-bottom: 8px;
-          letter-spacing: 0.6px;
-        }
-        .message-text {
-          font-size: 13.5px;
+          padding: 16px;
+          font-size: 14px;
           line-height: 1.6;
           color: #1e293b;
           white-space: pre-wrap;
@@ -573,45 +561,29 @@ export const sendSupportTicketEmail = async ({
           text-decoration: none;
           font-size: 13px;
           font-weight: 800;
-          padding: 10px 18px;
-          border-radius: 10px;
-          margin: 4px;
-          text-align: center;
-        }
-        .action-btn-dashboard {
-          display: inline-block;
-          background: #0f172a;
-          color: #ffffff !important;
-          text-decoration: none;
-          font-size: 13px;
-          font-weight: 800;
-          padding: 10px 18px;
-          border-radius: 10px;
+          padding: 10px 20px;
+          border-radius: 8px;
           margin: 4px;
           text-align: center;
         }
         .footer {
-          padding: 18px 20px;
+          padding: 16px 20px;
           background: #f8fafc;
           border-top: 1px solid #e2e8f0;
           font-size: 11px;
           color: #94a3b8;
           text-align: center;
           line-height: 1.5;
-          word-break: break-word;
         }
         @media only screen and (max-width: 480px) {
           .wrapper { padding: 8px 4px !important; }
           .container { border-radius: 12px !important; width: 100% !important; max-width: 100% !important; }
-          .header { padding: 20px 14px !important; }
-          .content { padding: 16px 12px !important; }
+          .header { padding: 18px 14px !important; }
+          .content { padding: 16px 14px !important; }
           .ticket-title { font-size: 16px !important; }
-          .ticket-banner { padding: 10px 12px !important; }
-          .message-box { padding: 12px !important; }
-          .action-btn-reply, .action-btn-dashboard {
+          .action-btn-reply {
             display: block !important;
             width: 100% !important;
-            margin: 6px 0 !important;
             box-sizing: border-box !important;
           }
         }
@@ -622,78 +594,27 @@ export const sendSupportTicketEmail = async ({
         <div class="container">
           <div class="header">
             <h1 class="brand-title">
-              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">THEKEDAR MESSAGE</span>
             </h1>
           </div>
 
           <div class="content">
+            <div class="sender-meta">Message from <strong>${userName}</strong> (${userRole}):</div>
             <div class="ticket-title">${subject}</div>
-            <div class="ticket-meta">
-              Ticket Number: <strong style="color: #0f172a; font-family: monospace;">${ticketNumber}</strong> &bull; Submitted: ${formattedDate}
-            </div>
 
-            <div class="ticket-banner">
-              <!-- Submitted By -->
-              <div class="detail-row">
-                <div class="detail-label">Submitted By</div>
-                <div class="detail-value">
-                  ${userName}
-                  <span class="role-badge">${userRole}</span>
-                </div>
-              </div>
+            <div class="message-box">${message}</div>
 
-              <!-- Contact Phone -->
-              <div class="detail-row">
-                <div class="detail-label">Contact Phone</div>
-                <div class="detail-value">
-                  ${userPhone
-                    ? `<a href="tel:${userPhone}" style="color: #2563eb; text-decoration: none; font-weight: 700;">📞 ${userPhone}</a>`
-                    : '<span style="color: #94a3b8; font-weight: 500;">Not provided</span>'
-                  }
-                </div>
-              </div>
-
-              <!-- Contact Email -->
-              <div class="detail-row">
-                <div class="detail-label">Contact Email</div>
-                <div class="detail-value">
-                  ${userEmail
-                    ? `<a href="mailto:${userEmail}" style="color: #2563eb; text-decoration: none; word-break: break-all; overflow-wrap: anywhere; font-weight: 700;">✉️ ${userEmail}</a>`
-                    : '<span style="color: #94a3b8; font-weight: 500;">Not provided</span>'
-                  }
-                </div>
-              </div>
-
-              <!-- Category -->
-              <div class="detail-row-last">
-                <div class="detail-label">Category</div>
-                <div class="detail-value">
-                  <span class="category-badge">${categoryName}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="message-box">
-              <div class="message-title">Issue Description / Details:</div>
-              <div class="message-text">${message}</div>
-            </div>
-
-            <!-- Fast Action Buttons for Owner / Admin -->
+            ${userEmail && userEmail.includes('@') ? `
             <div class="actions-box">
-              ${userEmail && userEmail.includes('@') ? `
-                <a href="mailto:${userEmail}?subject=Re:%20[FurniCraft%20Support]%20${ticketNumber}:%20${encodeURIComponent(subject)}" class="action-btn-reply">
-                  ✉️ Reply to ${userName}
-                </a>
-              ` : ''}
-              <a href="${env.CLIENT_URL || 'http://localhost:5173'}" class="action-btn-dashboard">
-                🏢 Open FurniCraft App
+              <a href="mailto:${userEmail}?subject=Re:%20[FurniCraft]%20${encodeURIComponent(subject)}" class="action-btn-reply">
+                ✉️ Reply to ${userName}
               </a>
             </div>
+            ` : ''}
           </div>
 
           <div class="footer">
-            This is an official automated helpdesk notification from <strong>FurniCraft ERP</strong>.<br/>
-            Ticket: <strong style="font-family: monospace;">${ticketNumber}</strong> &bull; Delivered to: <strong>${supportEmail}</strong>
+            FurniCraft ERP &bull; Ticket ${ticketNumber}
           </div>
         </div>
       </div>
@@ -702,17 +623,13 @@ export const sendSupportTicketEmail = async ({
   `;
 
   const textContent = `
-[FurniCraft ERP Support] New Support Ticket ${ticketNumber}
-Submitted by: ${userName} (${userRole})
-Contact Phone: ${userPhone || 'N/A'}
-Contact Email: ${userEmail || 'N/A'}
-Category: ${categoryName}
-Date: ${formattedDate}
-
+Message from ${userName} (${userRole}):
 Subject: ${subject}
 
-Description / Message:
 ${message}
+
+Reply to: ${userEmail || 'N/A'}
+Ticket: ${ticketNumber}
   `.trim();
 
   const fromAddress = getCleanFromAddress();
@@ -738,5 +655,154 @@ ${message}
   }
 
   console.log(`[EmailService - Simulated Support Email] Delivered to: ${supportEmail} | Ticket: ${ticketNumber}`);
+  return { success: true, mode: 'simulated' };
+};
+
+/**
+ * Dispatch Owner/Admin direct message response to Thekedar
+ */
+export const sendOwnerResponseEmail = async ({
+  to,
+  thekedarName,
+  ownerName = 'FurniCraft Owner',
+  subject,
+  ownerMessage,
+  ticketNumber,
+  status,
+}) => {
+  if (!to || !to.includes('@')) return { success: false, reason: 'invalid_recipient' };
+
+  const emailSubject = `[FurniCraft] Owner Response: ${subject}`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <meta name="x-apple-disable-message-reformatting">
+      <title>${emailSubject}</title>
+      <style>
+        *, *:before, *:after { box-sizing: border-box !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          min-width: 100% !important;
+          -webkit-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background-color: #f1f5f9;
+          color: #0f172a;
+        }
+        .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
+        .container { max-width: 580px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 22px 20px; text-align: center; color: #ffffff; }
+        .brand-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
+        .brand-name-furni { color: #d97706; }
+        .brand-name-craft { color: #60a5fa; }
+        .brand-badge { background: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; color: #ffffff; vertical-align: middle; margin-left: 6px; }
+        .content { padding: 24px 20px; }
+        .sender-meta { font-size: 13px; color: #64748b; margin-bottom: 6px; }
+        .ticket-title { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 16px; line-height: 1.35; }
+        .message-box {
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          border-left: 4px solid #16a34a;
+          border-radius: 8px;
+          padding: 16px;
+          font-size: 14px;
+          line-height: 1.6;
+          color: #14532d;
+          white-space: pre-wrap;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+        }
+        .status-pill {
+          display: inline-block;
+          margin-top: 14px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #475569;
+          background: #f1f5f9;
+          padding: 4px 10px;
+          border-radius: 6px;
+        }
+        .footer {
+          padding: 16px 20px;
+          background: #f8fafc;
+          border-top: 1px solid #e2e8f0;
+          font-size: 11px;
+          color: #94a3b8;
+          text-align: center;
+          line-height: 1.5;
+        }
+        @media only screen and (max-width: 480px) {
+          .wrapper { padding: 8px 4px !important; }
+          .container { border-radius: 12px !important; width: 100% !important; max-width: 100% !important; }
+          .header { padding: 18px 14px !important; }
+          .content { padding: 16px 14px !important; }
+          .ticket-title { font-size: 16px !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <h1 class="brand-title">
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">OWNER RESPONSE</span>
+            </h1>
+          </div>
+
+          <div class="content">
+            <div class="sender-meta">Response from Owner (<strong>${ownerName}</strong>) for <strong>${thekedarName}</strong>:</div>
+            <div class="ticket-title">Re: ${subject}</div>
+
+            <div class="message-box">${ownerMessage}</div>
+
+            ${status ? `<div class="status-pill">Ticket Status: <strong>${status}</strong></div>` : ''}
+          </div>
+
+          <div class="footer">
+            FurniCraft ERP &bull; Ticket ${ticketNumber}
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const textContent = `
+Response from Owner (${ownerName}) to ${thekedarName}:
+Re: ${subject}
+
+${ownerMessage}
+
+${status ? `Status: ${status}\n` : ''}Ticket: ${ticketNumber}
+  `.trim();
+
+  const fromAddress = getCleanFromAddress();
+  const mailOptions = {
+    from: fromAddress,
+    fromAddress,
+    to,
+    name: thekedarName,
+    subject: emailSubject,
+    text: textContent,
+    html: htmlContent,
+  };
+
+  const result = await sendMailWithResilience(mailOptions);
+  if (result.success) {
+    console.log(`[EmailService] Owner response email delivered to ${to}: ${result.info?.messageId || result.messageId}`);
+    return {
+      success: true,
+      mode: 'brevo_https',
+      messageId: result.info?.messageId || result.messageId,
+    };
+  }
+
+  console.log(`[EmailService - Simulated Owner Response] Delivered to: ${to} | Ticket: ${ticketNumber}`);
   return { success: true, mode: 'simulated' };
 };

@@ -1,6 +1,6 @@
 import { SupportTicket, AuditLog, Notification } from '../models/index.js';
 import { BadRequestError, NotFoundError } from '../utils/errors.js';
-import { sendSupportTicketEmail } from '../services/emailService.js';
+import { sendSupportTicketEmail, sendOwnerResponseEmail } from '../services/emailService.js';
 import { generateUniqueTicketNumber, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 export const supportController = {
@@ -226,6 +226,21 @@ export const supportController = {
       }).catch((notifErr) => {
         console.warn('[Support] Non-blocking notification failure:', notifErr.message);
       });
+
+      // Dispatch direct email response to Thekedar asynchronously if owner added a response/note
+      if (ticket.userEmail && ticket.userEmail.includes('@') && ticket.adminNotes) {
+        sendOwnerResponseEmail({
+          to: ticket.userEmail,
+          thekedarName: ticket.userName,
+          ownerName: req.user.name || 'FurniCraft Owner',
+          subject: ticket.subject,
+          ownerMessage: ticket.adminNotes,
+          ticketNumber: ticket.ticketNumber,
+          status: ticket.status,
+        }).catch((emailErr) => {
+          console.warn('[Support] Non-blocking owner response email dispatch failure:', emailErr.message);
+        });
+      }
 
       return res.status(200).json({
         success: true,
