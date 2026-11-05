@@ -46,8 +46,6 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
   const [category, setCategory] = useState('GENERAL_INQUIRY');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [submittedTicket, setSubmittedTicket] = useState(null);
@@ -79,10 +77,8 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
       } else {
         setActiveTab('new');
       }
-      setContactEmail(user?.email || '');
-      setContactPhone(user?.phone || '');
     }
-  }, [isOpen, initialTab, isOwner, user]);
+  }, [isOpen, initialTab, isOwner]);
 
   // Fetch tickets whenever modal is open or tab changes
   useEffect(() => {
@@ -126,8 +122,6 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
     setCategory('GENERAL_INQUIRY');
     setSubject('');
     setMessage('');
-    setContactEmail(user?.email || '');
-    setContactPhone(user?.phone || '');
     setError(null);
     setSubmittedTicket(null);
   };
@@ -147,12 +141,13 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
     setError(null);
 
     try {
+      // User email and phone are automatically fetched from logged in user data by default
       const res = await api.post('/support/tickets', {
         category,
         subject: subject.trim(),
         message: message.trim(),
-        contactEmail: contactEmail.trim() || user?.email || '',
-        contactPhone: contactPhone.trim() || user?.phone || '',
+        contactEmail: (user?.email || '').trim(),
+        contactPhone: (user?.phone || '').trim(),
       });
 
       const ticket = res?.ticket || res?.data?.ticket;
@@ -853,34 +848,6 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                   />
                   <div className="mt-1 text-right text-[10px] text-slate-400">
                     {message.length} / 2000
-                  </div>
-                </div>
-
-                {/* Contact callback info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                      Contact Email (optional)
-                    </label>
-                    <input
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="e.g. yourname@gmail.com"
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                      Contact Phone (optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="e.g. 9876543210"
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                    />
                   </div>
                 </div>
 

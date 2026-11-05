@@ -115,19 +115,6 @@ export const Navbar = () => {
         {/* Right: Profile Icon Toggler */}
         {user && (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Direct Help Center Access Button (Only for Thekedars, hidden on Owner side) */}
-            {user.role === 'THEKEDAR' && (
-              <button
-                type="button"
-                onClick={() => setHelpModalOpen(true)}
-                title={t('profile.helpCenter', 'Help & Support Center')}
-                aria-label="Help & Support Center"
-                className="group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 hover:border-amber-500 dark:hover:bg-amber-900/60 transition cursor-pointer shadow-2xs hover:scale-105 focus:outline-none"
-              >
-                <LifeBuoy className="h-5 w-5" />
-              </button>
-            )}
-
             <div className="relative" ref={profileRef}>
               {/* Round Profile Toggler Button */}
               <button

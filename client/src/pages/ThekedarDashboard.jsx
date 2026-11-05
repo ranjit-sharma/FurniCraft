@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   CalendarOff,
   LifeBuoy,
+  Clock,
+  AlertTriangle,
 } from 'lucide-react';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
@@ -137,6 +139,9 @@ export const ThekedarDashboard = () => {
   const onLeaveWorkers = allActiveWorkers.filter((w) => w.today?.code === 'LEAVE');
   const workers = allActiveWorkers.filter((w) => w.today?.code !== 'LEAVE');
   const markedTodayCount = workers.filter((w) => w.today).length;
+  const unmarkedWorkersCount = workers.length - markedTodayCount;
+  const isAttendancePending = workers.length > 0 && unmarkedWorkersCount > 0;
+  const isAttendanceComplete = workers.length > 0 && unmarkedWorkersCount === 0;
   const transactions = data?.recentTransactions || [];
   const firstName = (user?.name || '').split(' ')[0];
 
@@ -200,8 +205,83 @@ export const ThekedarDashboard = () => {
         </Link>
       </div>
 
+      {/* Attendance Pending Alert Banner */}
+      {isAttendancePending && (
+        <div
+          role="alert"
+          className="rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/70 dark:from-amber-950/60 dark:via-orange-950/40 dark:to-amber-900/40 p-4 shadow-md text-amber-950 dark:text-amber-100"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white shadow-xs">
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500" />
+                </span>
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-black text-amber-950 dark:text-white">
+                    {t('thekedarDash.attendanceAlertTitle', 'Attendance Action Required Today!')}
+                  </h4>
+                  <span className="rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                    {unmarkedWorkersCount} Pending
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-amber-900/90 dark:text-amber-200">
+                  {t(
+                    'thekedarDash.attendanceAlertDesc',
+                    `You have ${unmarkedWorkersCount} craftsman/craftsmen with unrecorded attendance today (${markedTodayCount}/${workers.length} marked). Please record their shift attendance below.`
+                  )
+                    .replace('{count}', unmarkedWorkersCount)
+                    .replace('{marked}', markedTodayCount)
+                    .replace('{total}', workers.length)}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('attendance-card');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-amber-700 cursor-pointer shrink-0 transition transform hover:scale-[1.02]"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              <span>{t('thekedarDash.markNowBtn', 'Take Attendance Now')}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Attendance Completed Banner */}
+      {isAttendanceComplete && (
+        <div
+          role="status"
+          className="rounded-2xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/40 p-3.5 text-emerald-950 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-3 text-xs"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="font-black text-emerald-900 dark:text-emerald-100 block">
+                {t('thekedarDash.attendanceAllMarkedTitle', 'All Attendance Marked!')}
+              </span>
+              <span className="text-[11px] text-emerald-800/80 dark:text-emerald-300">
+                {t('thekedarDash.attendanceAllMarkedDesc', `All ${workers.length} active craftsmen have their attendance recorded for today.`).replace('{count}', workers.length)}
+              </span>
+            </div>
+          </div>
+          <span className="rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold px-2 py-0.5 text-[10px]">
+            100% Done
+          </span>
+        </div>
+      )}
+
       {/* Today's attendance: one tap per worker */}
-      <div>
+      <div id="attendance-card">
         <Card
           title={t('thekedarDash.todayAttendance', "Today's attendance")}
           subtitle={

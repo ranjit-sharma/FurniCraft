@@ -926,7 +926,12 @@ export const translations = {
       "received": "received",
       "recentMoney": "Recent payments & advances",
       "noPayments": "No payments yet. Pay workers from the Workers tab.",
-      "onLeave": "on leave"
+      "onLeave": "on leave",
+      "attendanceAlertTitle": "Attendance Action Required Today!",
+      "attendanceAlertDesc": "You have {count} craftsman/craftsmen with unrecorded attendance today ({marked}/{total} marked). Please record their shift attendance below.",
+      "markNowBtn": "Take Attendance Now",
+      "attendanceAllMarkedTitle": "All Attendance Marked!",
+      "attendanceAllMarkedDesc": "All {count} active craftsmen have their attendance recorded for today."
     }
   },
   "hi": {
@@ -1827,7 +1832,12 @@ export const translations = {
       "received": "प्राप्त",
       "recentMoney": "हाल के भुगतान एवं एडवांस",
       "noPayments": "अभी कोई भुगतान नहीं। कारीगर टैब से भुगतान करें।",
-      "onLeave": "छुट्टी पर"
+      "onLeave": "छुट्टी पर",
+      "attendanceAlertTitle": "आज हाजिरी लगाना जरूरी है!",
+      "attendanceAlertDesc": "आज {count} कारीगरों की हाजिरी बाकी है ({marked}/{total} दर्ज)। कृपया नीचे उनकी हाजिरी लगाएं।",
+      "markNowBtn": "अभी हाजिरी लगाएं",
+      "attendanceAllMarkedTitle": "आज की हाजिरी पूरी हो गई!",
+      "attendanceAllMarkedDesc": "आज सभी {count} सक्रिय कारीगरों की हाजिरी दर्ज कर ली गई है।"
     }
   },
   "hinglish": {
@@ -2728,7 +2738,12 @@ export const translations = {
           "received": "prapt hua",
           "recentMoney": "Haal ke payment aur advance transactions",
           "noPayments": "Abhi koi payment nahi hua.",
-          "onLeave": "chutti par"
+          "onLeave": "chutti par",
+          "attendanceAlertTitle": "Aaj ki Haziri Lagana Zaroori Hai!",
+          "attendanceAlertDesc": "Aaj {count} karigaron ki haziri baaki hai ({marked}/{total} marked). Kripya neeche unki haziri lagayein.",
+          "markNowBtn": "Abhi Haziri Lagayein",
+          "attendanceAllMarkedTitle": "Aaj ki Haziri Complete!",
+          "attendanceAllMarkedDesc": "Aaj sabhi {count} active karigaron ki haziri lag gayi hai."
       }
   }
 };
