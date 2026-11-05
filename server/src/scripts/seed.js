@@ -71,10 +71,10 @@ const seedDatabase = async () => {
     // 2. Create Users (Owner, Thekedar, Workers)
     console.log('[Seed] Creating Users...');
     const owner = await User.create({
-      name: 'Ranjit Sharma',
-      email: 'ranjitsharma7482@gmail.com',
+      name: 'Admin',
+      email: 'furnicraft.erp@gmail.com',
       phone: '7482869029',
-      password: 'Ranjit@3948',
+      password: 'Furnicraft@3948',
       role: ROLES.OWNER,
       status: USER_STATUS.ACTIVE,
     });
@@ -521,8 +521,8 @@ const seedDatabase = async () => {
     console.log('===========================================================');
     console.log(' SEEDING COMPLETE! Safe Demo Credentials:');
     console.log(' 1. OWNER / ADMIN:');
-    console.log('    Email:    ranjitsharma7482@gmail.com');
-    console.log('    Password: Ranjit@3948');
+    console.log('    Email:    furnicraft.erp@gmail.com');
+    console.log('    Password: Furnicraft@3948');
     console.log(' 2. THEKEDAR:');
     console.log('    Email:    sunilmistri38@gmail.com');
     console.log('    Password: Thekedar@2026');
