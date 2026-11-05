@@ -563,12 +563,7 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
 
   return {
     ...genericResponse,
-    delivered: dispatchResult?.delivered !== false,
-    otp: dispatchResult?.delivered === false ? dispatchResult?.otp : undefined,
-    devOtp: dispatchResult?.devOtp,
-    message: (dispatchResult?.delivered === false && dispatchResult?.message)
-      ? dispatchResult.message
-      : genericResponse.message,
+    devOtp: (process.env.NODE_ENV !== 'production' ? dispatchResult?.devOtp : undefined),
   };
 };
 

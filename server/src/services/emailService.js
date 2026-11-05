@@ -19,8 +19,8 @@ const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 let cachedPrimaryTransporter = null;
 let cachedFallbackTransporter = null;
 
-// Aggressive fast timeouts (3.5s connection, 2.5s greeting, 5s socket) so blocked cloud ports fail fast instead of hanging
-const SMTP_TIMEOUTS = { connectionTimeout: 3500, greetingTimeout: 2500, socketTimeout: 5000 };
+// Reliable timeouts (10s connection, 10s greeting, 15s socket) allowing Gmail SMTP TLS handshake to complete cleanly
+const SMTP_TIMEOUTS = { connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 15000 };
 const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
 
 // Standard system defaults so dispatch succeeds reliably across local, testing, and cloud environments (e.g. Render)
@@ -421,12 +421,14 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
     };
   }
 
-  // Cloud network fallback: when outbound SMTP is blocked (e.g. Render Free Tier blocks outbound ports 465/587)
-  console.warn(`[EmailService] External email delivery unavailable on host network (${result.lastError?.code || result.lastError?.message || 'BLOCKED'}). Activating emergency direct OTP recovery.`);
+  // If delivery failed in production, throw ServiceUnavailableError so failure is clear and no OTP is ever leaked
+  if (isProduction) {
+    console.error(`[EmailService] SMTP delivery failed for ${to} (${result.lastError?.code || 'ERROR'}):`, result.lastError?.message);
+    throw new ServiceUnavailableError(EMAIL_UNAVAILABLE);
+  }
 
-  // Development / Test Simulated Dispatch
-  if (!isProduction) {
-    console.log(`
+  // Development / Test Simulated Dispatch (Never log OTP in production)
+  console.log(`
 ======================================================
 [EmailService - Simulated Secure Dispatch]
 To:       ${to} (${name})
@@ -435,16 +437,12 @@ Subject:  ${subject}
 OTP Code: ${otp}
 Expires:  5 Minutes
 ======================================================
-    `);
-  }
+  `);
 
   return {
     success: true,
-    delivered: false,
-    mode: 'cloud_fallback',
-    otp,
+    mode: 'simulated',
     devOtp: otp,
-    message: 'Notice: Outbound email delivery is restricted on this cloud network. Your single-use 6-digit verification code is provided below to complete password recovery.',
   };
 };
 
