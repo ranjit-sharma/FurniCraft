@@ -78,12 +78,15 @@ const financialTransactionSchema = new mongoose.Schema(
     },
     breakdown: {
       baseEarned: { type: Number, default: 0 },
+      totalEarnedBefore: { type: Number, default: 0 },
+      remainingWages: { type: Number, default: 0 },
+      remainingAdvance: { type: Number, default: 0 },
+      remainingBalance: { type: Number, default: 0 },
       advanceDeduction: { type: Number, default: 0 },
       foodDeduction: { type: Number, default: 0 },
       roomRentDeduction: { type: Number, default: 0 },
       additionalWages: { type: Number, default: 0 },
       netPaid: { type: Number, default: 0 },
-      remainingAdvance: { type: Number, default: 0 },
     },
     isReversed: {
       type: Boolean,

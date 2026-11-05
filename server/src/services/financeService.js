@@ -490,16 +490,18 @@ export const payWorkerNet = async ({
   );
 
   const remainingAdv = Math.max(0, subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction));
+  const remainingNetBalance = subtractMoney(remainingWagesAfterPayment, remainingAdv);
   const breakdown = {
     baseEarned: numBaseEarned,
     totalEarnedBefore: totalEarnedBeforePayment,
     remainingWages: remainingWagesAfterPayment,
+    remainingAdvance: remainingAdv,
+    remainingBalance: remainingNetBalance,
     advanceDeduction: numAdvanceDeduction,
     foodDeduction: numFoodDeduction,
     roomRentDeduction: numRoomRentDeduction,
     additionalWages: numAdditionalWages,
     netPaid: netPayable,
-    remainingAdvance: remainingAdv,
   };
 
   const executePayment = async (session) => {
@@ -620,6 +622,7 @@ export const payWorkerNet = async ({
       netPaid: netPayable,
       remainingAdvance: profile.outstandingAdvanceBalance,
       remainingWages: remainingWagesAfterPayment,
+      remainingBalance: remainingNetBalance,
     },
   });
 
@@ -628,6 +631,7 @@ export const payWorkerNet = async ({
     advanceDeduction: numAdvanceDeduction,
     remainingAdvance: profile.outstandingAdvanceBalance,
     remainingWages: remainingWagesAfterPayment,
+    remainingBalance: remainingNetBalance,
     transaction: salaryTxn,
     breakdown,
     billUrl: `/api/v1/finance/transactions/${salaryTxn._id}/bill`,

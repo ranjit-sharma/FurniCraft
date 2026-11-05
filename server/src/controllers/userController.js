@@ -214,6 +214,7 @@ export const getWorkerProfile = async (req, res, next) => {
       transactions,
       advanceRequests,
       payrolls,
+      unpaidAttendanceAgg,
     ] = await Promise.all([
       // 2. Wage Agreements
       WageAgreement.find({ workerId: targetUserId })
@@ -242,12 +243,39 @@ export const getWorkerProfile = async (req, res, next) => {
       // 7. Finalized Payrolls
       Payroll.find({ workerId: targetUserId })
         .sort({ periodYear: -1, periodMonth: -1 }),
+
+      // 8. Unpaid approved attendance earnings
+      Attendance.aggregate([
+        {
+          $match: {
+            workerId: profile.userId?._id || targetUserId,
+            approvalStatus: ATTENDANCE_STATUS.APPROVED,
+            isPayrollProcessed: false,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalEarned: { $sum: '$calculatedEarnings' },
+          },
+        },
+      ]),
     ]);
+
+    const totalEarned = ((unpaidAttendanceAgg && unpaidAttendanceAgg[0]?.totalEarned) || 0) + (profile.outstandingSalaryBalance || 0);
+    const advance = profile.outstandingAdvanceBalance || 0;
+    const netBalance = totalEarned - advance;
+
+    const profileObj = profile.toObject();
+    profileObj.totalEarned = totalEarned;
+    profileObj.unpaidWages = totalEarned;
+    profileObj.netBalance = netBalance;
+    profileObj.netPayable = netBalance;
 
     res.status(200).json({
       status: 'success',
       data: {
-        profile,
+        profile: profileObj,
         wageAgreements,
         attendanceHistory,
         transactions,

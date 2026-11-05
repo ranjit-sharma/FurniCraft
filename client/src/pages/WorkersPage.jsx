@@ -863,6 +863,32 @@ export const WorkersPage = () => {
                     {w.monthDehadi !== undefined ? `${w.monthDehadi} ${t('calendar.dehadiUnit', 'Shifts')} (${w.monthWorkedDays || 0}d)` : `${w.monthWorkedDays || 0} ${t('calendar.days', 'days')}`}
                   </strong>
                 </div>
+
+                {/* Worker Remaining Balance Status */}
+                <div className="mt-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 p-2.5 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
+                      {t('workers.remainingBalance', 'Remaining Balance')}
+                    </span>
+                    <strong className={`text-sm font-black ${
+                      (w.netBalance !== undefined ? w.netBalance : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0))) < 0
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : 'text-emerald-600 dark:text-emerald-400'
+                    }`}>
+                      {(w.netBalance !== undefined ? w.netBalance : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0))) < 0
+                        ? `-₹${Math.abs(w.netBalance !== undefined ? w.netBalance : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0))).toLocaleString('en-IN')}`
+                        : `₹${(w.netBalance !== undefined ? w.netBalance : ((w.totalEarned || 0) - (w.outstandingAdvanceBalance || 0))).toLocaleString('en-IN')}`}
+                    </strong>
+                  </div>
+                  <div className="text-right text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5">
+                    <div>{t('workers.unpaidWages', 'Wages')}: <strong className="text-slate-900 dark:text-white font-bold">₹{(w.totalEarned || 0).toLocaleString('en-IN')}</strong></div>
+                    {(w.outstandingAdvanceBalance || 0) > 0 && (
+                      <div className="text-rose-600 dark:text-rose-400">
+                        {t('workers.advShort', 'Adv')}: <strong>-₹{(w.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</strong>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </Card>
             );
@@ -1188,15 +1214,28 @@ export const WorkersPage = () => {
                   <div className="text-xs font-bold text-amber-900 dark:text-amber-300">₹{activityWorker.defaultDailyWage}/day</div>
                 </div>
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Advance Balance</div>
-                  <div className="text-xs font-bold text-rose-600 dark:text-rose-400">₹{activityData?.profile?.outstandingAdvanceBalance ?? activityWorker.outstandingAdvanceBalance ?? 0}</div>
-                </div>
-                <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Net Payable</div>
-                  <div className={`text-xs font-bold ${((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)) < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                    ₹{((activityWorker.totalEarned || 0) - (activityWorker.outstandingAdvanceBalance || 0)).toLocaleString('en-IN')}
+                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Unpaid Wages</div>
+                  <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                    ₹{(activityData?.profile?.totalEarned ?? activityWorker.totalEarned ?? 0).toLocaleString('en-IN')}
                   </div>
                 </div>
+                <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Advance Balance</div>
+                  <div className="text-xs font-bold text-rose-600 dark:text-rose-400">₹{(activityData?.profile?.outstandingAdvanceBalance ?? activityWorker.outstandingAdvanceBalance ?? 0).toLocaleString('en-IN')}</div>
+                </div>
+                {(() => {
+                  const wages = activityData?.profile?.totalEarned ?? activityWorker.totalEarned ?? 0;
+                  const adv = activityData?.profile?.outstandingAdvanceBalance ?? activityWorker.outstandingAdvanceBalance ?? 0;
+                  const net = activityData?.profile?.netBalance ?? (wages - adv);
+                  return (
+                    <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
+                      <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Remaining Balance</div>
+                      <div className={`text-xs font-bold ${net < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                        {net < 0 ? `-₹${Math.abs(net).toLocaleString('en-IN')}` : `₹${net.toLocaleString('en-IN')}`}
+                      </div>
+                    </div>
+                  );
+                })()}
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                   <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Attendance Logs</div>
                   <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{activityData?.attendanceHistory?.length || 0}</div>
@@ -1775,7 +1814,21 @@ export const WorkersPage = () => {
               </div>
 
               <div className="rounded-2xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                <PayRow label="Wages to settle" hint={<button type="button" onClick={handleUseFullEarned} className="font-semibold text-amber-700 dark:text-amber-400 underline">Use full ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')}</button>}>
+                <PayRow
+                  label="Wages to settle"
+                  hint={
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={handleUseFullEarned} className="font-semibold text-amber-700 dark:text-amber-400 underline">
+                          Use full ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')}
+                        </button>
+                      </div>
+                      <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                        ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')} → ₹{Math.max(0, (payWorker.totalEarned || 0) - base).toLocaleString('en-IN')} remaining unpaid wages
+                      </div>
+                    </div>
+                  }
+                >
                   <input type="number" inputMode="decimal" min="0" step="any" required aria-label="Wages to settle" value={payBaseEarned} onChange={(e) => handleBaseEarnedChange(e.target.value)} className={inputCls} />
                 </PayRow>
                 <PayRow sign="+" label="Bonus / allowance" hint="Overtime, travel or festival bonus">
@@ -1812,6 +1865,31 @@ export const WorkersPage = () => {
                   <div className="text-3xl font-black text-emerald-700 dark:text-emerald-300">₹{computedNetPay.toLocaleString('en-IN')}</div>
                 </div>
               </div>
+
+              {/* Remaining Account Balance After This Payment */}
+              {(() => {
+                const remWages = Math.max(0, (payWorker.totalEarned || 0) - base);
+                const remAdv = Math.max(0, outstanding - advCut);
+                const remBal = remWages - remAdv;
+                return (
+                  <div className="rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-3 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 block">
+                        Remaining Account Balance After Payment
+                      </span>
+                      <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                        Unpaid Wages: <strong>₹{remWages.toLocaleString('en-IN')}</strong> · Advance: <strong>₹{remAdv.toLocaleString('en-IN')}</strong>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Net Balance</span>
+                      <strong className={`text-base font-black ${remBal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                        {remBal < 0 ? `-₹${Math.abs(remBal).toLocaleString('en-IN')}` : `₹${remBal.toLocaleString('en-IN')}`}
+                      </strong>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <PaymentMethodPicker value={payMethod} onChange={setPayMethod} />
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -1913,6 +1991,25 @@ export const WorkersPage = () => {
                   <span className="font-bold text-blue-900 dark:text-blue-200">₹{Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0).toLocaleString('en-IN')}</span>
                 </div>
               )}
+              {(() => {
+                const remWages = Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0);
+                const remAdv = Number(generatedBillData.remainingAdvance ?? generatedBillData.breakdown?.remainingAdvance ?? 0);
+                const remBal = generatedBillData.breakdown?.remainingBalance !== undefined
+                  ? Number(generatedBillData.breakdown.remainingBalance)
+                  : (remWages - remAdv);
+                return (
+                  <div className={`rounded-lg p-2 border text-[11px] flex items-center justify-between ${
+                    remBal < 0
+                      ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+                      : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
+                  }`}>
+                    <span className="font-bold">Exact Remaining Account Balance:</span>
+                    <strong className="font-black text-xs">
+                      {remBal < 0 ? `-₹${Math.abs(remBal).toLocaleString('en-IN')}` : `₹${remBal.toLocaleString('en-IN')}`}
+                    </strong>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Action buttons */}

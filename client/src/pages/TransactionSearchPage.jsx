@@ -737,6 +737,29 @@ export const TransactionSearchPage = () => {
                         </strong>
                       </div>
                     )}
+
+                    {(() => {
+                      const remWages = selectedTx.breakdown.remainingWages || 0;
+                      const remAdv = selectedTx.breakdown.remainingAdvance || 0;
+                      const remBal = selectedTx.breakdown.remainingBalance !== undefined
+                        ? selectedTx.breakdown.remainingBalance
+                        : (remWages - remAdv);
+                      if (remWages > 0 || remAdv > 0) {
+                        return (
+                          <div className={`rounded-xl p-3 text-xs flex items-center justify-between border ${
+                            remBal < 0
+                              ? 'bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200'
+                              : 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
+                          }`}>
+                            <span className="font-bold">{t('transactionSearch.remainingBalance', 'Exact Remaining Balance in Account:')}</span>
+                            <strong className="font-black text-sm">
+                              {remBal < 0 ? `-₹${Math.abs(remBal).toLocaleString('en-IN')}` : `₹${remBal.toLocaleString('en-IN')}`}
+                            </strong>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 
