@@ -115,16 +115,18 @@ export const Navbar = () => {
         {/* Right: Profile Icon Toggler */}
         {user && (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Direct Help Center Access Button */}
-            <button
-              type="button"
-              onClick={() => setHelpModalOpen(true)}
-              title={t('profile.helpCenter', 'Help & Support Center')}
-              aria-label="Help & Support Center"
-              className="group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 hover:border-amber-500 dark:hover:bg-amber-900/60 transition cursor-pointer shadow-2xs hover:scale-105 focus:outline-none"
-            >
-              <LifeBuoy className="h-5 w-5" />
-            </button>
+            {/* Direct Help Center Access Button (Only for Thekedars, hidden on Owner side) */}
+            {user.role === 'THEKEDAR' && (
+              <button
+                type="button"
+                onClick={() => setHelpModalOpen(true)}
+                title={t('profile.helpCenter', 'Help & Support Center')}
+                aria-label="Help & Support Center"
+                className="group relative flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 hover:border-amber-500 dark:hover:bg-amber-900/60 transition cursor-pointer shadow-2xs hover:scale-105 focus:outline-none"
+              >
+                <LifeBuoy className="h-5 w-5" />
+              </button>
+            )}
 
             <div className="relative" ref={profileRef}>
               {/* Round Profile Toggler Button */}
@@ -214,33 +216,35 @@ export const Navbar = () => {
 
               {/* Menu Actions */}
               <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-                {/* Thekedar User Guide (Full instructions with photos) */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileOpen(false);
-                    setGuideModalOpen(true);
-                  }}
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-950 dark:text-amber-200 transition hover:bg-amber-100/70 dark:hover:bg-amber-950/60 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <div className="text-left">
-                      <div className="flex items-center gap-1.5">
-                        <span>{t('profile.thekedarGuide', 'Thekedar User Guide')}</span>
-                        <span className="rounded bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.2 tracking-wide">
-                          PHOTOS
+                {/* Thekedar User Guide (Only visible to Thekedars, hidden from Owner) */}
+                {user.role === 'THEKEDAR' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false);
+                      setGuideModalOpen(true);
+                    }}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-950 dark:text-amber-200 transition hover:bg-amber-100/70 dark:hover:bg-amber-950/60 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                      <div className="text-left">
+                        <div className="flex items-center gap-1.5">
+                          <span>{t('profile.thekedarGuide', 'Thekedar User Guide')}</span>
+                          <span className="rounded bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.2 tracking-wide">
+                            PHOTOS
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-amber-700/90 dark:text-amber-400/90 block font-normal">
+                          {t('profile.thekedarGuideSub', 'Full instructions & shift codes')}
                         </span>
                       </div>
-                      <span className="text-[10px] text-amber-700/90 dark:text-amber-400/90 block font-normal">
-                        {t('profile.thekedarGuideSub', 'Full instructions & shift codes')}
-                      </span>
                     </div>
-                  </div>
-                  <ChevronRight className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                </button>
+                    <ChevronRight className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                  </button>
+                )}
 
-                {/* Help & Support Center */}
+                {/* Help & Support Center / Thekedar Requests */}
                 <button
                   type="button"
                   onClick={() => {
@@ -251,7 +255,7 @@ export const Navbar = () => {
                 >
                   <div className="flex items-center gap-2.5">
                     <LifeBuoy className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                    <span>{t('profile.helpCenter', 'Help & Support Center')}</span>
+                    <span>{user.role === 'OWNER' ? t('help.thekedarRequests', 'Thekedar Requests') : t('profile.helpCenter', 'Help & Support Center')}</span>
                   </div>
                   <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                 </button>

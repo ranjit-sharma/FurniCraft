@@ -328,7 +328,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight">
-                {t('help.title', 'Help & Support Center')}
+                {isOwner ? t('help.thekedarRequests', 'Thekedar Requests') : t('help.title', 'Help & Support Center')}
               </h3>
               {isOwner && openTicketsCount > 0 && (
                 <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider animate-pulse">
@@ -347,73 +347,48 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
       maxWidth="max-w-2xl"
     >
       <div className="flex flex-col gap-4">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5 flex-wrap">
-          {/* Owner Tab: Thekedar Requests (shown first for Owner) */}
-          {isOwner && (
+        {/* Navigation Tabs (Only for Thekedars/Workers, removed from Owner side) */}
+        {!isOwner && (
+          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5 flex-wrap">
+            {/* Tab: Submit Request */}
             <button
               type="button"
-              onClick={() => setActiveTab('all')}
+              onClick={() => setActiveTab('new')}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                activeTab === 'all'
+                activeTab === 'new'
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <InboxIcon className="h-3.5 w-3.5" />
-              <span>{t('help.thekedarRequests', 'Thekedar Requests')}</span>
-              {allTickets.length > 0 && (
-                <span
-                  className={`ml-1 rounded-full px-1.5 py-0.2 text-[10px] font-black ${
-                    openTicketsCount > 0
-                      ? 'bg-rose-500 text-white'
-                      : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                  }`}
-                >
-                  {allTickets.length}
+              <Send className="h-3.5 w-3.5" />
+              <span>{t('help.newTicket', 'Submit Request')}</span>
+            </button>
+
+            {/* Tab: My Tickets */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                activeTab === 'history'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>{t('help.myTickets', 'My Tickets')}</span>
+              {myTickets.length > 0 && (
+                <span className="ml-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 py-0.2 text-[10px] font-black">
+                  {myTickets.length}
                 </span>
               )}
             </button>
-          )}
-
-          {/* Tab: Submit Request (Thekedar & Owner) */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('new')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              activeTab === 'new'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Send className="h-3.5 w-3.5" />
-            <span>{t('help.newTicket', 'Submit Request')}</span>
-          </button>
-
-          {/* Tab: My Tickets */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-              activeTab === 'history'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Clock className="h-3.5 w-3.5" />
-            <span>{t('help.myTickets', 'My Tickets')}</span>
-            {myTickets.length > 0 && (
-              <span className="ml-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-1.5 py-0.2 text-[10px] font-black">
-                {myTickets.length}
-              </span>
-            )}
-          </button>
-        </div>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* TAB 1 (OWNER ONLY): ALL THEKEDAR REQUESTS                                 */}
         {/* ========================================================================= */}
-        {isOwner && activeTab === 'all' && (
+        {isOwner && (
           <div className="space-y-3">
             {/* Owner Filter & Search Header */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
@@ -702,9 +677,9 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: SUBMIT NEW REQUEST FORM (THEKEDAR & OWNER)                         */}
+        {/* TAB 2: SUBMIT NEW REQUEST FORM (THEKEDAR ONLY, HIDDEN FOR OWNER)          */}
         {/* ========================================================================= */}
-        {activeTab === 'new' && (
+        {!isOwner && activeTab === 'new' && (
           <div>
             {submittedTicket ? (
               <div className="rounded-2xl border-2 border-emerald-300 bg-gradient-to-br from-emerald-50/90 via-teal-50/50 to-amber-50/40 dark:from-emerald-950/40 dark:to-slate-900 p-6 text-center animate-page-in shadow-xs">
@@ -946,9 +921,9 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: MY SUBMITTED TICKETS                                               */}
+        {/* TAB 3: MY SUBMITTED TICKETS (THEKEDAR ONLY, HIDDEN FOR OWNER)             */}
         {/* ========================================================================= */}
-        {activeTab === 'history' && (
+        {!isOwner && activeTab === 'history' && (
           <div className="space-y-2.5">
             {myTickets.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 p-8 text-center">
