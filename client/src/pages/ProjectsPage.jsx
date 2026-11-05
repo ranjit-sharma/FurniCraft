@@ -514,7 +514,7 @@ export const ProjectsPage = () => {
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. DLF Magnolias - Acrylic Modular Kitchen & Island Bar"
+              placeholder="Project title"
               className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
             />
           </div>
@@ -527,7 +527,7 @@ export const ProjectsPage = () => {
                 required
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                placeholder="e.g. Aarav Singhania"
+                placeholder="Client full name"
                 className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
               />
             </div>
@@ -537,7 +537,7 @@ export const ProjectsPage = () => {
                 type="text"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
-                placeholder="+91 98100 11223"
+                placeholder="Client phone number"
                 className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
               />
             </div>
@@ -550,7 +550,7 @@ export const ProjectsPage = () => {
               required
               value={siteAddress}
               onChange={(e) => setSiteAddress(e.target.value)}
-              placeholder="e.g. Villa 14, Magnolias, Golf Course Road, Gurugram"
+              placeholder="Site address"
               className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
             />
           </div>
@@ -594,7 +594,7 @@ export const ProjectsPage = () => {
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Hafele hardware, Merino high-gloss laminate, Blum servo-drive drawers"
+              placeholder="Scope of work & material specifications"
               className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
             />
           </div>

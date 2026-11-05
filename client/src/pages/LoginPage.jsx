@@ -117,7 +117,7 @@ export const LoginPage = () => {
       setModalError(
         t(
           'login.recoveryMobileWarning',
-          'Please enter a valid email address (e.g. craftsman@furnicraft.com). Password reset OTP cannot be sent to mobile numbers.'
+          'Please enter a valid email address (e.g. yourname@gmail.com). Password reset OTP cannot be sent to mobile numbers.'
         )
       );
       setModalLoading(false);
@@ -333,7 +333,7 @@ export const LoginPage = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={t('login.emailPlaceholder', 'name@furnicraft.com')}
+                      placeholder={t('login.emailPlaceholder', 'yourname@gmail.com')}
                       className="block w-full min-h-[44px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 py-2.5 sm:py-3 pl-10 pr-3.5 text-base sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 shadow-xs focus:bg-white dark:focus:bg-slate-800 focus:border-blue-600 dark:focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     />
                   </div>
@@ -481,7 +481,7 @@ export const LoginPage = () => {
                       setResetEmail(e.target.value);
                       if (modalError) setModalError(null);
                     }}
-                    placeholder={t('login.recoveryEmailPlaceholder', 'e.g. craftsman@furnicraft.com')}
+                    placeholder={t('login.recoveryEmailPlaceholder', 'e.g. yourname@gmail.com')}
                     className={`block w-full min-h-[44px] rounded-xl border py-2.5 pl-10 pr-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none transition ${
                       modalError && otpStep === 'EMAIL_INPUT'
                         ? 'border-amber-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-amber-50/20 dark:bg-amber-950/20'

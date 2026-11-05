@@ -393,7 +393,7 @@ export const ThekedarDashboard = () => {
               required
               value={newWorkerName}
               onChange={(e) => setNewWorkerName(e.target.value)}
-              placeholder="e.g. Ramesh Kumar"
+              placeholder="Craftsman name"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
             />
           </div>

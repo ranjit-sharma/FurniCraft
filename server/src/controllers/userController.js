@@ -619,12 +619,12 @@ export const createWorker = async (req, res, next) => {
       : `worker.${Date.now()}.${Math.floor(1000 + Math.random() * 9000)}@furnicraft.local`;
 
     // Unusable password hash since workers cannot log in
-    const dummyPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const workerSecuredPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const workerUser = await User.create({
       name: name.trim(),
       email: internalEmail,
       phone: phone.trim(),
-      password: dummyPassword,
+      password: workerSecuredPassword,
       role: ROLES.WORKER,
       assignedThekedar: thekedarId,
       status: USER_STATUS.ACTIVE,

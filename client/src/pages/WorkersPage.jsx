@@ -849,7 +849,7 @@ export const WorkersPage = () => {
               required
               value={workerName}
               onChange={(e) => setWorkerName(e.target.value)}
-              placeholder="e.g. Ramesh Kumar"
+              placeholder="Craftsman name"
               className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
             />
           </div>
@@ -862,7 +862,7 @@ export const WorkersPage = () => {
                 required
                 value={workerPhone}
                 onChange={(e) => setWorkerPhone(e.target.value)}
-                placeholder="+91 99222 33445"
+                placeholder="10-digit mobile number"
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               />
             </div>

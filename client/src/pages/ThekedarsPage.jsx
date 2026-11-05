@@ -596,7 +596,7 @@ export const ThekedarsPage = () => {
             <input
               type="text"
               required
-              placeholder="e.g., Sunil Sharma"
+              placeholder="Contractor full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
@@ -610,7 +610,7 @@ export const ThekedarsPage = () => {
             <input
               type="email"
               required
-              placeholder="thekedar@furnicraft.com"
+              placeholder="contractor@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"

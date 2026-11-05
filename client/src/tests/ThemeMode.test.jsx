@@ -11,7 +11,7 @@ vi.mock('../context/AuthContext', () => ({
   useAuth: () => ({
     user: {
       _id: 'user_123',
-      name: 'Ramesh Mistri',
+      name: 'Sunil Sharma',
       role: 'THEKEDAR',
       email: 'thekedar@test.com',
       phone: '+91 99887 76655',

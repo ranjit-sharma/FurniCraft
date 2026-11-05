@@ -715,7 +715,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
                   {guideLang === 'en' ? 'Actual Screen: Worker Profile & Action Card' : 'ऐप स्क्रीन: कारीगर प्रोफाइल व हिसाब कार्ड'}
                 </span>
                 <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                  Ramesh Carpenter (WRK-0001)
+                  {guideLang === 'en' ? 'Craftsman Profile Card' : 'कारीगर प्रोफाइल कार्ड'}
                 </span>
               </div>
               <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-inner">

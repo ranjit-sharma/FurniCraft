@@ -17,7 +17,7 @@ describe('LoginPage Component', () => {
     );
 
     expect(screen.getByText('Sign in to your account')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('name@furnicraft.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('yourname@gmail.com')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('••••••••••••')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sign In to Dashboard/i })).toBeInTheDocument();
     expect(screen.getByText('Forgot password?')).toBeInTheDocument();
@@ -82,7 +82,7 @@ describe('LoginPage Component', () => {
 
     fireEvent.click(screen.getByText('Forgot password?'));
 
-    const emailInput = screen.getByPlaceholderText('e.g. craftsman@furnicraft.com');
+    const emailInput = screen.getByPlaceholderText('e.g. yourname@gmail.com');
     fireEvent.change(emailInput, { target: { value: 'unregistered@test.com' } });
 
     fireEvent.click(screen.getByRole('button', { name: /Send 6-Digit OTP/i }));
