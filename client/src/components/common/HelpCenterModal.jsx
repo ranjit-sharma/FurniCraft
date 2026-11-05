@@ -27,7 +27,6 @@ import {
   Search,
   Filter,
   RefreshCw,
-  Wrench,
   MessageSquare,
   ShieldCheck,
   ExternalLink,
@@ -238,12 +237,6 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
       label: t('help.catProject', 'Project & Site'),
       icon: FolderKanban,
       color: 'text-blue-600 bg-blue-50 border-blue-200',
-    },
-    {
-      id: 'TOOL_EQUIPMENT',
-      label: t('help.catTool', 'Tools & Machinery'),
-      icon: Wrench,
-      color: 'text-orange-600 bg-orange-50 border-orange-200',
     },
     {
       id: 'ACCOUNT_LOGIN',

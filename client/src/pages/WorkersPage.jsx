@@ -1785,13 +1785,6 @@ export const WorkersPage = () => {
                   placeholder="e.g. 2000"
                   className="mt-1 block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-3 text-lg font-bold focus:border-rose-500 focus:outline-none"
                 />
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {[500, 1000, 2000, 5000, 10000, 20000, 25000].filter((v) => v <= room).map((v) => (
-                    <button key={v} type="button" onClick={() => setAdvanceAmount(String(v))} className="inline-flex items-center rounded-full border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
-                      ₹{v.toLocaleString('en-IN')}
-                    </button>
-                  ))}
-                </div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Reason *</label>
