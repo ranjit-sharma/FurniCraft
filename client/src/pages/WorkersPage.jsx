@@ -1210,10 +1210,6 @@ export const WorkersPage = () => {
               {/* Fast Stats Pills */}
               <div className="flex flex-wrap items-center gap-2">
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Daily Wage</div>
-                  <div className="text-xs font-bold text-amber-900 dark:text-amber-300">₹{activityWorker.defaultDailyWage}/day</div>
-                </div>
-                <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                   <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Unpaid Wages</div>
                   <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
                     ₹{(activityData?.profile?.totalEarned ?? activityWorker.totalEarned ?? 0).toLocaleString('en-IN')}
