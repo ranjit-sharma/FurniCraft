@@ -3,6 +3,7 @@ import { PAYROLL_STATUS, ATTENDANCE_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHOD
 import { BadRequestError, NotFoundError, ConflictError, ForbiddenError } from '../utils/errors.js';
 import { addMoney, subtractMoney, roundRupee } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
+import { generateUniquePayrollCode } from '../utils/codeGenerator.js';
 
 /**
  * Preview Payroll calculation before finalization
@@ -125,8 +126,7 @@ export const finalizePayroll = async ({ data, thekedarUser, req }) => {
     thekedarUser,
   });
 
-  const payrollCount = await Payroll.countDocuments();
-  const payrollCode = `PAY-${periodYear}-${String(periodMonth).padStart(2, '0')}-${String(payrollCount + 1).padStart(4, '0')}`;
+  const payrollCode = await generateUniquePayrollCode(periodYear, periodMonth);
 
   const payroll = await Payroll.create({
     payrollCode,

@@ -2,10 +2,10 @@ import { Project, ProjectAssignment, ProjectExpense, ProjectMoneyReceived, Atten
 import { ROLES, PROJECT_STATUS, ATTENDANCE_STATUS } from '../config/constants.js';
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
 import { recordAuditLog } from './auditService.js';
+import { generateUniqueProjectCode, generateUniqueReceiptCode } from '../utils/codeGenerator.js';
 
 export const createProject = async ({ data, user, req }) => {
-  const count = await Project.countDocuments();
-  const projectCode = data.projectCode || `FURN-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+  const projectCode = data.projectCode || await generateUniqueProjectCode();
 
   const thekedarId = user.role === ROLES.THEKEDAR ? user._id : data.thekedarId;
   if (!thekedarId) {
@@ -98,8 +98,7 @@ export const recordProjectMoneyReceived = async ({ projectId, data, user, req })
     throw new ForbiddenError('You can only record money received for projects you manage');
   }
 
-  const count = await ProjectMoneyReceived.countDocuments();
-  const receiptCode = `RCP-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+  const receiptCode = await generateUniqueReceiptCode();
 
   const payment = await ProjectMoneyReceived.create({
     receiptCode,
