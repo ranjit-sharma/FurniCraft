@@ -256,8 +256,8 @@ export const ThekedarDashboard = () => {
               <Clock className="h-3.5 w-3.5" />
             </div>
             <div className="flex items-center gap-2 flex-wrap min-w-0">
-              <span className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white truncate">
-                {t('thekedarDash.attendanceAlertTitle', 'Attendance Due Today')}
+              <span className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white whitespace-nowrap">
+                {t('thekedarDash.attendanceAlertTitle', 'Attendance Due')}
               </span>
               <span className="text-[11px] text-amber-800/80 dark:text-amber-300 font-medium hidden sm:inline">
                 ({markedTodayCount}/{workers.length} marked)
