@@ -12,6 +12,7 @@ import {
 import { ROLES, USER_STATUS, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
+import { generateUniqueWorkerCode } from '../utils/codeGenerator.js';
 
 export const listUsers = async (req, res, next) => {
   try {
@@ -583,6 +584,7 @@ export const updateLanguagePreference = async (req, res, next) => {
 };
 
 export const createWorker = async (req, res, next) => {
+  let workerUser = null;
   try {
     const {
       name,
@@ -591,6 +593,7 @@ export const createWorker = async (req, res, next) => {
       trade,
       skills,
       defaultDailyWage = 750,
+      thekedarId: targetThekedarId,
       address,
       emergencyContact,
       bankDetails,
@@ -599,19 +602,30 @@ export const createWorker = async (req, res, next) => {
     if (!name || !name.trim()) throw new BadRequestError('Worker name is required');
     if (!phone || !phone.trim()) throw new BadRequestError('Worker phone number is required');
 
-    // Scoped strictly to Thekedar (or Owner)
+    // Scoped strictly to Thekedar (or Owner assigning to a Thekedar)
     let thekedarId;
     if (req.user.role === ROLES.THEKEDAR) {
       thekedarId = req.user._id;
     } else if (req.user.role === ROLES.OWNER) {
-      thekedarId = req.body.thekedarId || req.user._id;
+      if (targetThekedarId) {
+        const thekedarUser = await User.findOne({ _id: targetThekedarId, role: ROLES.THEKEDAR });
+        if (!thekedarUser) {
+          throw new BadRequestError('The selected Thekedar is invalid or does not exist');
+        }
+        thekedarId = thekedarUser._id;
+      } else {
+        const defaultThekedar = await User.findOne({ role: ROLES.THEKEDAR, status: USER_STATUS.ACTIVE }).sort({ createdAt: 1 });
+        if (!defaultThekedar) {
+          throw new BadRequestError('No active Thekedar found. Please register a Thekedar before creating workers.');
+        }
+        thekedarId = defaultThekedar._id;
+      }
     } else {
       throw new ForbiddenError('Only Thekedars or Owners can create workers');
     }
 
-    // Auto-generate unique Worker ID: sequential count + 1
-    const workerCount = await WorkerProfile.countDocuments();
-    const workerCode = `FC-WRK-${String(workerCount + 1).padStart(4, '0')}`;
+    // Auto-generate strictly unique, gap-safe sequential Worker ID
+    const workerCode = await generateUniqueWorkerCode('FC-WRK');
 
     // Auto-generate safe managed internal email if not provided
     const internalEmail = email && email.trim()
@@ -620,7 +634,7 @@ export const createWorker = async (req, res, next) => {
 
     // Unusable password hash since workers cannot log in
     const workerSecuredPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const workerUser = await User.create({
+    workerUser = await User.create({
       name: name.trim(),
       email: internalEmail,
       phone: phone.trim(),
@@ -658,7 +672,7 @@ export const createWorker = async (req, res, next) => {
       action: 'WORKER_CREATED_MANUALLY',
       targetType: 'User',
       targetId: workerUser._id,
-      newValues: { name: workerUser.name, workerCode, wage },
+      newValues: { name: workerUser.name, workerCode, wage, thekedarId },
     });
 
     res.status(201).json({
@@ -676,6 +690,10 @@ export const createWorker = async (req, res, next) => {
       },
     });
   } catch (error) {
+    // If the User record was created but subsequent operations failed, rollback to prevent orphan records
+    if (workerUser && workerUser._id) {
+      await User.deleteOne({ _id: workerUser._id }).catch(() => {});
+    }
     next(error);
   }
 };

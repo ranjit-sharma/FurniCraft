@@ -7,6 +7,7 @@ import { ROLES, USER_STATUS } from '../config/constants.js';
 import { sendPasswordEmail, sendOtpEmail } from './emailService.js';
 import { normalizePhone, findUserByIdentifier } from '../utils/phone.js';
 import { sendOtpSms } from './smsService.js';
+import { generateUniqueWorkerCode } from '../utils/codeGenerator.js';
 
 export const loginUser = async ({ email, identifier, phone, password, req, res }) => {
   // Use generic error message to prevent account enumeration
@@ -106,25 +107,29 @@ export const registerUser = async ({ data, creatorUser, req }) => {
 
   // If worker, create WorkerProfile and initial WageAgreement
   if (user.role === ROLES.WORKER) {
-    const workerCount = await WorkerProfile.countDocuments();
-    const workerCode = `WRK-${String(workerCount + 1).padStart(4, '0')}`;
-    const defaultWage = data.defaultDailyWage || 700;
+    try {
+      const workerCode = await generateUniqueWorkerCode('FC-WRK');
+      const defaultWage = data.defaultDailyWage || 700;
 
-    await WorkerProfile.create({
-      userId: user._id,
-      thekedarId: assignedThekedar || creatorUser?._id || user._id,
-      workerCode,
-      defaultDailyWage: defaultWage,
-    });
+      await WorkerProfile.create({
+        userId: user._id,
+        thekedarId: assignedThekedar || creatorUser?._id || user._id,
+        workerCode,
+        defaultDailyWage: defaultWage,
+      });
 
-    await WageAgreement.create({
-      workerId: user._id,
-      thekedarId: assignedThekedar || creatorUser?._id || user._id,
-      dailyWage: defaultWage,
-      effectiveFrom: new Date(),
-      createdBy: creatorUser?._id || user._id,
-      notes: 'Initial standard wage agreement on registration',
-    });
+      await WageAgreement.create({
+        workerId: user._id,
+        thekedarId: assignedThekedar || creatorUser?._id || user._id,
+        dailyWage: defaultWage,
+        effectiveFrom: new Date(),
+        createdBy: creatorUser?._id || user._id,
+        notes: 'Initial standard wage agreement on registration',
+      });
+    } catch (workerErr) {
+      await User.deleteOne({ _id: user._id }).catch(() => {});
+      throw workerErr;
+    }
   }
 
   await recordAuditLog({

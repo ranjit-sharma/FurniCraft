@@ -259,7 +259,7 @@ export const WorkersPage = () => {
         phone: workerPhone.trim(),
         trade: workerTrade || 'Mistry',
         defaultDailyWage: defaultWage !== '' && !isNaN(Number(defaultWage)) ? Number(defaultWage) : 750,
-        ...(isOwner && selectedThekedarId ? { thekedarId: selectedThekedarId } : {}),
+        ...(isOwner ? { thekedarId: selectedThekedarId || thekedarsList[0]?._id } : {}),
       });
       const generatedCode = res.data?.data?.worker?.profile?.workerCode || 'FC-WRK';
       setMessage({ type: 'success', text: `Craftsman ${workerName} added successfully with ID ${generatedCode}!` });
