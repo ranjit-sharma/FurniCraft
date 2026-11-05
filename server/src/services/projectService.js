@@ -2,35 +2,36 @@ import { Project, ProjectAssignment, ProjectExpense, ProjectMoneyReceived, Atten
 import { ROLES, PROJECT_STATUS, ATTENDANCE_STATUS } from '../config/constants.js';
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
 import { recordAuditLog } from './auditService.js';
-import { generateUniqueProjectCode, generateUniqueReceiptCode } from '../utils/codeGenerator.js';
+import { generateUniqueProjectCode, generateUniqueReceiptCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 export const createProject = async ({ data, user, req }) => {
-  const projectCode = data.projectCode || await generateUniqueProjectCode();
-
   const thekedarId = user.role === ROLES.THEKEDAR ? user._id : data.thekedarId;
   if (!thekedarId) {
     throw new BadRequestError('Thekedar ID is required for project creation');
   }
 
-  const project = await Project.create({
-    ...data,
-    projectCode,
-    thekedarId,
-    status: PROJECT_STATUS.PLANNED,
-  });
+  return await withDuplicateRetry(async () => {
+    const projectCode = data.projectCode || await generateUniqueProjectCode();
+    const project = await Project.create({
+      ...data,
+      projectCode,
+      thekedarId,
+      status: PROJECT_STATUS.PLANNED,
+    });
 
-  await recordAuditLog({
-    req,
-    actorId: user._id,
-    actorName: user.name,
-    actorRole: user.role,
-    action: 'PROJECT_CREATED',
-    targetType: 'Project',
-    targetId: project._id,
-    newValues: { projectCode, name: project.name, projectType: project.projectType },
-  });
+    await recordAuditLog({
+      req,
+      actorId: user._id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'PROJECT_CREATED',
+      targetType: 'Project',
+      targetId: project._id,
+      newValues: { projectCode, name: project.name, projectType: project.projectType },
+    });
 
-  return project;
+    return project;
+  });
 };
 
 export const getProjectDashboardDetails = async ({ projectId, user }) => {
@@ -98,37 +99,39 @@ export const recordProjectMoneyReceived = async ({ projectId, data, user, req })
     throw new ForbiddenError('You can only record money received for projects you manage');
   }
 
-  const receiptCode = await generateUniqueReceiptCode();
+  return await withDuplicateRetry(async () => {
+    const receiptCode = await generateUniqueReceiptCode();
 
-  const payment = await ProjectMoneyReceived.create({
-    receiptCode,
-    projectId: project._id,
-    thekedarId: project.thekedarId,
-    amount: data.amount,
-    receivedDate: data.receivedDate ? new Date(data.receivedDate) : new Date(),
-    paymentMethod: data.paymentMethod || 'BANK_TRANSFER',
-    receiptReference: data.receiptReference || null,
-    payerName: data.payerName || project.clientName,
-    stage: data.stage || 'Advance Booking',
-    notes: data.notes || '',
-    recordedBy: user._id,
+    const payment = await ProjectMoneyReceived.create({
+      receiptCode,
+      projectId: project._id,
+      thekedarId: project.thekedarId,
+      amount: data.amount,
+      receivedDate: data.receivedDate ? new Date(data.receivedDate) : new Date(),
+      paymentMethod: data.paymentMethod || 'BANK_TRANSFER',
+      receiptReference: data.receiptReference || null,
+      payerName: data.payerName || project.clientName,
+      stage: data.stage || 'Advance Booking',
+      notes: data.notes || '',
+      recordedBy: user._id,
+    });
+
+    project.totalMoneyReceived = (project.totalMoneyReceived || 0) + data.amount;
+    await project.save();
+
+    await recordAuditLog({
+      req,
+      actorId: user._id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'PROJECT_MONEY_RECEIVED',
+      targetType: 'Project',
+      targetId: project._id,
+      newValues: { receiptCode, amount: data.amount, paymentMethod: data.paymentMethod, stage: data.stage },
+    });
+
+    return payment;
   });
-
-  project.totalMoneyReceived = (project.totalMoneyReceived || 0) + data.amount;
-  await project.save();
-
-  await recordAuditLog({
-    req,
-    actorId: user._id,
-    actorName: user.name,
-    actorRole: user.role,
-    action: 'PROJECT_MONEY_RECEIVED',
-    targetType: 'Project',
-    targetId: project._id,
-    newValues: { receiptCode, amount: data.amount, paymentMethod: data.paymentMethod, stage: data.stage },
-  });
-
-  return payment;
 };
 
 export const listAllProjectMoneyReceived = async ({ user, projectId }) => {

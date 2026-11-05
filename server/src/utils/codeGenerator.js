@@ -11,6 +11,30 @@ import {
 } from '../models/index.js';
 
 /**
+ * Concurrency retry wrapper for operations involving uniquely generated codes.
+ * If simultaneous requests from multiple Thekedars collide on a unique key constraint (E11000),
+ * this automatically retries with jittered backoff, regenerating the next safe unique code.
+ */
+export const withDuplicateRetry = async (fn, maxRetries = 5) => {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isDup = err.code === 11000 || (err.message && err.message.includes('E11000'));
+      if (isDup && attempt < maxRetries - 1) {
+        attempt++;
+        // Jittered backoff: 10ms - 50ms to let competing concurrent operation commit
+        const jitter = Math.floor(10 * attempt + Math.random() * 20);
+        await new Promise((res) => setTimeout(res, jitter));
+        continue;
+      }
+      throw err;
+    }
+  }
+};
+
+/**
  * Robustly generates the next sequential unique workerCode (e.g. FC-WRK-0021).
  * Inspects all existing worker profiles to determine the true arithmetic maximum
  * numeric suffix, preventing collisions across all Thekedars.

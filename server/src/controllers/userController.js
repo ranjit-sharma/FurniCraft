@@ -12,7 +12,7 @@ import {
 import { ROLES, USER_STATUS, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS } from '../config/constants.js';
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
-import { generateUniqueWorkerCode } from '../utils/codeGenerator.js';
+import { generateUniqueWorkerCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 export const listUsers = async (req, res, next) => {
   try {
@@ -624,76 +624,82 @@ export const createWorker = async (req, res, next) => {
       throw new ForbiddenError('Only Thekedars or Owners can create workers');
     }
 
-    // Auto-generate strictly unique, gap-safe sequential Worker ID
-    const workerCode = await generateUniqueWorkerCode('FC-WRK');
+    return await withDuplicateRetry(async () => {
+      let createdUser = null;
+      try {
+        // Auto-generate strictly unique, gap-safe sequential Worker ID
+        const workerCode = await generateUniqueWorkerCode('FC-WRK');
 
-    // Auto-generate safe managed internal email if not provided
-    const internalEmail = email && email.trim()
-      ? email.trim().toLowerCase()
-      : `worker.${Date.now()}.${Math.floor(1000 + Math.random() * 9000)}@furnicraft.local`;
+        // Auto-generate safe managed internal email if not provided
+        const internalEmail = email && email.trim()
+          ? email.trim().toLowerCase()
+          : `worker.${Date.now()}.${Math.floor(1000 + Math.random() * 9000)}@furnicraft.local`;
 
-    // Unusable password hash since workers cannot log in
-    const workerSecuredPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    workerUser = await User.create({
-      name: name.trim(),
-      email: internalEmail,
-      phone: phone.trim(),
-      password: workerSecuredPassword,
-      role: ROLES.WORKER,
-      assignedThekedar: thekedarId,
-      status: USER_STATUS.ACTIVE,
-    });
+        // Unusable password hash since workers cannot log in
+        const workerSecuredPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        createdUser = await User.create({
+          name: name.trim(),
+          email: internalEmail,
+          phone: phone.trim(),
+          password: workerSecuredPassword,
+          role: ROLES.WORKER,
+          assignedThekedar: thekedarId,
+          status: USER_STATUS.ACTIVE,
+        });
 
-    const wage = parseFloat(defaultDailyWage) || 750;
-    const skillsList = trade ? [trade] : (Array.isArray(skills) && skills.length > 0 ? skills : ['Mistry']);
+        const wage = parseFloat(defaultDailyWage) || 750;
+        const skillsList = trade ? [trade] : (Array.isArray(skills) && skills.length > 0 ? skills : ['Mistry']);
 
-    const profile = await WorkerProfile.create({
-      userId: workerUser._id,
-      thekedarId,
-      workerCode,
-      skills: skillsList,
-      defaultDailyWage: wage,
-      address: address || '',
-      emergencyContact: emergencyContact || {},
-      bankDetails: bankDetails || {},
-    });
+        const profile = await WorkerProfile.create({
+          userId: createdUser._id,
+          thekedarId,
+          workerCode,
+          skills: skillsList,
+          defaultDailyWage: wage,
+          address: address || '',
+          emergencyContact: emergencyContact || {},
+          bankDetails: bankDetails || {},
+        });
 
-    await WageAgreement.create({
-      workerId: workerUser._id,
-      thekedarId,
-      dailyWage: wage,
-      effectiveFrom: new Date(),
-      createdBy: req.user._id,
-      notes: 'Initial standard wage agreement on worker registration',
-    });
+        await WageAgreement.create({
+          workerId: createdUser._id,
+          thekedarId,
+          dailyWage: wage,
+          effectiveFrom: new Date(),
+          createdBy: req.user._id,
+          notes: 'Initial standard wage agreement on worker registration',
+        });
 
-    await recordAuditLog({
-      req,
-      action: 'WORKER_CREATED_MANUALLY',
-      targetType: 'User',
-      targetId: workerUser._id,
-      newValues: { name: workerUser.name, workerCode, wage, thekedarId },
-    });
+        await recordAuditLog({
+          req,
+          action: 'WORKER_CREATED_MANUALLY',
+          targetType: 'User',
+          targetId: createdUser._id,
+          newValues: { name: createdUser.name, workerCode, wage, thekedarId },
+        });
 
-    res.status(201).json({
-      status: 'success',
-      message: `Worker ${name} created successfully with ID ${workerCode}`,
-      data: {
-        worker: {
-          _id: workerUser._id,
-          name: workerUser.name,
-          phone: workerUser.phone,
-          email: workerUser.email,
-          status: workerUser.status,
-          profile,
-        },
-      },
+        return res.status(201).json({
+          status: 'success',
+          message: `Worker ${name} created successfully with ID ${workerCode}`,
+          data: {
+            worker: {
+              _id: createdUser._id,
+              name: createdUser.name,
+              phone: createdUser.phone,
+              email: createdUser.email,
+              status: createdUser.status,
+              profile,
+            },
+          },
+        });
+      } catch (innerErr) {
+        if (createdUser && createdUser._id) {
+          await User.deleteOne({ _id: createdUser._id }).catch(() => {});
+        }
+        throw innerErr;
+      }
     });
   } catch (error) {
-    // If the User record was created but subsequent operations failed, rollback to prevent orphan records
-    if (workerUser && workerUser._id) {
-      await User.deleteOne({ _id: workerUser._id }).catch(() => {});
-    }
     next(error);
   }
 };

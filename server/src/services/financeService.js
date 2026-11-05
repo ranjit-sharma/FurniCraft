@@ -4,7 +4,7 @@ import { ADVANCE_REQUEST_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHODS, PAYROLL_
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
 import { addMoney, subtractMoney } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
-import { generateUniqueTransactionId, generateUniqueAdvanceRequestCode } from '../utils/codeGenerator.js';
+import { generateUniqueTransactionId, generateUniqueAdvanceRequestCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 /**
  * Worker submits Advance Request
@@ -27,30 +27,32 @@ export const createAdvanceRequest = async ({ workerId, projectId, amount, reason
     throw new BadRequestError(`Worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance. With current advance of ₹${currentAdvance.toLocaleString('en-IN')}, requesting ₹${amount.toLocaleString('en-IN')} pushes total to ₹${(currentAdvance + amount).toLocaleString('en-IN')}. Maximum additional advance allowed is ₹${(MAX_ADVANCE_LIMIT - currentAdvance).toLocaleString('en-IN')}.`);
   }
 
-  const requestCode = await generateUniqueAdvanceRequestCode();
+  return await withDuplicateRetry(async () => {
+    const requestCode = await generateUniqueAdvanceRequestCode();
 
-  const advanceRequest = await AdvanceRequest.create({
-    requestCode,
-    workerId: finalWorkerId,
-    thekedarId: workerProfile.thekedarId,
-    projectId: projectId || null,
-    amount,
-    reason,
-    status: ADVANCE_REQUEST_STATUS.PENDING,
+    const advanceRequest = await AdvanceRequest.create({
+      requestCode,
+      workerId: finalWorkerId,
+      thekedarId: workerProfile.thekedarId,
+      projectId: projectId || null,
+      amount,
+      reason,
+      status: ADVANCE_REQUEST_STATUS.PENDING,
+    });
+
+    await recordAuditLog({
+      req,
+      actorId: user._id,
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'ADVANCE_REQUEST_CREATED',
+      targetType: 'AdvanceRequest',
+      targetId: advanceRequest._id,
+      newValues: { requestCode, amount, reason },
+    });
+
+    return advanceRequest;
   });
-
-  await recordAuditLog({
-    req,
-    actorId: user._id,
-    actorName: user.name,
-    actorRole: user.role,
-    action: 'ADVANCE_REQUEST_CREATED',
-    targetType: 'AdvanceRequest',
-    targetId: advanceRequest._id,
-    newValues: { requestCode, amount, reason },
-  });
-
-  return advanceRequest;
 };
 
 /**
@@ -160,21 +162,22 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
   }
 
   try {
-    const transactionId = await generateUniqueTransactionId('DISB');
-
-    const transaction = await FinancialTransaction.create({
-      transactionId,
-      category: FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT,
-      amount: advanceRequest.amount,
-      transactionDate: new Date(),
-      paymentMethod: paymentMethod || PAYMENT_METHODS.CASH,
-      receiptReference: receiptReference || null,
-      workerId: advanceRequest.workerId,
-      thekedarId: advanceRequest.thekedarId,
-      projectId: advanceRequest.projectId,
-      advanceRequestId: advanceRequest._id,
-      recordedBy: recordedBy._id,
-      notes: notes || `Disbursement for request ${advanceRequest.requestCode}`,
+    const transaction = await withDuplicateRetry(async () => {
+      const transactionId = await generateUniqueTransactionId('DISB');
+      return await FinancialTransaction.create({
+        transactionId,
+        category: FINANCIAL_CATEGORIES.ADVANCE_DISBURSEMENT,
+        amount: advanceRequest.amount,
+        transactionDate: new Date(),
+        paymentMethod: paymentMethod || PAYMENT_METHODS.CASH,
+        receiptReference: receiptReference || null,
+        workerId: advanceRequest.workerId,
+        thekedarId: advanceRequest.thekedarId,
+        projectId: advanceRequest.projectId,
+        advanceRequestId: advanceRequest._id,
+        recordedBy: recordedBy._id,
+        notes: notes || `Disbursement for request ${advanceRequest.requestCode}`,
+      });
     });
 
     advanceRequest.status = ADVANCE_REQUEST_STATUS.DISBURSED;
@@ -259,20 +262,21 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
     );
   }
 
-  const transactionId = await generateUniqueTransactionId('SAL');
-
-  const transaction = await FinancialTransaction.create({
-    transactionId,
-    category: FINANCIAL_CATEGORIES.SALARY_PAYMENT,
-    amount,
-    transactionDate: new Date(),
-    paymentMethod: paymentMethod || PAYMENT_METHODS.BANK_TRANSFER,
-    receiptReference: receiptReference || null,
-    workerId: payroll.workerId,
-    thekedarId: payroll.thekedarId,
-    payrollId: payroll._id,
-    recordedBy: recordedBy._id,
-    notes: notes || `Salary payment for period ${payroll.periodMonth}/${payroll.periodYear}`,
+  const transaction = await withDuplicateRetry(async () => {
+    const transactionId = await generateUniqueTransactionId('SAL');
+    return await FinancialTransaction.create({
+      transactionId,
+      category: FINANCIAL_CATEGORIES.SALARY_PAYMENT,
+      amount,
+      transactionDate: new Date(),
+      paymentMethod: paymentMethod || PAYMENT_METHODS.BANK_TRANSFER,
+      receiptReference: receiptReference || null,
+      workerId: payroll.workerId,
+      thekedarId: payroll.thekedarId,
+      payrollId: payroll._id,
+      recordedBy: recordedBy._id,
+      notes: notes || `Salary payment for period ${payroll.periodMonth}/${payroll.periodYear}`,
+    });
   });
 
   // Allocate payment to payroll
@@ -465,8 +469,6 @@ export const payWorkerNet = async ({
   const totalDeductions = addMoney(addMoney(numAdvanceDeduction, numFoodDeduction), numRoomRentDeduction);
   const netPayable = Math.max(0, subtractMoney(totalCredits, totalDeductions));
 
-  const txIdSalary = await generateUniqueTransactionId('NET');
-
   const remainingAdv = Math.max(0, subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction));
   const breakdown = {
     baseEarned: numBaseEarned,
@@ -480,6 +482,7 @@ export const payWorkerNet = async ({
 
   const executePayment = async (session) => {
     const sessionOpt = session ? { session } : {};
+    const txIdSalary = await generateUniqueTransactionId('NET');
 
     const salaryTxnArr = await FinancialTransaction.create(
       [

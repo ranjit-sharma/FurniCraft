@@ -2,7 +2,7 @@ import { ProjectExpense, Project } from '../models/index.js';
 import { NotFoundError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { ROLES } from '../config/constants.js';
-import { generateUniqueExpenseCode } from '../utils/codeGenerator.js';
+import { generateUniqueExpenseCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 export const listExpenses = async (req, res, next) => {
   try {
@@ -34,13 +34,15 @@ export const createExpense = async (req, res, next) => {
     const project = await Project.findById(req.body.projectId);
     if (!project) throw new NotFoundError('Project not found');
 
-    const expenseCode = await generateUniqueExpenseCode();
+    const expense = await withDuplicateRetry(async () => {
+      const expenseCode = await generateUniqueExpenseCode();
 
-    const expense = await ProjectExpense.create({
-      ...req.body,
-      expenseCode,
-      thekedarId: project.thekedarId,
-      recordedBy: req.user._id,
+      return await ProjectExpense.create({
+        ...req.body,
+        expenseCode,
+        thekedarId: project.thekedarId,
+        recordedBy: req.user._id,
+      });
     });
 
     await recordAuditLog({

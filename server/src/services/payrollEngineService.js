@@ -3,7 +3,7 @@ import { PAYROLL_STATUS, ATTENDANCE_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHOD
 import { BadRequestError, NotFoundError, ConflictError, ForbiddenError } from '../utils/errors.js';
 import { addMoney, subtractMoney, roundRupee } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
-import { generateUniquePayrollCode, generateUniqueAdjustmentCode } from '../utils/codeGenerator.js';
+import { generateUniquePayrollCode, generateUniqueAdjustmentCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 
 /**
  * Preview Payroll calculation before finalization
@@ -126,32 +126,34 @@ export const finalizePayroll = async ({ data, thekedarUser, req }) => {
     thekedarUser,
   });
 
-  const payrollCode = await generateUniquePayrollCode(periodYear, periodMonth);
+  const payroll = await withDuplicateRetry(async () => {
+    const payrollCode = await generateUniquePayrollCode(periodYear, periodMonth);
 
-  const payroll = await Payroll.create({
-    payrollCode,
-    workerId,
-    thekedarId: thekedarUser._id,
-    periodMonth,
-    periodYear,
-    startDate: preview.startDate,
-    endDate: preview.endDate,
-    status: PAYROLL_STATUS.FINALIZED,
-    totalApprovedDays: preview.totalApprovedDays,
-    attendanceBreakdown: preview.breakdown,
-    grossEarnings: preview.grossEarnings,
-    totalAllowances: allowances,
-    totalDeductions: deductions,
-    advancesRecovered: preview.advancesRecovered,
-    netPayable: preview.netPayable,
-    salaryPaymentsAllocated: 0,
-    balanceRemaining: preview.netPayable,
-    lineItems: preview.lineItems,
-    ruleVersionApplied: 1,
-    finalizedBy: thekedarUser._id,
-    finalizedAt: new Date(),
-    isImmutable: true,
-    notes,
+    return await Payroll.create({
+      payrollCode,
+      workerId,
+      thekedarId: thekedarUser._id,
+      periodMonth,
+      periodYear,
+      startDate: preview.startDate,
+      endDate: preview.endDate,
+      status: PAYROLL_STATUS.FINALIZED,
+      totalApprovedDays: preview.totalApprovedDays,
+      attendanceBreakdown: preview.breakdown,
+      grossEarnings: preview.grossEarnings,
+      totalAllowances: allowances,
+      totalDeductions: deductions,
+      advancesRecovered: preview.advancesRecovered,
+      netPayable: preview.netPayable,
+      salaryPaymentsAllocated: 0,
+      balanceRemaining: preview.netPayable,
+      lineItems: preview.lineItems,
+      ruleVersionApplied: 1,
+      finalizedBy: thekedarUser._id,
+      finalizedAt: new Date(),
+      isImmutable: true,
+      notes,
+    });
   });
 
   // Mark all included attendance records as processed & link payroll ID
@@ -222,18 +224,20 @@ export const addPayrollAdjustment = async ({ payrollId, type, amount, reason, au
     throw new BadRequestError('Adjustments can only be added to finalized payrolls');
   }
 
-  const adjustmentCode = await generateUniqueAdjustmentCode();
+  const adjustment = await withDuplicateRetry(async () => {
+    const adjustmentCode = await generateUniqueAdjustmentCode();
 
-  const adjustment = await PayrollAdjustment.create({
-    adjustmentCode,
-    payrollId: payroll._id,
-    workerId: payroll.workerId,
-    thekedarId: authorizedUser._id,
-    type,
-    amount,
-    reason,
-    authorizedBy: authorizedUser._id,
-    authorizedAt: new Date(),
+    return await PayrollAdjustment.create({
+      adjustmentCode,
+      payrollId: payroll._id,
+      workerId: payroll.workerId,
+      thekedarId: authorizedUser._id,
+      type,
+      amount,
+      reason,
+      authorizedBy: authorizedUser._id,
+      authorizedAt: new Date(),
+    });
   });
 
   // Adjust remaining balance
