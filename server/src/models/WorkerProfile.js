@@ -59,6 +59,14 @@ const workerProfileSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    isOnLeave: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    leaveUpdatedAt: {
+      type: Date,
+    },
     totalAdvancesDisbursed: {
       type: Number,
       default: 0,

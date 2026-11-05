@@ -165,6 +165,7 @@ export const listWorkers = async (req, res, next) => {
       wObj.monthEarnings = mStats.monthEarnings;
       wObj.netBalance = netBalance;
       wObj.netPayable = netBalance;
+      wObj.isOnLeave = !!w.isOnLeave;
       wObj.pendingAdvance = pendingAdv;
       wObj.hasPendingAdvance = !!pendingAdv;
       wObj.requestedAdvanceAmount = pendingAdv ? pendingAdv.totalRequested : 0;
@@ -423,6 +424,48 @@ export const updateUserStatus = async (req, res, next) => {
       status: 'success',
       message: `${user.role === ROLES.THEKEDAR ? 'Thekedar' : 'Worker'} account ${status === USER_STATUS.ACTIVE ? 'activated' : 'deactivated/suspended'} successfully`,
       data: { user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleWorkerLeave = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const profile = await WorkerProfile.findOne({ userId });
+    if (!profile) {
+      throw new NotFoundError('Worker profile not found');
+    }
+
+    if (req.user.role === ROLES.THEKEDAR) {
+      const thekedarIdStr = profile.thekedarId?.toString();
+      if (thekedarIdStr !== req.user._id.toString()) {
+        throw new ForbiddenError('You can only manage leave for workers under your supervision');
+      }
+    }
+
+    const newLeaveState = typeof req.body.isOnLeave === 'boolean' ? req.body.isOnLeave : !profile.isOnLeave;
+    profile.isOnLeave = newLeaveState;
+    profile.leaveUpdatedAt = new Date();
+    await profile.save();
+
+    await recordAuditLog({
+      req,
+      action: newLeaveState ? 'WORKER_MARKED_ON_LEAVE' : 'WORKER_RETURNED_FROM_LEAVE',
+      targetType: 'WorkerProfile',
+      targetId: profile._id,
+      newValues: { isOnLeave: newLeaveState, leaveUpdatedAt: profile.leaveUpdatedAt },
+      reason: req.body.reason || (newLeaveState ? 'Worker placed on standing leave' : 'Worker returned from leave'),
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: `Worker ${newLeaveState ? 'marked on leave' : 'returned from leave'} successfully`,
+      data: {
+        isOnLeave: profile.isOnLeave,
+        leaveUpdatedAt: profile.leaveUpdatedAt,
+      },
     });
   } catch (error) {
     next(error);

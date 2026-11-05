@@ -15,6 +15,7 @@ router.get('/workers/:userId', userController.getWorkerProfile);
 router.put('/workers/:userId', requireRole(ROLES.OWNER, ROLES.THEKEDAR), userController.updateWorker);
 router.put('/workers/:targetUserId/wage', requireRole(ROLES.OWNER, ROLES.THEKEDAR), userController.updateWorkerWage);
 router.delete('/workers/:userId', requireRole(ROLES.OWNER, ROLES.THEKEDAR), userController.deleteWorker);
+router.patch('/workers/:userId/leave', requireRole(ROLES.OWNER, ROLES.THEKEDAR), userController.toggleWorkerLeave);
 router.patch('/thekedars/:userId/status', requireRole(ROLES.OWNER), userController.updateUserStatus);
 router.patch('/workers/:userId/status', requireRole(ROLES.THEKEDAR), userController.updateUserStatus);
 router.delete('/thekedars/:userId', requireRole(ROLES.OWNER), userController.deleteThekedar);

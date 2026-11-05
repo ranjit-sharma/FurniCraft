@@ -221,7 +221,14 @@ export const WorkersPage = () => {
     try {
       setLoadError(null);
       const res = await api.get('/users/workers');
-      setWorkers(res.data.workers);
+      const list = res.data.workers || [];
+      const sorted = [...list].sort((a, b) => {
+        const aLeave = !!a.isOnLeave;
+        const bLeave = !!b.isOnLeave;
+        if (aLeave !== bLeave) return aLeave ? 1 : -1;
+        return (a.userId?.name || '').localeCompare(b.userId?.name || '');
+      });
+      setWorkers(sorted);
     } catch (err) {
       setLoadError(err.message);
     } finally {
@@ -351,47 +358,71 @@ export const WorkersPage = () => {
     }
   };
 
-  const handleToggleLeaveToday = async () => {
+  const handleToggleLeave = async () => {
     if (!activityWorker?.userId?._id && !activityWorker?._id) return;
     const workerUserId = activityWorker?.userId?._id || activityWorker?._id;
     const workerName = activityWorker?.userId?.name || activityWorker?.name || 'Craftsman';
-    const todayStr = localToday();
-    const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
+    const isCurrentlyOnLeave = !!(activityWorker?.isOnLeave ?? activityData?.profile?.isOnLeave);
 
-    if (todayAtt?.code === 'LEAVE') {
+    if (isCurrentlyOnLeave) {
       const confirmRemove = window.confirm(
-        `Remove leave for ${workerName} today (${todayStr})? This will return them to active attendance on the dashboard.`
+        `Remove leave for ${workerName}? They will return to active work and appear on the attendance dashboard.`
       );
       if (!confirmRemove) return;
       try {
         setLeaveActionLoading(true);
-        await api.delete(`/attendance/${todayAtt._id}`);
+        await api.patch(`/users/workers/${workerUserId}/leave`, { isOnLeave: false });
         setMessage({
           type: 'success',
-          text: `Leave removed for ${workerName}. Worker returned to active attendance.`,
+          text: `Leave removed for ${workerName}. Worker returned to active work.`,
         });
-        await refreshWorkerData(activityWorker);
-        fetchWorkers();
+        setActivityWorker((prev) => (prev ? { ...prev, isOnLeave: false } : prev));
+        if (activityData?.profile) {
+          activityData.profile.isOnLeave = false;
+        }
+        setWorkers((prev) => {
+          const updated = prev.map((w) =>
+            (w.userId?._id === workerUserId || w._id === workerUserId) ? { ...w, isOnLeave: false } : w
+          );
+          return [...updated].sort((a, b) => {
+            const aLeave = !!a.isOnLeave;
+            const bLeave = !!b.isOnLeave;
+            if (aLeave !== bLeave) return aLeave ? 1 : -1;
+            return (a.userId?.name || '').localeCompare(b.userId?.name || '');
+          });
+        });
       } catch (err) {
         setMessage({ type: 'error', text: err.message || 'Failed to remove leave' });
       } finally {
         setLeaveActionLoading(false);
       }
     } else {
+      const confirmLeave = window.confirm(
+        `Mark ${workerName} on leave? They will remain on leave until you change it, and will be kept at the end of the workers list.`
+      );
+      if (!confirmLeave) return;
       try {
         setLeaveActionLoading(true);
-        await api.post('/attendance/submit', {
-          workerId: workerUserId,
-          date: todayStr,
-          shift: 'GENERAL',
-          code: 'LEAVE',
-        });
+        await api.patch(`/users/workers/${workerUserId}/leave`, { isOnLeave: true });
         setMessage({
           type: 'success',
-          text: `${workerName} marked on leave for today (${todayStr}). They will not appear in today's attendance list on the dashboard.`,
+          text: `${workerName} marked on leave. They will remain on leave until you remove it.`,
         });
-        await refreshWorkerData(activityWorker);
-        fetchWorkers();
+        setActivityWorker((prev) => (prev ? { ...prev, isOnLeave: true } : prev));
+        if (activityData?.profile) {
+          activityData.profile.isOnLeave = true;
+        }
+        setWorkers((prev) => {
+          const updated = prev.map((w) =>
+            (w.userId?._id === workerUserId || w._id === workerUserId) ? { ...w, isOnLeave: true } : w
+          );
+          return [...updated].sort((a, b) => {
+            const aLeave = !!a.isOnLeave;
+            const bLeave = !!b.isOnLeave;
+            if (aLeave !== bLeave) return aLeave ? 1 : -1;
+            return (a.userId?.name || '').localeCompare(b.userId?.name || '');
+          });
+        });
       } catch (err) {
         setMessage({ type: 'error', text: err.message || 'Failed to mark leave' });
       } finally {
@@ -788,7 +819,12 @@ export const WorkersPage = () => {
                       </span>
                     )}
                   </div>
-                  {!isThekedar && (
+                  {w.isOnLeave ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                      <CalendarOff className="h-3 w-3" />
+                      On Leave
+                    </span>
+                  ) : !isThekedar ? (
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${
                         w.userId?.status === 'ACTIVE'
@@ -803,7 +839,7 @@ export const WorkersPage = () => {
                       />
                       {w.userId?.status === 'ACTIVE' ? t('workers.active', 'Active') : t('workers.suspended', 'Suspended')}
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="mt-3 flex items-center gap-3">
@@ -1112,16 +1148,12 @@ export const WorkersPage = () => {
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                       ₹{activityWorker.defaultDailyWage || 750}/day
                     </span>
-                    {(() => {
-                      const todayStr = localToday();
-                      const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
-                      return todayAtt?.code === 'LEAVE' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                          <CalendarOff className="h-3 w-3" />
-                          On Leave Today
-                        </span>
-                      ) : null;
-                    })()}
+                    {!!(activityWorker?.isOnLeave ?? activityData?.profile?.isOnLeave) && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                        <CalendarOff className="h-3 w-3" />
+                        On Leave
+                      </span>
+                    )}
                     
                     <span className="text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
                       {activityWorker.workerCode}
@@ -1158,9 +1190,7 @@ export const WorkersPage = () => {
 
             {/* Actions (each closes this sheet before opening its own form) */}
             {(isOwner || isThekedar) && (() => {
-              const todayStr = localToday();
-              const todayAtt = (activityData?.attendanceHistory || []).find((a) => a.date === todayStr);
-              const isOnLeaveToday = todayAtt?.code === 'LEAVE';
+              const isWorkerOnLeave = !!(activityWorker?.isOnLeave ?? activityData?.profile?.isOnLeave);
               return (
                 <div className="flex flex-wrap gap-2">
                   {isThekedar && (
@@ -1178,18 +1208,18 @@ export const WorkersPage = () => {
                   </Button>
                   {isThekedar && (
                     <Button
-                      variant={isOnLeaveToday ? 'secondary' : 'outline'}
+                      variant={isWorkerOnLeave ? 'secondary' : 'outline'}
                       className={`justify-center ${
-                        isOnLeaveToday
+                        isWorkerOnLeave
                           ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300'
                           : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                       icon={CalendarOff}
                       loading={leaveActionLoading}
-                      onClick={handleToggleLeaveToday}
-                      title={isOnLeaveToday ? 'Currently on leave today. Click to remove leave.' : 'Mark worker on leave for today'}
+                      onClick={handleToggleLeave}
+                      title={isWorkerOnLeave ? 'Currently on leave. Click to remove leave.' : 'Mark worker on leave'}
                     >
-                      {isOnLeaveToday ? 'On Leave ✓' : 'On Leave'}
+                      {isWorkerOnLeave ? 'On Leave ✓' : 'On Leave'}
                     </Button>
                   )}
                 </div>

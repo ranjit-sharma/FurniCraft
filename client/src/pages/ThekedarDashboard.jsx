@@ -132,9 +132,9 @@ export const ThekedarDashboard = () => {
 
   const m = data?.metrics || {};
   const allActiveWorkers = (data?.workers || []).filter((w) => w.status === 'ACTIVE');
-  // Workers marked on leave for today are excluded from today's attendance marking list
-  const onLeaveWorkers = allActiveWorkers.filter((w) => w.today?.code === 'LEAVE');
-  const workers = allActiveWorkers.filter((w) => w.today?.code !== 'LEAVE');
+  // Workers marked on leave are excluded from today's attendance marking list
+  const onLeaveWorkers = allActiveWorkers.filter((w) => w.isOnLeave || w.today?.code === 'LEAVE');
+  const workers = allActiveWorkers.filter((w) => !w.isOnLeave && w.today?.code !== 'LEAVE');
   const markedTodayCount = workers.filter((w) => w.today).length;
   const unmarkedWorkersCount = workers.length - markedTodayCount;
   const isAttendancePending = workers.length > 0 && unmarkedWorkersCount > 0;
@@ -282,7 +282,7 @@ export const ThekedarDashboard = () => {
             workers.length === 0
               ? allActiveWorkers.length === 0
                 ? 'No active craftsmen registered yet'
-                : 'All craftsmen are on leave today'
+                : 'All craftsmen are on leave'
               : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
           }
         >
@@ -291,7 +291,7 @@ export const ThekedarDashboard = () => {
             <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-medium min-w-0">
               <CalendarOff className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span className="truncate">
-                <strong>{onLeaveWorkers.length} {onLeaveWorkers.length === 1 ? 'craftsman' : 'craftsmen'} on leave today:</strong>{' '}
+                <strong>{onLeaveWorkers.length} {onLeaveWorkers.length === 1 ? 'craftsman' : 'craftsmen'} on leave:</strong>{' '}
                 {onLeaveWorkers.map((w) => w.name).join(', ')}
               </span>
             </div>
@@ -305,7 +305,7 @@ export const ThekedarDashboard = () => {
           <div className="py-6 text-center">
             <p className="text-sm text-slate-600 dark:text-slate-400">
               {allActiveWorkers.length > 0 && onLeaveWorkers.length === allActiveWorkers.length
-                ? 'All active craftsmen are marked on leave today.'
+                ? 'All active craftsmen are marked on leave.'
                 : t('thekedarDash.noWorkers', 'No active workers yet.')}
             </p>
             {allActiveWorkers.length === 0 && (
