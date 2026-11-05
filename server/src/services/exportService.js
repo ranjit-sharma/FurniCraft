@@ -233,7 +233,7 @@ const PDF_LABELS = {
     wageReceipt: 'Wage Payment Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Payment Receipt', paidBy: 'Paid by', paidTo: 'Paid to',
     payment: 'Payment', description: 'Description', amount: 'Amount', wagesEarned: 'Wages earned (attendance)', bonus: 'Bonus / allowance',
     advanceCut: 'Advance recovered', food: 'Food / mess', room: 'Room rent', advanceGiven: 'Advance given', netPaid: 'Net paid',
-    advanceAfter: 'Advance balance after this payment', advanceNow: 'Advance balance now', notes: 'Notes', authorised: 'Authorised by (Thekedar)',
+    advanceAfter: 'Advance balance after this payment', advanceNow: 'Advance balance now', remainingWages: 'Remaining unpaid wages in account', notes: 'Notes', authorised: 'Authorised by (Thekedar)',
     received: 'Received by (worker signature / thumb)', statementOf: 'Attendance statement', deductNext: 'Deducted from the next wage payment',
   },
   hinglish: {
@@ -244,7 +244,7 @@ const PDF_LABELS = {
     wageReceipt: 'Dehadi Bhugtan Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Bhugtan Receipt', paidBy: 'Dene wale', paidTo: 'Lene wale',
     payment: 'Bhugtan', description: 'Vivaran', amount: 'Rakam', wagesEarned: 'Kamai (haziri se)', bonus: 'Bonus / bhatta',
     advanceCut: 'Advance kata', food: 'Khana / mess', room: 'Kamra kiraya', advanceGiven: 'Advance diya', netPaid: 'Kul diya',
-    advanceAfter: 'Is bhugtan ke baad advance', advanceNow: 'Abhi ka advance', notes: 'Notes', authorised: 'Thekedar ke hastakshar',
+    advanceAfter: 'Is bhugtan ke baad advance', advanceNow: 'Abhi ka advance', remainingWages: 'Khate mein baki bachi dehadi balance', notes: 'Notes', authorised: 'Thekedar ke hastakshar',
     received: 'Karigar ke hastakshar / angutha', statementOf: 'Haziri statement', deductNext: 'Agli dehadi se kata jayega',
   },
   hi: {
@@ -255,7 +255,7 @@ const PDF_LABELS = {
     wageReceipt: 'Mazdoori Bhugtan Raseed', advanceReceipt: 'Agrim Raseed', paymentReceipt: 'Bhugtan Raseed', paidBy: 'Bhugtankarta', paidTo: 'Prapatkarta',
     payment: 'Bhugtan', description: 'Vivaran', amount: 'Raashi', wagesEarned: 'Arjit mazdoori', bonus: 'Bonus / bhatta',
     advanceCut: 'Agrim vasooli', food: 'Bhojan / mess', room: 'Kamra kiraya', advanceGiven: 'Agrim diya', netPaid: 'Shuddh bhugtan',
-    advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', notes: 'Tippani', authorised: 'Thekedar hastakshar',
+    advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', remainingWages: 'Khate mein shesh mazdoori rashi', notes: 'Tippani', authorised: 'Thekedar hastakshar',
     received: 'Karigar hastakshar / angutha', statementOf: 'Haziri vivaran', deductNext: 'Agli mazdoori se vasool hoga',
   },
 };
@@ -638,7 +638,14 @@ export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lan
     doc.roundedRect(PAGE.margin, y, CONTENT_W, 30, 6).fill(C.soft);
     text(doc, isWage ? L.advanceAfter : L.advanceNow, PAGE.margin + 12, y + 10, { size: 8.5, color: C.body });
     text(doc, inr(advanceBalance), PAGE.margin + CONTENT_W - 152, y + 9, { size: 10, font: 'Bold', color: advanceBalance > 0 ? C.bad : C.good, width: 140, align: 'right' });
-    y += 42;
+    y += 38;
+  }
+
+  if (isWage && bd.remainingWages > 0) {
+    doc.roundedRect(PAGE.margin, y, CONTENT_W, 30, 6).fill(C.soft);
+    text(doc, L.remainingWages, PAGE.margin + 12, y + 10, { size: 8.5, color: C.body });
+    text(doc, inr(bd.remainingWages), PAGE.margin + CONTENT_W - 152, y + 9, { size: 10, font: 'Bold', color: C.good, width: 140, align: 'right' });
+    y += 38;
   }
 
   if (txn.notes) {

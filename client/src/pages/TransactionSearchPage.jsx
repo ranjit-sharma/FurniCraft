@@ -26,6 +26,8 @@ import {
   Clock,
   Calendar,
   X,
+  ChevronDown,
+  Filter,
 } from 'lucide-react';
 
 export const TransactionSearchPage = () => {
@@ -35,6 +37,7 @@ export const TransactionSearchPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [dateFilterMode, setDateFilterMode] = useState('ALL'); // 'ALL' | 'TODAY' | 'THIS_MONTH' | 'CUSTOM'
   const [customDate, setCustomDate] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTx, setSelectedTx] = useState(null);
@@ -149,6 +152,28 @@ export const TransactionSearchPage = () => {
     setCustomDate('');
   };
 
+  const getCategoryLabel = (cat) => {
+    switch (cat) {
+      case 'SALARY_PAYMENT':
+        return t('transactionSearch.wagePayments') || 'Wage Payments';
+      case 'ADVANCE_DISBURSEMENT':
+        return t('transactionSearch.advanceDisbursements') || 'Advance Disbursements';
+      default:
+        return t('transactionSearch.allCategories') || 'All Categories';
+    }
+  };
+
+  const getDateLabel = () => {
+    if (dateFilterMode === 'TODAY') return t('transactionSearch.today') || 'Today';
+    if (dateFilterMode === 'THIS_MONTH') return t('transactionSearch.thisMonth') || 'This Month';
+    if (dateFilterMode === 'CUSTOM' && customDate) {
+      return new Date(customDate).toLocaleDateString();
+    }
+    return t('transactionSearch.allDates') || 'All Dates';
+  };
+
+  const isFilterActive = selectedCategory !== 'ALL' || dateFilterMode !== 'ALL' || !!customDate;
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     setCopiedId(true);
@@ -174,114 +199,166 @@ export const TransactionSearchPage = () => {
         subtitle={`${transactions.length} ${t('transactionSearch.recordsLower', 'records')} · ${t('transactionSearch.pageSub', 'find a payment or advance and download its bill')}`}
       />
 
-      {/* Category + Date Filter Bar */}
-      <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3 shadow-xs`}>
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x" role="tablist" aria-label="Filters">
-          {/* Category Tabs */}
-          {[
-            { id: 'ALL', label: t('transactionSearch.allCategories', 'All') },
-            { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage payments') },
-            { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advanceDisbursements', 'Advances') },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              role="tab"
-              aria-selected={selectedCategory === cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                selectedCategory === cat.id
-                  ? 'border-amber-600 bg-amber-600 text-white shadow-xs'
-                  : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-
-          {/* Elegant Divider between Categories and Date */}
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 shrink-0 mx-0.5" />
-
-          {/* Quick Date: All Dates */}
-          <button
-            type="button"
-            onClick={() => {
-              setDateFilterMode('ALL');
-              setCustomDate('');
-            }}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-              dateFilterMode === 'ALL' && !customDate
-                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-            }`}
-          >
-            {t('transactionSearch.allDates') || 'All Dates'}
-          </button>
-
-          {/* Quick Date: Today */}
-          <button
-            type="button"
-            onClick={() => {
-              setDateFilterMode('TODAY');
-              setCustomDate('');
-            }}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-              dateFilterMode === 'TODAY'
-                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-            }`}
-          >
-            {t('transactionSearch.today') || 'Today'}
-          </button>
-
-          {/* Quick Date: This Month */}
-          <button
-            type="button"
-            onClick={() => {
-              setDateFilterMode('THIS_MONTH');
-              setCustomDate('');
-            }}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-              dateFilterMode === 'THIS_MONTH'
-                ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-            }`}
-          >
-            {t('transactionSearch.thisMonth') || 'This Month'}
-          </button>
-
-          {/* Custom Date Picker Pill */}
-          <div className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold transition whitespace-nowrap ${
-            dateFilterMode === 'CUSTOM' && customDate
-              ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500/30'
-              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
-          }`}>
-            <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            <input
-              type="date"
-              value={customDate}
-              onChange={(e) => {
-                setCustomDate(e.target.value);
-                setDateFilterMode(e.target.value ? 'CUSTOM' : 'ALL');
-              }}
-              aria-label="Filter by specific date"
-              className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer border-none p-0 w-28"
-            />
-            {customDate && (
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomDate('');
-                  setDateFilterMode('ALL');
-                }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer"
-                title="Clear date filter"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            )}
+      {/* Single Filter Toggler */}
+      <div className={`${mobileView === 'voucher' ? 'hidden lg:block' : 'block'} rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden`}>
+        {/* Toggler Bar Button */}
+        <button
+          type="button"
+          onClick={() => setFilterOpen((prev) => !prev)}
+          className="w-full flex items-center justify-between p-3 sm:p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition cursor-pointer select-none"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400">
+              <Filter className="h-4 w-4" />
+            </div>
+            <div className="text-left min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {t('transactionSearch.filterTransactions') || 'Filter Transactions'}
+              </div>
+              <div className="text-xs sm:text-sm font-black text-slate-800 dark:text-slate-200 truncate flex items-center gap-1.5 flex-wrap">
+                <span>{getCategoryLabel(selectedCategory)}</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="text-blue-600 dark:text-blue-400">{getDateLabel()}</span>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {isFilterActive && (
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleResetFilters();
+                }}
+                className="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:text-rose-600 dark:hover:text-rose-400 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                {t('transactionSearch.resetFilters') || 'Reset'}
+              </span>
+            )}
+            <div className={`p-1 rounded-lg text-slate-400 transition-transform duration-200 ${filterOpen ? 'rotate-180' : ''}`}>
+              <ChevronDown className="h-4 w-4" />
+            </div>
+          </div>
+        </button>
+
+        {/* Toggled Filter Options */}
+        {filterOpen && (
+          <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/50 space-y-3">
+            {/* Category selection */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">
+                {t('transactionSearch.categoryLabel') || 'Category'}
+              </span>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x" role="tablist">
+                {[
+                  { id: 'ALL', label: t('transactionSearch.allCategories', 'All Categories') },
+                  { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagePayments', 'Wage Payments') },
+                  { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advanceDisbursements', 'Advance Disbursements') },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedCategory === cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                      selectedCategory === cat.id
+                        ? 'border-amber-600 bg-amber-600 text-white shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date selection */}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block">
+                {t('transactionSearch.filterDate') || 'Date'}
+              </span>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 touch-pan-x">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFilterMode('ALL');
+                    setCustomDate('');
+                  }}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    dateFilterMode === 'ALL' && !customDate
+                      ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  }`}
+                >
+                  {t('transactionSearch.allDates') || 'All Dates'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFilterMode('TODAY');
+                    setCustomDate('');
+                  }}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    dateFilterMode === 'TODAY'
+                      ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  }`}
+                >
+                  {t('transactionSearch.today') || 'Today'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDateFilterMode('THIS_MONTH');
+                    setCustomDate('');
+                  }}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    dateFilterMode === 'THIS_MONTH'
+                      ? 'border-blue-600 bg-blue-600 text-white shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                  }`}
+                >
+                  {t('transactionSearch.thisMonth') || 'This Month'}
+                </button>
+
+                {/* Custom Date Picker Pill */}
+                <div className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-bold transition whitespace-nowrap ${
+                  dateFilterMode === 'CUSTOM' && customDate
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500/30'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300'
+                }`}>
+                  <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <input
+                    type="date"
+                    value={customDate}
+                    onChange={(e) => {
+                      setCustomDate(e.target.value);
+                      setDateFilterMode(e.target.value ? 'CUSTOM' : 'ALL');
+                    }}
+                    aria-label="Filter by specific date"
+                    className="bg-transparent text-xs font-medium text-slate-700 dark:text-slate-200 outline-none cursor-pointer border-none p-0 w-28"
+                  />
+                  {customDate && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomDate('');
+                        setDateFilterMode('ALL');
+                      }}
+                      className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded cursor-pointer"
+                      title="Clear date filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Grid: Results List (Left) + Detail Card (Right) */}
@@ -644,6 +721,15 @@ export const TransactionSearchPage = () => {
                         <span>{t('transactionSearch.carriedForwardAdvance') || 'Carried Forward Advance Balance:'}</span>
                         <strong className="font-black text-sm text-amber-950 dark:text-amber-200">
                           ₹{selectedTx.breakdown.remainingAdvance?.toLocaleString('en-IN')}
+                        </strong>
+                      </div>
+                    )}
+
+                    {selectedTx.breakdown.remainingWages > 0 && (
+                      <div className="rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-900 dark:text-blue-300 flex items-center justify-between">
+                        <span>{t('transactionSearch.remainingWages') || 'Remaining Unpaid Wage Balance in Account:'}</span>
+                        <strong className="font-black text-sm text-blue-950 dark:text-blue-200">
+                          ₹{selectedTx.breakdown.remainingWages?.toLocaleString('en-IN')}
                         </strong>
                       </div>
                     )}

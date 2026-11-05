@@ -1907,6 +1907,12 @@ export const WorkersPage = () => {
                 <span className="text-slate-600 dark:text-slate-400">Remaining Advance Balance:</span>
                 <span className="font-bold text-amber-800 dark:text-amber-400">₹{Number(generatedBillData.remainingAdvance ?? 0).toLocaleString('en-IN')}</span>
               </div>
+              {Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0) > 0 && (
+                <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-2 border border-blue-200 dark:border-blue-800 text-[11px] flex items-center justify-between">
+                  <span className="text-blue-700 dark:text-blue-300 font-semibold">Remaining Unpaid Wages in Account:</span>
+                  <span className="font-bold text-blue-900 dark:text-blue-200">₹{Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0).toLocaleString('en-IN')}</span>
+                </div>
+              )}
             </div>
 
             {/* Action buttons */}

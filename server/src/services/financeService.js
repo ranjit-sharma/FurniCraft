@@ -469,9 +469,31 @@ export const payWorkerNet = async ({
   const totalDeductions = addMoney(addMoney(numAdvanceDeduction, numFoodDeduction), numRoomRentDeduction);
   const netPayable = Math.max(0, subtractMoney(totalCredits, totalDeductions));
 
+  // Pre-calculate worker's total earned unpaid wages before this payment
+  const unpaidAttendanceListPre = await Attendance.find({
+    workerId,
+    approvalStatus: ATTENDANCE_STATUS.APPROVED,
+    isPayrollProcessed: false,
+  }).sort({ date: 1 });
+
+  const totalUnpaidAttendanceEarnings = unpaidAttendanceListPre.reduce(
+    (sum, a) => addMoney(sum, a.calculatedEarnings || 0),
+    0
+  );
+  const totalEarnedBeforePayment = addMoney(
+    totalUnpaidAttendanceEarnings,
+    profile.outstandingSalaryBalance || 0
+  );
+  const remainingWagesAfterPayment = Math.max(
+    0,
+    subtractMoney(totalEarnedBeforePayment, numBaseEarned)
+  );
+
   const remainingAdv = Math.max(0, subtractMoney(profile.outstandingAdvanceBalance || 0, numAdvanceDeduction));
   const breakdown = {
     baseEarned: numBaseEarned,
+    totalEarnedBefore: totalEarnedBeforePayment,
+    remainingWages: remainingWagesAfterPayment,
     advanceDeduction: numAdvanceDeduction,
     foodDeduction: numFoodDeduction,
     roomRentDeduction: numRoomRentDeduction,
@@ -518,11 +540,6 @@ export const payWorkerNet = async ({
     }
 
     profile.totalSalaryPaid = addMoney(profile.totalSalaryPaid || 0, netPayable);
-    profile.outstandingSalaryBalance = Math.max(
-      0,
-      subtractMoney(profile.outstandingSalaryBalance || 0, numBaseEarned)
-    );
-    await profile.save(sessionOpt);
 
     // Mark approved attendance as processed up to numBaseEarned
     if (numBaseEarned > 0) {
@@ -542,9 +559,24 @@ export const payWorkerNet = async ({
         if (remainingToMark <= 0) break;
         att.isPayrollProcessed = true;
         await att.save(sessionOpt);
-        remainingToMark -= att.calculatedEarnings;
+        remainingToMark = subtractMoney(remainingToMark, att.calculatedEarnings || 0);
       }
+
+      // Calculate how much unpaid attendance earnings remain in unprocessed attendances
+      const remainingUnprocessedEarnings = unpaidAttendances
+        .filter((a) => !a.isPayrollProcessed)
+        .reduce((sum, a) => addMoney(sum, a.calculatedEarnings || 0), 0);
+
+      // Remaining unpaid wages after this payment (if attendances were marked processed beyond or partially)
+      // must remain in profile.outstandingSalaryBalance so the worker's account shows the exact remaining balance!
+      profile.outstandingSalaryBalance = Math.max(
+        0,
+        subtractMoney(remainingWagesAfterPayment, remainingUnprocessedEarnings)
+      );
+    } else {
+      profile.outstandingSalaryBalance = remainingWagesAfterPayment;
     }
+    await profile.save(sessionOpt);
 
     return createdTxn;
   };
@@ -587,6 +619,7 @@ export const payWorkerNet = async ({
       additionalWages: numAdditionalWages,
       netPaid: netPayable,
       remainingAdvance: profile.outstandingAdvanceBalance,
+      remainingWages: remainingWagesAfterPayment,
     },
   });
 
@@ -594,6 +627,7 @@ export const payWorkerNet = async ({
     netPaid: netPayable,
     advanceDeduction: numAdvanceDeduction,
     remainingAdvance: profile.outstandingAdvanceBalance,
+    remainingWages: remainingWagesAfterPayment,
     transaction: salaryTxn,
     breakdown,
     billUrl: `/api/v1/finance/transactions/${salaryTxn._id}/bill`,
