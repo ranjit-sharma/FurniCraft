@@ -252,25 +252,6 @@ export const ThekedarDashboard = () => {
       </div>
 
 
-      {/* Attendance Completed Banner */}
-      {isAttendanceComplete && (
-        <div
-          role="status"
-          className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/40 px-3 py-2 text-emerald-950 dark:text-emerald-200 shadow-xs flex items-center justify-between gap-2.5 text-xs"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            </div>
-            <span className="font-bold text-emerald-900 dark:text-emerald-100 text-xs sm:text-sm">
-              {t('thekedarDash.attendanceAllMarkedTitle', 'All Attendance Marked!')}
-            </span>
-          </div>
-          <span className="rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold px-2 py-0.5 text-[10px]">
-            100% Done
-          </span>
-        </div>
-      )}
 
       {/* Today's attendance: one tap per worker */}
       <div id="attendance-card">
@@ -361,15 +342,24 @@ export const ThekedarDashboard = () => {
                 <ChevronRight className="h-6 w-6 stroke-[2.5]" />
               </button>
 
-              {/* Only show number of attendance to take with suitable style */}
-              {isAttendancePending && (
-                <span
-                  title={`${unmarkedWorkersCount} attendance to take today`}
-                  className="relative flex h-6 min-w-[24px] px-1.5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-xs font-black shadow-xs ring-2 ring-rose-100 dark:ring-rose-950 ml-1.5 sm:ml-2.5 select-none animate-fade-in cursor-default"
-                >
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-50" />
-                  <span className="relative">{unmarkedWorkersCount}</span>
-                </span>
+              {/* Today's attendance count badge (Red when pending, Green when all taken) */}
+              {isToday && workers.length > 0 && (
+                isAttendancePending ? (
+                  <span
+                    title={`${unmarkedWorkersCount} attendance to take today`}
+                    className="relative flex h-8 min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-rose-200 dark:ring-rose-950 ml-2 sm:ml-3 select-none animate-fade-in cursor-default"
+                  >
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-50" />
+                    <span className="relative">{unmarkedWorkersCount}</span>
+                  </span>
+                ) : isAttendanceComplete ? (
+                  <span
+                    title={`All ${markedTodayCount} attendance taken today`}
+                    className="relative flex h-8 min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-emerald-200 dark:ring-emerald-950 ml-2 sm:ml-3 select-none animate-fade-in cursor-default"
+                  >
+                    <span className="relative">{markedTodayCount}</span>
+                  </span>
+                ) : null
               )}
             </div>
           }
