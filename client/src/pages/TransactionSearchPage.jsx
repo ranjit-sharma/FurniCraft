@@ -760,6 +760,32 @@ export const TransactionSearchPage = () => {
                       }
                       return null;
                     })()}
+
+                    {(() => {
+                      const totalEarnedBefore = selectedTx.breakdown.totalEarnedBefore || 0;
+                      const remWages = selectedTx.breakdown.remainingWages || 0;
+                      const netPaid = selectedTx.amount || selectedTx.breakdown.netPaid || 0;
+                      const food = selectedTx.breakdown.foodDeduction || 0;
+                      const room = selectedTx.breakdown.roomRentDeduction || 0;
+                      const advCut = selectedTx.breakdown.advanceDeduction || 0;
+                      const bonus = selectedTx.breakdown.additionalWages || 0;
+                      const netDeductions = (advCut + food + room) - bonus;
+                      if (totalEarnedBefore > 0 && remWages > 0) {
+                        return (
+                          <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-2.5 text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center justify-between flex-wrap gap-1 border border-slate-200 dark:border-slate-700">
+                            <span>
+                              <strong>Total Accounted:</strong> ₹{netPaid.toLocaleString('en-IN')} (Cash)
+                              {netDeductions !== 0 && <span> + ₹{netDeductions.toLocaleString('en-IN')} (Expenses)</span>}
+                              <span> + ₹{remWages.toLocaleString('en-IN')} (Remaining)</span>
+                            </span>
+                            <strong className="text-emerald-700 dark:text-emerald-400 font-black">
+                              = ₹{totalEarnedBefore.toLocaleString('en-IN')} ✓
+                            </strong>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 

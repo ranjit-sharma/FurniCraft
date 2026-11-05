@@ -1868,24 +1868,49 @@ export const WorkersPage = () => {
 
               {/* Remaining Account Balance After This Payment */}
               {(() => {
-                const remWages = Math.max(0, (payWorker.totalEarned || 0) - base);
+                const totalEarned = payWorker.totalEarned || 0;
+                const remWages = Math.max(0, totalEarned - base);
                 const remAdv = Math.max(0, outstanding - advCut);
                 const remBal = remWages - remAdv;
+                const foodDeduct = parseFloat(payFoodDeduction) || 0;
+                const roomDeduct = parseFloat(payRoomRentDeduction) || 0;
+                const totalDeductionsCleared = advCut + foodDeduct + roomDeduct;
+                const netExpensesCleared = totalDeductionsCleared - bonus;
+                const hasDeductionsOrBonus = totalDeductionsCleared > 0 || bonus > 0;
+
                 return (
-                  <div className="rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-3 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 block">
-                        Remaining Account Balance After Payment
-                      </span>
-                      <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                        Unpaid Wages: <strong>₹{remWages.toLocaleString('en-IN')}</strong> · Advance: <strong>₹{remAdv.toLocaleString('en-IN')}</strong>
+                  <div className="rounded-xl border border-blue-200 dark:border-blue-800/80 bg-blue-50/70 dark:bg-blue-950/40 p-3 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-blue-800 dark:text-blue-300 block">
+                          Remaining Account Balance After Payment
+                        </span>
+                        <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
+                          Unpaid Wages: <strong>₹{remWages.toLocaleString('en-IN')}</strong>
+                          {remAdv > 0 && <span> · Advance: <strong className="text-rose-600">₹{remAdv.toLocaleString('en-IN')}</strong></span>}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Net Balance</span>
+                        <strong className={`text-base font-black ${remBal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
+                          {remBal < 0 ? `-₹${Math.abs(remBal).toLocaleString('en-IN')}` : `₹${remBal.toLocaleString('en-IN')}`}
+                        </strong>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Net Balance</span>
-                      <strong className={`text-base font-black ${remBal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
-                        {remBal < 0 ? `-₹${Math.abs(remBal).toLocaleString('en-IN')}` : `₹${remBal.toLocaleString('en-IN')}`}
-                      </strong>
+
+                    {/* Full ₹ Account Reconciliation Line */}
+                    <div className="pt-2 border-t border-blue-200/60 dark:border-blue-800/60 text-[11px] text-blue-900 dark:text-blue-200 font-medium flex items-center justify-between flex-wrap gap-1">
+                      <span>
+                        <strong className="text-slate-700 dark:text-slate-300">Total Accounted:</strong>{' '}
+                        <span>₹{computedNetPay.toLocaleString('en-IN')} (Cash)</span>
+                        {hasDeductionsOrBonus && (
+                          <span> + ₹{netExpensesCleared.toLocaleString('en-IN')} ({bonus > 0 ? 'Deductions − Bonus' : 'Deductions'})</span>
+                        )}
+                        <span> + ₹{remWages.toLocaleString('en-IN')} (Remaining)</span>
+                      </span>
+                      <span className="font-black text-emerald-700 dark:text-emerald-400">
+                        = ₹{totalEarned.toLocaleString('en-IN')} ✓
+                      </span>
                     </div>
                   </div>
                 );
@@ -2009,6 +2034,32 @@ export const WorkersPage = () => {
                     </strong>
                   </div>
                 );
+              })()}
+
+              {(() => {
+                const totalEarnedBefore = Number(generatedBillData.breakdown?.totalEarnedBefore || 0);
+                const netPaid = Number(generatedBillData.netPaid || 0);
+                const remWages = Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0);
+                const food = Number(generatedBillData.breakdown?.foodDeduction || 0);
+                const room = Number(generatedBillData.breakdown?.roomRentDeduction || 0);
+                const advCut = Number(generatedBillData.advanceDeduction || 0);
+                const bonus = Number(generatedBillData.breakdown?.additionalWages || 0);
+                const netDeductions = (advCut + food + room) - bonus;
+                if (totalEarnedBefore > 0 && remWages > 0) {
+                  return (
+                    <div className="rounded-lg bg-slate-100 dark:bg-slate-800 p-2 text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 font-medium flex items-center justify-between flex-wrap gap-1 border border-slate-200 dark:border-slate-700">
+                      <span>
+                        <strong>Total Accounted:</strong> ₹{netPaid.toLocaleString('en-IN')} (Cash)
+                        {netDeductions !== 0 && <span> + ₹{netDeductions.toLocaleString('en-IN')} (Expenses)</span>}
+                        <span> + ₹{remWages.toLocaleString('en-IN')} (Remaining)</span>
+                      </span>
+                      <strong className="text-emerald-700 dark:text-emerald-400 font-black">
+                        = ₹{totalEarnedBefore.toLocaleString('en-IN')} ✓
+                      </strong>
+                    </div>
+                  );
+                }
+                return null;
               })()}
             </div>
 
