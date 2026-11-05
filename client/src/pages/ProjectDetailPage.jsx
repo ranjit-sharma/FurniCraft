@@ -224,13 +224,14 @@ export const ProjectDetailPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0">
+          <div className="flex flex-wrap items-center gap-2 mt-3 sm:mt-0 w-full sm:w-auto">
             {isThekedar && (
               <Button
                 size="sm"
                 variant="primary"
                 onClick={() => setMoneyModalOpen(true)}
                 icon={IndianRupee}
+                className="w-full sm:w-auto justify-center min-h-[42px]"
               >
                 {t('projectDetail.recordMoney', 'Record Money Received')}
               </Button>
@@ -459,11 +460,11 @@ export const ProjectDetailPage = () => {
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <div className="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-800 [&>*]:w-full sm:[&>*]:w-auto">
             <Button variant="secondary" onClick={() => setMoneyModalOpen(false)}>
               {t('common.cancel', 'Cancel')}
             </Button>
-            <Button type="submit" variant="primary" disabled={moneySubmitting}>
+            <Button type="submit" variant="primary" disabled={moneySubmitting} className="min-h-[42px] justify-center">
               {moneySubmitting ? 'Recording...' : t('projectDetail.recordMoney', 'Record Money Received')}
             </Button>
           </div>

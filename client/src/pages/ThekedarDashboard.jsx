@@ -261,22 +261,22 @@ export const ThekedarDashboard = () => {
               : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
           }
           action={
-            <div className="flex items-center gap-2 sm:gap-3 select-none">
+            <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-3 select-none w-full sm:w-auto mt-2 sm:mt-0">
               <button
                 type="button"
                 onClick={handlePrevDay}
                 title="Previous Day"
                 aria-label="Previous Day"
-                className="p-1 text-amber-800 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-100 transition cursor-pointer shrink-0"
+                className="p-1.5 sm:p-1 text-amber-800 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-100 transition active:scale-90 cursor-pointer shrink-0 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40"
               >
-                <ChevronLeft className="h-6 w-6 stroke-[2.5]" />
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
               </button>
 
               {/* Exact 3-column day style matching reference */}
               <div
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="flex items-center justify-center gap-6 sm:gap-8 px-1 select-none"
+                className="flex items-center justify-center gap-3.5 sm:gap-7 px-1 select-none"
               >
                 {surroundingDays.map((d) => (
                   <button
@@ -284,7 +284,7 @@ export const ThekedarDashboard = () => {
                     type="button"
                     disabled={d.isFuture}
                     onClick={() => !d.isFuture && setSelectedDate(d.dateStr)}
-                    className={`flex flex-col items-center justify-center text-center transition min-w-[36px] sm:min-w-[42px] ${
+                    className={`flex flex-col items-center justify-center text-center transition min-w-[34px] sm:min-w-[42px] min-h-[44px] active:scale-95 ${
                       d.isSelected
                         ? 'text-amber-800 dark:text-amber-300 scale-105 cursor-default'
                         : d.isFuture
@@ -293,7 +293,7 @@ export const ThekedarDashboard = () => {
                     }`}
                   >
                     <span
-                      className={`text-xs sm:text-[13px] leading-tight ${
+                      className={`text-[11px] sm:text-[13px] leading-tight ${
                         d.isSelected ? 'font-bold' : 'font-medium'
                       }`}
                     >
@@ -302,14 +302,14 @@ export const ThekedarDashboard = () => {
                     <span
                       className={`leading-none my-0.5 ${
                         d.isSelected
-                          ? 'text-2xl sm:text-3xl font-black'
-                          : 'text-lg sm:text-xl font-bold'
+                          ? 'text-xl sm:text-3xl font-black'
+                          : 'text-base sm:text-xl font-bold'
                       }`}
                     >
                       {d.dayNum}
                     </span>
                     <span
-                      className={`text-xs sm:text-[13px] leading-tight ${
+                      className={`text-[11px] sm:text-[13px] leading-tight ${
                         d.isSelected ? 'font-bold' : 'font-medium'
                       }`}
                     >
@@ -325,13 +325,13 @@ export const ThekedarDashboard = () => {
                 disabled={isToday}
                 title={isToday ? 'No future dates' : 'Next Day'}
                 aria-label="Next Day"
-                className={`p-1 transition shrink-0 ${
+                className={`p-1.5 sm:p-1 transition active:scale-90 shrink-0 rounded-lg ${
                   isToday
                     ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
-                    : 'text-amber-800 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-100 cursor-pointer'
+                    : 'text-amber-800 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-100 hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer'
                 }`}
               >
-                <ChevronRight className="h-6 w-6 stroke-[2.5]" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
               </button>
 
               {/* Today's attendance count badge (Red when pending, Green when all taken) */}
@@ -339,7 +339,7 @@ export const ThekedarDashboard = () => {
                 isAttendancePending ? (
                   <span
                     title={`${unmarkedWorkersCount} attendance to take today`}
-                    className="relative flex h-8 min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-rose-200 dark:ring-rose-950 ml-2 sm:ml-3 select-none animate-fade-in cursor-default"
+                    className="relative flex h-7 min-w-[28px] sm:h-8 sm:min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-rose-200 dark:ring-rose-950 ml-1 sm:ml-3 select-none animate-fade-in cursor-default"
                   >
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-50" />
                     <span className="relative">{unmarkedWorkersCount}</span>
@@ -347,7 +347,7 @@ export const ThekedarDashboard = () => {
                 ) : isAttendanceComplete ? (
                   <span
                     title={`All ${markedTodayCount} attendance taken today`}
-                    className="relative flex h-8 min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-emerald-200 dark:ring-emerald-950 ml-2 sm:ml-3 select-none animate-fade-in cursor-default"
+                    className="relative flex h-7 min-w-[28px] sm:h-8 sm:min-w-[32px] px-1.5 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white text-xs sm:text-sm font-black shadow-xs ring-2 ring-emerald-200 dark:ring-emerald-950 ml-1 sm:ml-3 select-none animate-fade-in cursor-default"
                   >
                     <span className="relative">{markedTodayCount}</span>
                   </span>
@@ -392,23 +392,32 @@ export const ThekedarDashboard = () => {
               return (
                 <li key={w.userId} className="px-1 py-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
                         <span className="truncate">{w.name}</span>
                         {w.today && !locked && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-label="Marked" />}
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {w.workerCode} · {inr(w.defaultDailyWage)}/day · <span className="font-medium text-slate-700 dark:text-slate-300">{w.trade || (Array.isArray(w.skills) && w.skills[0]) || 'Mistry'}</span>
-                        {w.today && <> · {isToday ? t('thekedarDash.earnedToday', 'today') : 'earned'} {inr(w.today.calculatedEarnings)}</>}
+                      <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 mt-0.5">
+                        <span className="font-mono">{w.workerCode}</span>
+                        <span>·</span>
+                        <span>{inr(w.defaultDailyWage)}/day</span>
+                        <span>·</span>
+                        <span className="font-medium text-slate-700 dark:text-slate-300">{w.trade || (Array.isArray(w.skills) && w.skills[0]) || 'Mistry'}</span>
+                        {w.today && (
+                          <>
+                            <span>·</span>
+                            <span className="font-semibold text-emerald-700 dark:text-emerald-400">{isToday ? t('thekedarDash.earnedToday', 'today') : 'earned'} {inr(w.today.calculatedEarnings)}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     {locked && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 shrink-0">
                         <Lock className="h-3.5 w-3.5" /> {t('thekedarDash.paidLocked', 'Paid')}
                       </span>
                     )}
                   </div>
-                  <div className="mt-2 grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={`Attendance for ${w.name}`}>
+                  <div className="mt-2.5 grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={`Attendance for ${w.name}`}>
                     {QUICK_CODES.map(({ code, label, title }) => {
                       const active = w.today?.code === code;
                       return (
@@ -420,12 +429,12 @@ export const ThekedarDashboard = () => {
                           title={title}
                           disabled={saving || locked}
                           onClick={() => handleMark(w, code)}
-                          className={`min-h-10 px-1 truncate rounded-xl border text-[11px] sm:text-xs font-black transition disabled:opacity-60 ${
+                          className={`min-h-[44px] px-0.5 sm:px-1 truncate rounded-xl border text-[11px] sm:text-xs font-black transition active:scale-95 disabled:opacity-60 cursor-pointer ${
                             active
                               ? code === 'ABSENT'
-                                ? 'border-rose-500 bg-rose-500 text-white'
-                                : 'border-amber-600 bg-amber-600 text-white'
-                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                ? 'border-rose-500 bg-rose-500 text-white shadow-sm'
+                                : 'border-amber-600 bg-amber-600 text-white shadow-sm'
+                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 active:bg-slate-100 dark:active:bg-slate-700'
                           }`}
                         >
                           {saving && !active ? '·' : label}
@@ -497,30 +506,27 @@ export const ThekedarDashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Daily Wage Rate (₹/day)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                required
-                value={newWorkerWage}
-                onChange={(e) => setNewWorkerWage(e.target.value)}
-                placeholder="Custom rate e.g. 754"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Daily Wage Rate (₹/day) *
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="any"
+              required
+              value={newWorkerWage}
+              onChange={(e) => setNewWorkerWage(e.target.value)}
+              placeholder="Custom rate e.g. 750"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+            />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setAddWorkerModalOpen(false)}>
+          <div className="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="secondary" onClick={() => setAddWorkerModalOpen(false)} className="w-full sm:w-auto justify-center">
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={addWorkerSubmitting}>
+            <Button type="submit" variant="primary" disabled={addWorkerSubmitting} className="w-full sm:w-auto justify-center min-h-[42px]">
               {addWorkerSubmitting ? 'Registering...' : 'Add Worker to Roster'}
             </Button>
           </div>

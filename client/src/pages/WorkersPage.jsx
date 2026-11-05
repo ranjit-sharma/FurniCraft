@@ -79,7 +79,7 @@ const PaymentMethodPicker = ({ value, onChange }) => (
           role="radio"
           aria-checked={value === m.id}
           onClick={() => onChange(m.id)}
-          className={`min-h-11 rounded-xl border text-sm font-bold transition ${
+          className={`min-h-[44px] rounded-xl border text-sm font-bold transition active:scale-95 cursor-pointer ${
             value === m.id
               ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500/30'
               : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -94,15 +94,15 @@ const PaymentMethodPicker = ({ value, onChange }) => (
 
 /** One line of the pay receipt: label (+/− sign, hint) on the left, amount input on the right. */
 const PayRow = ({ sign, label, hint, children }) => (
-  <div className="flex items-center justify-between gap-3 px-4 py-3">
-    <div className="min-w-0">
-      <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+  <div className="flex items-center justify-between gap-2.5 sm:gap-3 px-3.5 sm:px-4 py-3">
+    <div className="min-w-0 flex-1">
+      <div className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
         {sign && <span className={sign === '+' ? 'text-emerald-600 mr-1' : 'text-rose-600 mr-1'}>{sign}</span>}
         {label}
       </div>
-      {hint && <div className="text-xs text-slate-500 dark:text-slate-400">{hint}</div>}
+      {hint && <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">{hint}</div>}
     </div>
-    {children}
+    <div className="shrink-0">{children}</div>
   </div>
 );
 
@@ -1121,13 +1121,13 @@ export const WorkersPage = () => {
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
               Attendance Multiplier Code *
             </label>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-1">
               {ATTENDANCE_CODE_OPTIONS.map((item) => (
                 <button
                   type="button"
                   key={item.code}
                   onClick={() => setAttendanceCode(item.code)}
-                  className={`p-2 rounded-xl text-center border transition-all cursor-pointer ${
+                  className={`p-2 min-h-[44px] rounded-xl text-center border transition-all cursor-pointer active:scale-95 ${
                     attendanceCode === item.code
                       ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-950 dark:text-amber-100 font-black shadow-xs ring-2 ring-amber-500/30'
                       : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
@@ -1141,11 +1141,11 @@ export const WorkersPage = () => {
           </div>
 
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setMarkAttendanceModalOpen(false)}>
+          <div className="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="secondary" onClick={() => setMarkAttendanceModalOpen(false)} className="w-full sm:w-auto justify-center">
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={markAttendanceSubmitting}>
+            <Button type="submit" variant="primary" disabled={markAttendanceSubmitting} className="w-full sm:w-auto justify-center min-h-[42px]">
               {markAttendanceSubmitting ? 'Recording...' : 'Authorize & Save Attendance'}
             </Button>
           </div>
@@ -1208,7 +1208,7 @@ export const WorkersPage = () => {
               </div>
 
               {/* Fast Stats Pills */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
                   <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Unpaid Wages</div>
                   <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
@@ -1243,24 +1243,24 @@ export const WorkersPage = () => {
             {(isOwner || isThekedar) && (() => {
               const isWorkerOnLeave = !!(activityWorker?.isOnLeave ?? activityData?.profile?.isOnLeave);
               return (
-                <div className="flex flex-wrap gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                   {isThekedar && (
-                    <Button variant="success" className="justify-center" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
+                    <Button variant="success" className="justify-center min-h-[42px] text-xs font-bold" icon={IndianRupee} onClick={() => { setActivityModalOpen(false); handleOpenPayModal(activityWorker); }}>
                       {t('thekedar.payWorkerNet', 'Pay Net')}
                     </Button>
                   )}
                   {isThekedar && (
-                    <Button variant="outline" className="justify-center border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300" icon={Receipt} onClick={() => handleOpenGiveAdvance(activityWorker)}>
+                    <Button variant="outline" className="justify-center min-h-[42px] text-xs font-bold border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300" icon={Receipt} onClick={() => handleOpenGiveAdvance(activityWorker)}>
                       Give Advance
                     </Button>
                   )}
-                  <Button variant="outline" className="justify-center border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
+                  <Button variant="outline" className="justify-center min-h-[42px] text-xs font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
                     {t('common.edit', 'Edit')}
                   </Button>
                   {isThekedar && (
                     <Button
                       variant={isWorkerOnLeave ? 'secondary' : 'outline'}
-                      className={`justify-center ${
+                      className={`justify-center min-h-[42px] text-xs font-bold ${
                         isWorkerOnLeave
                           ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300'
                           : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300'
@@ -1341,29 +1341,30 @@ export const WorkersPage = () => {
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Attendance recorded from worker cards or dashboard will be tracked here.</p>
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <table className="w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
-                          <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
-                            <tr>
-                              <th className="px-3 sm:px-4 py-2.5 sm:py-3">Date</th>
-                              <th className="px-2 sm:px-4 py-2.5 sm:py-3">Code</th>
-                              <th className="px-2 sm:px-4 py-2.5 sm:py-3">Earned</th>
-                              <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                            {activityData.attendanceHistory.map((att) => (
-                              <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
-                                <td className="px-3 sm:px-4 py-2.5 font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
-                                  {att.date || formatDate(att.createdAt)}
-                                </td>
-                                <td className="px-2 sm:px-4 py-2.5">
+                      <div className="space-y-3">
+                        {/* Mobile Card List (< 640px): Stacked rows with large touch targets, zero side-scroll */}
+                        <div className="sm:hidden space-y-2">
+                          {activityData.attendanceHistory.map((att) => (
+                            <div
+                              key={att._id}
+                              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 p-3 shadow-xs space-y-2"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                                    {att.date || formatDate(att.createdAt)}
+                                  </span>
                                   <Badge variant={att.code} size="sm">{att.code}</Badge>
-                                </td>
-                                <td className="px-2 sm:px-4 py-2.5 font-bold text-amber-900 dark:text-amber-300 whitespace-nowrap text-xs">
+                                </div>
+                                <div className="text-sm font-black text-amber-900 dark:text-amber-300">
                                   ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
-                                </td>
-                                <td className="px-3 sm:px-4 py-2.5 text-right whitespace-nowrap">
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-700/60 text-xs">
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                  {att.shift || 'General Shift'}
+                                </span>
+                                <div>
                                   {att.isPayrollProcessed ? (
                                     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
                                       <CheckCircle2 className="h-3.5 w-3.5" /> Paid (locked)
@@ -1380,11 +1381,58 @@ export const WorkersPage = () => {
                                       <Lock className="h-3.5 w-3.5" /> Locked
                                     </span>
                                   )}
-                                </td>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Tablet & Desktop Table (>= 640px) */}
+                        <div className="hidden sm:block rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                          <table className="w-full divide-y divide-slate-200 dark:divide-slate-700 text-left text-xs">
+                            <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase tracking-wider font-semibold">
+                              <tr>
+                                <th className="px-3 sm:px-4 py-2.5 sm:py-3">Date</th>
+                                <th className="px-2 sm:px-4 py-2.5 sm:py-3">Code</th>
+                                <th className="px-2 sm:px-4 py-2.5 sm:py-3">Earned</th>
+                                <th className="px-3 sm:px-4 py-2.5 sm:py-3 text-right">Action</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                              {activityData.attendanceHistory.map((att) => (
+                                <tr key={att._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/60">
+                                  <td className="px-3 sm:px-4 py-2.5 font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                    {att.date || formatDate(att.createdAt)}
+                                  </td>
+                                  <td className="px-2 sm:px-4 py-2.5">
+                                    <Badge variant={att.code} size="sm">{att.code}</Badge>
+                                  </td>
+                                  <td className="px-2 sm:px-4 py-2.5 font-bold text-amber-900 dark:text-amber-300 whitespace-nowrap text-xs">
+                                    ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
+                                  </td>
+                                  <td className="px-3 sm:px-4 py-2.5 text-right whitespace-nowrap">
+                                    {att.isPayrollProcessed ? (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                        <CheckCircle2 className="h-3.5 w-3.5" /> Paid (locked)
+                                      </span>
+                                    ) : isAttendanceEditable(att) ? (
+                                      <Button size="sm" variant="outline" icon={Edit} onClick={() => handleOpenEditAttendance(att)}>
+                                        {t('common.edit', 'Edit')}
+                                      </Button>
+                                    ) : (
+                                      <span
+                                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 dark:text-slate-500"
+                                        title="Finalized attendance is locked"
+                                      >
+                                        <Lock className="h-3.5 w-3.5" /> Locked
+                                      </span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1791,7 +1839,7 @@ export const WorkersPage = () => {
           const bonus = parseFloat(payAdditionalWages) || 0;
           const advCut = parseFloat(payAdvanceDeduction) || 0;
           const maxCut = Math.min(base + bonus, outstanding);
-          const inputCls = 'w-28 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 text-right text-base font-bold focus:border-amber-500 focus:outline-none';
+          const inputCls = 'w-24 sm:w-28 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-2.5 sm:px-3 py-2 text-right text-sm sm:text-base font-bold focus:border-amber-500 focus:outline-none shrink-0';
           return (
             <form onSubmit={handleSubmitPayNet} className="space-y-4">
               <div className="grid grid-cols-3 gap-2 text-center">
@@ -1918,8 +1966,8 @@ export const WorkersPage = () => {
                 <input type="text" aria-label="Payment notes" value={payNotes} onChange={(e) => setPayNotes(e.target.value)} placeholder="Notes (optional)" className="block w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-sm focus:border-amber-500 focus:outline-none" />
               </div>
 
-              <div className="sticky bottom-0 -mx-5 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-5 pt-3 backdrop-blur sm:-mx-6 sm:px-6">
-                <Button type="submit" variant="success" size="lg" className="w-full" loading={paySubmitting} icon={IndianRupee}>
+              <div className="sticky bottom-0 -mx-3.5 -mb-3.5 border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 px-3.5 py-3 backdrop-blur sm:-mx-6 sm:-mb-5 sm:px-6">
+                <Button type="submit" variant="success" size="lg" className="w-full min-h-[48px] text-base font-black shadow-md active:scale-[0.98]" loading={paySubmitting} icon={IndianRupee}>
                   Confirm & Pay ₹{computedNetPay.toLocaleString('en-IN')}
                 </Button>
               </div>
