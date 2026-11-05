@@ -1212,7 +1212,7 @@ export const WorkersPage = () => {
                       Give Advance
                     </Button>
                   )}
-                  <Button variant="outline" className="justify-center" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
+                  <Button variant="outline" className="justify-center border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300" icon={Edit} onClick={() => { setActivityModalOpen(false); handleOpenEditWorker(activityWorker); }}>
                     {t('common.edit', 'Edit')}
                   </Button>
                   {isThekedar && (
