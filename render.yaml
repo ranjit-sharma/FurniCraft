@@ -25,4 +25,8 @@ services:
         value: fdds krvn kkny riik
       - key: EMAIL_FROM
         value: '"FurniCraft ERP Security" <furnicraft.erp@gmail.com>'
+      - key: BREVO_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
 
