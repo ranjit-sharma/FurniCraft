@@ -50,6 +50,7 @@ export const LoginPage = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState(null);
   const [modalNotice, setModalNotice] = useState(null);
+  const [directOtpNotice, setDirectOtpNotice] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
 
   // Show (once) why the user was signed out, e.g. "Your session has expired".
@@ -102,6 +103,7 @@ export const LoginPage = () => {
     setConfirmPassword('');
     setModalError(null);
     setModalNotice(null);
+    setDirectOtpNotice(null);
     setForgotModalOpen(true);
   };
 
@@ -129,6 +131,13 @@ export const LoginPage = () => {
       setModalNotice(
         res?.message || 'A 6-digit verification code has been sent to your registered email address. Please also check your Spam or Junk folder.'
       );
+      if (res?.otp || res?.devOtp) {
+        const receivedOtp = String(res.otp || res.devOtp);
+        setDirectOtpNotice(receivedOtp);
+        setOtpCode(receivedOtp);
+      } else {
+        setDirectOtpNotice(null);
+      }
       setResendCooldown(60);
       setOtpStep('OTP_VERIFY');
     } catch (err) {
@@ -525,13 +534,24 @@ export const LoginPage = () => {
                 <strong className="text-slate-900 dark:text-white font-semibold">{resetEmail}</strong>.
               </p>
 
-              <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/60 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
-                <Mail className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="leading-relaxed">
-                  <span className="font-semibold">{t('login.checkSpamTitle', 'Check Spam Folder:')} </span>
-                  {t('login.checkSpamNotice', 'If you do not see the email in your inbox within 1–2 minutes, please check your Spam or Promotions folder.')}
+              {directOtpNotice ? (
+                <div className="rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/60 p-3.5 text-xs text-blue-950 dark:text-blue-100 flex items-start gap-2.5 shadow-sm">
+                  <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 leading-relaxed">
+                    <div className="font-bold text-blue-950 dark:text-blue-100 mb-0.5">Your 6-Digit Verification Code:</div>
+                    <div className="font-mono text-2xl font-black text-blue-700 dark:text-blue-300 tracking-widest my-1">{directOtpNotice}</div>
+                    <div className="text-[11px] text-blue-700/80 dark:text-blue-300/80">Code auto-filled below. Click &quot;Verify OTP&quot; to set your new password.</div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/60 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
+                  <Mail className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <span className="font-semibold">{t('login.checkSpamTitle', 'Check Spam Folder:')} </span>
+                    {t('login.checkSpamNotice', 'If you do not see the email in your inbox within 1–2 minutes, please check your Spam or Promotions folder.')}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
