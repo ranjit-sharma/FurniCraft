@@ -83,10 +83,12 @@ export const listPayrolls = async (req, res, next) => {
       filter.workerId = workerId;
     }
 
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
     const payrolls = await Payroll.find(filter)
       .populate('workerId', 'name email phone')
       .populate('thekedarId', 'name phone')
-      .sort({ periodYear: -1, periodMonth: -1 });
+      .sort({ periodYear: -1, periodMonth: -1 })
+      .limit(safeLimit);
 
     res.status(200).json({
       status: 'success',

@@ -15,14 +15,20 @@ export const listExpenses = async (req, res, next) => {
       filter.thekedarId = req.user._id;
     }
 
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
+    const safePage = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const skip = (safePage - 1) * safeLimit;
+
     const expenses = await ProjectExpense.find(filter)
       .populate('projectId', 'name projectCode')
       .populate('recordedBy', 'name')
-      .sort({ expenseDate: -1 });
+      .sort({ expenseDate: -1 })
+      .skip(skip)
+      .limit(safeLimit);
 
     res.status(200).json({
       status: 'success',
-      data: { expenses },
+      data: { expenses, page: safePage, limit: safeLimit },
     });
   } catch (error) {
     next(error);

@@ -1,7 +1,7 @@
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { createApp } from './app.js';
-import { connectDB, disconnectDB } from './config/db.js';
+import { connectDB, disconnectDB, ensureIndexes } from './config/db.js';
 import { env } from './config/env.js';
 import { verifyEmailTransport } from './services/emailService.js';
 import { verifyToken } from './utils/jwt.js';
@@ -17,8 +17,9 @@ process.on('uncaughtException', (err) => {
 
 const startServer = async () => {
   try {
-    // 1. Connect to Database
+    // 1. Connect to Database & verify core schema indexes
     await connectDB();
+    await ensureIndexes();
 
     // Log whether OTP email can actually be sent (does not block startup)
     verifyEmailTransport();
@@ -30,6 +31,7 @@ const startServer = async () => {
     // 3. High-concurrency Real-time Socket.IO Server (optimized for 500+ active connections)
     const allowedSocketOrigins = [
       env.CLIENT_URL,
+      'https://furnicraft.onrender.com',
       'https://furnicraft-erp.onrender.com',
       'http://localhost:8080',
       'http://127.0.0.1:8080',
@@ -37,10 +39,24 @@ const startServer = async () => {
       'http://127.0.0.1:5173',
     ].filter(Boolean);
 
+    const isSocketOriginAllowed = (origin) => {
+      if (!origin) return true;
+      if (!env.isProduction) return true;
+      if (allowedSocketOrigins.includes(origin)) return true;
+      try {
+        const url = new URL(origin);
+        if (url.hostname.endsWith('.onrender.com')) return true;
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
+      } catch {
+        return false;
+      }
+      return false;
+    };
+
     const io = new SocketIOServer(server, {
       cors: {
         origin: (origin, callback) => {
-          if (!origin || allowedSocketOrigins.includes(origin) || !env.isProduction) {
+          if (isSocketOriginAllowed(origin)) {
             return callback(null, true);
           }
           return callback(new Error('CORS not allowed for this origin'), false);

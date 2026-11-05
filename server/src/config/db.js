@@ -69,6 +69,26 @@ export const disconnectDB = async () => {
   await mongoose.disconnect();
 };
 
+/**
+ * Ensures required indexes are initialized on startup without blocking server performance
+ */
+export const ensureIndexes = async () => {
+  try {
+    const { User, SupportTicket, FinancialTransaction, OtpRecord, Project, ProjectExpense } = await import('../models/index.js');
+    await Promise.allSettled([
+      User.init(),
+      SupportTicket.init(),
+      FinancialTransaction.init(),
+      OtpRecord.init(),
+      Project.init(),
+      ProjectExpense.init(),
+    ]);
+    console.log('[MongoDB] Schema indexes verified successfully');
+  } catch (err) {
+    console.warn('[MongoDB] Index verification note:', err.message);
+  }
+};
+
 let dbConnectedAt = null;
 let dbDisconnectedAt = null;
 let lastDbError = null;

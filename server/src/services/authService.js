@@ -492,7 +492,8 @@ export const requestPasswordResetOtp = async ({ email, phone, req }) => {
 
   // If user is not found, warn the user to provide a valid registered email address
   if (!user) {
-    console.warn(`[Auth - Password Reset Warning] Requested password reset for "${trimmedEmail}", but user is NOT found in database.`);
+    const maskedEmail = trimmedEmail.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => a + '***' + c);
+    console.warn(`[Auth - Password Reset Warning] Requested password reset for "${maskedEmail}", but user is NOT found in database.`);
     throw new NotFoundError('This email address is not registered with FurniCraft. Please provide a valid registered email address.');
   }
 

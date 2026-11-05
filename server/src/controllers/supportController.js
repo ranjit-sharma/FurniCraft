@@ -19,11 +19,17 @@ export const supportController = {
       if (subject.trim().length < 3) {
         throw new BadRequestError('Subject must be at least 3 characters long');
       }
+      if (subject.trim().length > 150) {
+        throw new BadRequestError('Subject cannot exceed 150 characters');
+      }
       if (!message || !message.trim()) {
         throw new BadRequestError('Message description is required');
       }
       if (message.trim().length < 5) {
         throw new BadRequestError('Message must be at least 5 characters long');
+      }
+      if (message.trim().length > 3000) {
+        throw new BadRequestError('Message cannot exceed 3000 characters');
       }
 
       // Generate strictly unique human-readable ticket number with concurrency retry
@@ -192,7 +198,12 @@ export const supportController = {
 
       const previousStatus = ticket.status;
       if (status) ticket.status = status;
-      if (adminNotes !== undefined) ticket.adminNotes = adminNotes.trim();
+      if (adminNotes !== undefined) {
+        if (adminNotes.trim().length > 3000) {
+          throw new BadRequestError('Response notes cannot exceed 3000 characters');
+        }
+        ticket.adminNotes = adminNotes.trim();
+      }
 
       await ticket.save();
 

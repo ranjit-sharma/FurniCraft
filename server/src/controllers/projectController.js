@@ -59,9 +59,11 @@ export const listProjects = async (req, res, next) => {
       }
     }
 
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
     const projects = await Project.find(filter)
       .populate('thekedarId', 'name phone email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(safeLimit);
 
     if (req.user.role === ROLES.WORKER) {
       const allWorkerProjectIds = projects.map((p) => p._id);

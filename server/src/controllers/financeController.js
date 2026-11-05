@@ -230,17 +230,23 @@ export const listTransactions = async (req, res, next) => {
       filter.workerId = workerId;
     }
 
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), 500);
+    const safePage = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const skip = (safePage - 1) * safeLimit;
+
     const transactions = await FinancialTransaction.find(filter)
       .populate('workerId', 'name phone email')
       .populate('thekedarId', 'name phone email')
       .populate('projectId', 'name projectCode')
       .populate('payrollId', 'payrollCode')
       .populate('recordedBy', 'name role')
-      .sort({ transactionDate: -1 });
+      .sort({ transactionDate: -1 })
+      .skip(skip)
+      .limit(safeLimit);
 
     res.status(200).json({
       status: 'success',
-      data: { transactions },
+      data: { transactions, page: safePage, limit: safeLimit },
     });
   } catch (error) {
     next(error);

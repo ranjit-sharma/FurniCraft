@@ -29,7 +29,8 @@ export const listUsers = async (req, res, next) => {
       filter.assignedThekedar = req.user._id;
     }
 
-    const users = await User.find(filter).select('-password');
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
+    const users = await User.find(filter).select('-password').limit(safeLimit);
     res.status(200).json({
       status: 'success',
       data: { users },
@@ -48,9 +49,11 @@ export const listWorkers = async (req, res, next) => {
       filter.thekedarId = req.user._id;
     }
 
+    const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
     const workerProfiles = await WorkerProfile.find(filter)
       .populate('userId', 'name email phone status')
-      .populate('thekedarId', 'name phone');
+      .populate('thekedarId', 'name phone')
+      .limit(safeLimit);
 
     // Aggregate unpaid approved attendance earnings for each worker
     const workerUserIds = workerProfiles.map((w) => w.userId?._id).filter(Boolean);

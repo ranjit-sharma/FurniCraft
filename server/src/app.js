@@ -10,6 +10,7 @@ import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import { NotFoundError } from './utils/errors.js';
+import { noSqlSanitizeMiddleware } from './utils/sanitize.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -54,9 +55,10 @@ export const createApp = () => {
     })
   );
 
-  // CORS configuration: Restrict to explicit verified client domains
+  // CORS configuration: Restrict to explicit verified client domains with dynamic onrender.com support
   const allowedOrigins = [
     env.CLIENT_URL,
+    'https://furnicraft.onrender.com',
     'https://furnicraft-erp.onrender.com',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
@@ -64,11 +66,24 @@ export const createApp = () => {
     'http://127.0.0.1:5173',
   ].filter(Boolean);
 
+  const isOriginAllowed = (origin) => {
+    if (!origin) return true;
+    if (!env.isProduction) return true;
+    if (allowedOrigins.includes(origin)) return true;
+    try {
+      const url = new URL(origin);
+      if (url.hostname.endsWith('.onrender.com')) return true;
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return true;
+    } catch {
+      return false;
+    }
+    return false;
+  };
+
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin) || !env.isProduction) {
+        if (isOriginAllowed(origin)) {
           return callback(null, true);
         }
         return callback(null, false);
@@ -79,10 +94,13 @@ export const createApp = () => {
     })
   );
 
-  // Parsers
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  // Parsers - production-hardened payload limits (1MB is safe & generous for JSON APIs)
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cookieParser());
+
+  // Global NoSQL query operator injection protection
+  app.use(noSqlSanitizeMiddleware);
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {
