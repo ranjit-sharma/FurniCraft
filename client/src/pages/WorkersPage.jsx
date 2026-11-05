@@ -1351,20 +1351,6 @@ export const WorkersPage = () => {
                 {/* TAB 2: ADVANCES TAKEN — Single View Responsive Cards, Zero Side Scroll */}
                 {activeTab === 'advances' && (
                   <div className="space-y-4">
-                    {/* Outstanding advance + give a new one */}
-                    <div className="flex flex-col gap-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 p-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <div className="text-[11px] font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">Outstanding Advance</div>
-                        <div className="text-2xl font-black text-rose-700 dark:text-rose-300">₹{(activityData.profile?.outstandingAdvanceBalance ?? 0).toLocaleString('en-IN')}</div>
-                        <div className="text-xs text-slate-600 dark:text-slate-400">Deducted from the next net payment · limit ₹{MAX_ADVANCE.toLocaleString('en-IN')}</div>
-                      </div>
-                      {isThekedar && (
-                        <Button variant="danger" icon={IndianRupee} onClick={() => handleOpenGiveAdvance(activityWorker)}>
-                          Give Advance
-                        </Button>
-                      )}
-                    </div>
-
                     {/* Section: Advance Requests */}
                     <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
