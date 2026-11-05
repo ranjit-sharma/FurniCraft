@@ -220,49 +220,32 @@ export const ThekedarDashboard = () => {
       {isAttendancePending && (
         <div
           role="alert"
-          className="rounded-xl border border-amber-300 dark:border-amber-700/80 bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-100/60 dark:from-amber-950/50 dark:via-orange-950/30 dark:to-amber-900/30 p-2.5 sm:p-3 shadow-xs text-amber-950 dark:text-amber-100"
+          onClick={() => {
+            const el = document.getElementById('attendance-card');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="rounded-xl border border-amber-300 dark:border-amber-700/80 bg-gradient-to-r from-amber-50 via-orange-50/70 to-amber-100/60 dark:from-amber-950/50 dark:via-orange-950/30 dark:to-amber-900/30 px-3 py-2 shadow-xs text-amber-950 dark:text-amber-100 flex items-center justify-between gap-2.5 transition hover:shadow-sm cursor-pointer"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white shadow-2xs">
-                <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
-                </span>
-                <Clock className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h4 className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white leading-tight">
-                    {t('thekedarDash.attendanceAlertTitle', 'Attendance Action Required Today!')}
-                  </h4>
-                  <span className="inline-flex items-center rounded-full bg-rose-600 text-white px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider whitespace-nowrap shrink-0">
-                    {unmarkedWorkersCount} {t('thekedarDash.pending', 'Pending')}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-[11px] text-amber-900/80 dark:text-amber-200/90 leading-tight">
-                  {t(
-                    'thekedarDash.attendanceAlertDesc',
-                    `You have ${unmarkedWorkersCount} craftsman/craftsmen with unrecorded attendance today (${markedTodayCount}/${workers.length} marked).`
-                  )
-                    .replace('{count}', unmarkedWorkersCount)
-                    .replace('{marked}', markedTodayCount)
-                    .replace('{total}', workers.length)}
-                </p>
-              </div>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-white shadow-2xs">
+              <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              </span>
+              <Clock className="h-3.5 w-3.5" />
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                const el = document.getElementById('attendance-card');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 active:bg-amber-800 px-3 py-1.5 text-xs font-bold text-white shadow-xs cursor-pointer shrink-0 transition self-start sm:self-center ml-10.5 sm:ml-0"
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>{t('thekedarDash.markNowBtn', 'Take Attendance Now')}</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="text-xs sm:text-sm font-bold text-amber-950 dark:text-white truncate">
+                {t('thekedarDash.attendanceAlertTitle', 'Attendance Action Required Today!')}
+              </span>
+              <span className="text-[11px] text-amber-800/80 dark:text-amber-300 font-medium hidden sm:inline">
+                ({markedTodayCount}/{workers.length} marked)
+              </span>
+            </div>
           </div>
+          <span className="inline-flex items-center rounded-full bg-rose-600 text-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wider whitespace-nowrap shrink-0 shadow-2xs">
+            {unmarkedWorkersCount} {t('thekedarDash.pending', 'Pending')}
+          </span>
         </div>
       )}
 
@@ -270,20 +253,15 @@ export const ThekedarDashboard = () => {
       {isAttendanceComplete && (
         <div
           role="status"
-          className="rounded-2xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/40 p-3.5 text-emerald-950 dark:text-emerald-200 shadow-2xs flex items-center justify-between gap-3 text-xs"
+          className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/80 dark:bg-emerald-950/40 px-3 py-2 text-emerald-950 dark:text-emerald-200 shadow-xs flex items-center justify-between gap-2.5 text-xs"
         >
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
-              <CheckCircle2 className="h-4 w-4" />
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
+              <CheckCircle2 className="h-3.5 w-3.5" />
             </div>
-            <div>
-              <span className="font-black text-emerald-900 dark:text-emerald-100 block">
-                {t('thekedarDash.attendanceAllMarkedTitle', 'All Attendance Marked!')}
-              </span>
-              <span className="text-[11px] text-emerald-800/80 dark:text-emerald-300">
-                {t('thekedarDash.attendanceAllMarkedDesc', `All ${workers.length} active craftsmen have their attendance recorded for today.`).replace('{count}', workers.length)}
-              </span>
-            </div>
+            <span className="font-bold text-emerald-900 dark:text-emerald-100 text-xs sm:text-sm">
+              {t('thekedarDash.attendanceAllMarkedTitle', 'All Attendance Marked!')}
+            </span>
           </div>
           <span className="rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-bold px-2 py-0.5 text-[10px]">
             100% Done
