@@ -484,7 +484,7 @@ export const WorkersPage = () => {
     setEditingWorker(worker);
     setEditName(worker.userId?.name || worker.name || '');
     setEditPhone(worker.userId?.phone || worker.phone || '');
-    setEditTrade(worker.skills?.[0] || 'Mistry');
+    setEditTrade(worker.trade || worker.skills?.[0] || 'Mistry');
     setEditWage(worker.defaultDailyWage || '750');
     setEditWorkerModalOpen(true);
   };
@@ -852,6 +852,17 @@ export const WorkersPage = () => {
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         ₹{w.defaultDailyWage || 750}/day
                       </span>
+                      {((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry') && (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold border ${
+                            (((Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry').toLowerCase() === 'helper')
+                              ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+                              : 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                          }`}
+                        >
+                          {(Array.isArray(w.skills) && w.skills.length > 0 ? w.skills[0] : null) || w.trade || 'Mistry'}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
                   </div>
@@ -1046,7 +1057,7 @@ export const WorkersPage = () => {
                     {selectedAttendanceWorker?.workerCode || 'FC-WRK'}
                   </span>
                   <span className="rounded-md bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                    {selectedAttendanceWorker?.skills?.[0] || 'Mistry'}
+                    {selectedAttendanceWorker?.trade || selectedAttendanceWorker?.skills?.[0] || 'Mistry'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
@@ -1148,6 +1159,23 @@ export const WorkersPage = () => {
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                       ₹{activityWorker.defaultDailyWage || 750}/day
                     </span>
+                    {(() => {
+                      const actTrade = (Array.isArray(activityData?.profile?.skills) && activityData.profile.skills.length > 0 ? activityData.profile.skills[0] : null)
+                        || (Array.isArray(activityWorker?.skills) && activityWorker.skills.length > 0 ? activityWorker.skills[0] : null)
+                        || activityWorker?.trade
+                        || 'Mistry';
+                      return (
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold border ${
+                            actTrade.toLowerCase() === 'helper'
+                              ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+                              : 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                          }`}
+                        >
+                          {actTrade}
+                        </span>
+                      );
+                    })()}
                     {!!(activityWorker?.isOnLeave ?? activityData?.profile?.isOnLeave) && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                         <CalendarOff className="h-3 w-3" />

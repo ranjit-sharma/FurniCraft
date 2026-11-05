@@ -798,6 +798,15 @@ export const ThekedarsPage = () => {
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                             ₹{w.defaultDailyWage || 750}/day
                           </span>
+                          <span
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                              (((Array.isArray(w.skills) && w.skills[0]) || w.trade || 'Mistry').toLowerCase() === 'helper')
+                                ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
+                                : 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800'
+                            }`}
+                          >
+                            {(Array.isArray(w.skills) && w.skills[0]) || w.trade || 'Mistry'}
+                          </span>
                         </div>
                         <div className="text-slate-600 dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
                           <Phone className="h-3 w-3 text-purple-600 dark:text-purple-400" />

@@ -23,6 +23,11 @@ const workerProfileSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+    trade: {
+      type: String,
+      trim: true,
+      default: 'Mistry',
+    },
     skills: [
       {
         type: String,

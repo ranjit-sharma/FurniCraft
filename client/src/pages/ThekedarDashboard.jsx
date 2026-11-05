@@ -328,7 +328,7 @@ export const ThekedarDashboard = () => {
                         {w.today && !locked && <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" aria-label="Marked" />}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {w.workerCode} · {inr(w.defaultDailyWage)}/day
+                        {w.workerCode} · {inr(w.defaultDailyWage)}/day · <span className="font-medium text-slate-700 dark:text-slate-300">{w.trade || (Array.isArray(w.skills) && w.skills[0]) || 'Mistry'}</span>
                         {w.today && <> · {t('thekedarDash.earnedToday', 'today')} {inr(w.today.calculatedEarnings)}</>}
                       </div>
                     </div>

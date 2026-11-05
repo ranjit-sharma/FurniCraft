@@ -76,6 +76,7 @@ export const getThekedarDashboardData = async (thekedarId, date) => {
         status: wp.userId.status,
         workerCode: wp.workerCode,
         defaultDailyWage: wp.defaultDailyWage,
+        trade: wp.trade || (Array.isArray(wp.skills) && wp.skills.length > 0 ? wp.skills[0] : 'Mistry'),
         skills: wp.skills,
         isOnLeave: !!wp.isOnLeave,
         unpaidWages,

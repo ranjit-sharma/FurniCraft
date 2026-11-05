@@ -695,11 +695,13 @@ export const createWorker = async (req, res, next) => {
 
         const wage = parseFloat(defaultDailyWage) || 750;
         const skillsList = trade ? [trade] : (Array.isArray(skills) && skills.length > 0 ? skills : ['Mistry']);
+        const primaryTrade = trade || skillsList[0] || 'Mistry';
 
         const profile = await WorkerProfile.create({
           userId: createdUser._id,
           thekedarId,
           workerCode,
+          trade: primaryTrade,
           skills: skillsList,
           defaultDailyWage: wage,
           address: address || '',
@@ -787,9 +789,11 @@ export const updateWorker = async (req, res, next) => {
 
     // Update Profile fields
     if (trade) {
+      profile.trade = trade;
       profile.skills = [trade];
     } else if (skills && Array.isArray(skills)) {
       profile.skills = skills;
+      if (skills[0]) profile.trade = skills[0];
     }
     if (address !== undefined) profile.address = address;
     if (emergencyContact !== undefined) profile.emergencyContact = emergencyContact;
