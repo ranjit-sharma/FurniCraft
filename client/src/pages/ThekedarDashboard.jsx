@@ -14,6 +14,7 @@ import {
   IndianRupee,
   FolderKanban,
   FileText,
+  ChevronLeft,
   ChevronRight,
   ArrowUpRight,
   Lock,
@@ -44,8 +45,24 @@ export const ThekedarDashboard = () => {
   const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [today] = useState(localToday);
+  const [selectedDate, setSelectedDate] = useState(localToday);
   const [savingWorkerId, setSavingWorkerId] = useState(null);
+  const isToday = selectedDate === localToday();
+
+  const handlePrevDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(d.toISOString().slice(0, 10));
+  };
+
+  const handleNextDay = () => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + 1);
+    const nextStr = d.toISOString().slice(0, 10);
+    if (nextStr <= localToday()) {
+      setSelectedDate(nextStr);
+    }
+  };
 
   // Add New Craftsman Modal State
   const [addWorkerModalOpen, setAddWorkerModalOpen] = useState(false);
@@ -58,7 +75,7 @@ export const ThekedarDashboard = () => {
   const fetchDashboard = async () => {
     try {
       setLoadError(null);
-      const res = await api.get(`/reports/dashboard?date=${today}`);
+      const res = await api.get(`/reports/dashboard?date=${selectedDate}`);
       setData(res.data);
     } catch (err) {
       setLoadError(err.message);
@@ -69,7 +86,7 @@ export const ThekedarDashboard = () => {
 
   useEffect(() => {
     fetchDashboard();
-  }, []);
+  }, [selectedDate]);
 
   const projects = data?.activeProjects || [];
 
@@ -81,7 +98,7 @@ export const ThekedarDashboard = () => {
     try {
       const res = await api.post('/attendance/submit', {
         workerId: worker.userId,
-        date: today,
+        date: selectedDate,
         shift: 'GENERAL',
         code,
       });
@@ -137,8 +154,8 @@ export const ThekedarDashboard = () => {
   const workers = allActiveWorkers.filter((w) => !w.isOnLeave && w.today?.code !== 'LEAVE');
   const markedTodayCount = workers.filter((w) => w.today).length;
   const unmarkedWorkersCount = workers.length - markedTodayCount;
-  const isAttendancePending = workers.length > 0 && unmarkedWorkersCount > 0;
-  const isAttendanceComplete = workers.length > 0 && unmarkedWorkersCount === 0;
+  const isAttendancePending = isToday && workers.length > 0 && unmarkedWorkersCount > 0;
+  const isAttendanceComplete = isToday && workers.length > 0 && unmarkedWorkersCount === 0;
   const transactions = data?.recentTransactions || [];
   const firstName = (user?.name || '').split(' ')[0];
 
@@ -277,13 +294,54 @@ export const ThekedarDashboard = () => {
       {/* Today's attendance: one tap per worker */}
       <div id="attendance-card">
         <Card
-          title={t('thekedarDash.todayAttendance', "Today's attendance")}
+          title={
+            isToday
+              ? t('thekedarDash.todayAttendance', "Today's attendance")
+              : `Attendance for ${new Date(selectedDate + 'T00:00:00').toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'short' })}`
+          }
           subtitle={
             workers.length === 0
               ? allActiveWorkers.length === 0
                 ? 'No active craftsmen registered yet'
                 : 'All craftsmen are on leave'
               : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
+          }
+          action={
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={handlePrevDay}
+                title="Previous Day"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <input
+                type="date"
+                value={selectedDate}
+                max={localToday()}
+                onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
+              />
+              <button
+                type="button"
+                onClick={handleNextDay}
+                disabled={isToday}
+                title="Next Day"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+              {!isToday && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(localToday())}
+                  className="px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 text-xs font-bold hover:bg-amber-200 dark:hover:bg-amber-900 transition cursor-pointer"
+                >
+                  Today
+                </button>
+              )}
+            </div>
           }
         >
         {onLeaveWorkers.length > 0 && (
@@ -329,7 +387,7 @@ export const ThekedarDashboard = () => {
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         {w.workerCode} · {inr(w.defaultDailyWage)}/day · <span className="font-medium text-slate-700 dark:text-slate-300">{w.trade || (Array.isArray(w.skills) && w.skills[0]) || 'Mistry'}</span>
-                        {w.today && <> · {t('thekedarDash.earnedToday', 'today')} {inr(w.today.calculatedEarnings)}</>}
+                        {w.today && <> · {isToday ? t('thekedarDash.earnedToday', 'today') : 'earned'} {inr(w.today.calculatedEarnings)}</>}
                       </div>
                     </div>
                     {locked && (

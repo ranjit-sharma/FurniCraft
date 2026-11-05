@@ -74,12 +74,17 @@ export const submitAttendance = async ({ data, user, req }) => {
     shift,
   });
 
-  // Thekedar re-marking their own worker's day = edit that entry (paid entries stay locked).
-  if (existing && user.role === ROLES.THEKEDAR && existing.thekedarId.toString() === user._id.toString()) {
+  // Thekedar or Owner re-marking a worker's day = edit that entry (paid entries stay locked).
+  const isOwner = user.role === ROLES.OWNER;
+  const isSameThekedar =
+    user.role === ROLES.THEKEDAR &&
+    existing?.thekedarId?.toString() === user._id?.toString();
+
+  if (existing && (isSameThekedar || isOwner)) {
     if (existing.isPayrollProcessed) {
       throw new ForbiddenError(`Attendance for ${date} is already paid and locked; it cannot be changed.`);
     }
-    if (project && projectId && existing.projectId?.toString() !== projectId && project.thekedarId.toString() === user._id.toString()) {
+    if (project && projectId && existing.projectId?.toString() !== projectId && (isOwner || project.thekedarId?.toString() === user._id?.toString())) {
       existing.projectId = projectId;
       await existing.save();
     }
@@ -90,6 +95,7 @@ export const submitAttendance = async ({ data, user, req }) => {
       reviewerUser: user,
       req,
     });
+    updated.$locals = updated.$locals || {};
     updated.$locals.wasUpdate = true;
     return updated;
   }
@@ -251,30 +257,6 @@ export const rectifyAttendance = async ({ attendanceId, code, dailyWage, reason,
 
   if (attendance.isPayrollProcessed) {
     throw new ForbiddenError('Cannot modify attendance that has already been finalized in payroll');
-  }
-
-  // Business Rule: Worker attendance can only be edited on the same day it was recorded/taken
-  const now = new Date();
-  const todayUtc = now.toISOString().slice(0, 10);
-  const todayIst = new Date(now.getTime() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const todayLocal = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-  const validTodayDates = new Set([todayUtc, todayIst, todayLocal]);
-
-  const attDate = attendance.date ? String(attendance.date).slice(0, 10) : '';
-  const attCreatedUtc = attendance.createdAt ? attendance.createdAt.toISOString().slice(0, 10) : '';
-  const attCreatedIst = attendance.createdAt
-    ? new Date(attendance.createdAt.getTime() + 5.5 * 60 * 60 * 1000).toISOString().slice(0, 10)
-    : '';
-
-  const isSameDay =
-    validTodayDates.has(attDate) ||
-    validTodayDates.has(attCreatedUtc) ||
-    validTodayDates.has(attCreatedIst);
-
-  if (!isSameDay) {
-    throw new ForbiddenError(
-      'Worker attendance can only be edited on the same day it was recorded. Past attendance is locked.'
-    );
   }
 
   const oldStatus = attendance.approvalStatus;
