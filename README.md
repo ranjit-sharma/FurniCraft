@@ -350,7 +350,6 @@ FurniCraft/
 └── server/                              # Backend Node.js / Express REST API (Port 5001)
     ├── package.json                     # Server scripts, dependencies & Vitest config
     ├── vitest.config.js                 # Server test runner configuration
-    ├── .env.example                     # Environment configuration template
     ├── tests/                           # Vitest server integration test suites
     │   ├── setup.js                     # Test database connection setup & teardown
     │   ├── auth.test.js                 # Authentication & token verification tests
