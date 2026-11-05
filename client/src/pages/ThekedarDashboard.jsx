@@ -50,12 +50,31 @@ export const ThekedarDashboard = () => {
   const [savingWorkerId, setSavingWorkerId] = useState(null);
   const isToday = selectedDate === localToday();
 
-  const surroundingDays = React.useMemo(() => {
-    const base = new Date(selectedDate + 'T12:00:00');
+  const scrollContainerRef = React.useRef(null);
+  const selectedDayRef = React.useRef(null);
+  const isFirstMountRef = React.useRef(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Mouse drag-to-scroll support
+  const isDraggingRef = React.useRef(false);
+  const dragMovedRef = React.useRef(false);
+  const startXRef = React.useRef(0);
+  const startScrollLeftRef = React.useRef(0);
+
+  // Generate historical track strictly up to today (no future days)
+  const scrollableDays = React.useMemo(() => {
     const todayStr = localToday();
+    const todayDate = new Date(todayStr + 'T12:00:00');
+    let minDays = 60;
+    if (selectedDate && selectedDate < todayStr) {
+      const diffMs = todayDate.getTime() - new Date(selectedDate + 'T12:00:00').getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays > minDays) minDays = diffDays + 14;
+    }
     const days = [];
-    for (let offset = -1; offset <= 1; offset++) {
-      const d = new Date(base);
+    for (let offset = -minDays; offset <= 0; offset++) {
+      const d = new Date(todayDate);
       d.setDate(d.getDate() + offset);
       const dStr = d.toISOString().slice(0, 10);
       days.push({
@@ -63,25 +82,75 @@ export const ThekedarDashboard = () => {
         weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
         dayNum: d.getDate(),
         month: d.toLocaleDateString('en-US', { month: 'short' }),
-        isSelected: dStr === selectedDate,
-        isFuture: dStr > todayStr,
+        isToday: dStr === todayStr,
       });
     }
     return days;
   }, [selectedDate]);
 
-  const handlePrevDay = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 1);
-    setSelectedDate(d.toISOString().slice(0, 10));
+  const checkScroll = React.useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 6);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+    }
+  }, []);
+
+  // Smoothly center the selected day in view on date change or mount
+  React.useEffect(() => {
+    const el = selectedDayRef.current;
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({
+        behavior: isFirstMountRef.current ? 'auto' : 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+      isFirstMountRef.current = false;
+      setTimeout(checkScroll, 120);
+    }
+  }, [selectedDate, checkScroll]);
+
+  const handleScrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -140, behavior: 'smooth' });
+      setTimeout(checkScroll, 180);
+    }
   };
 
-  const handleNextDay = () => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + 1);
-    const nextStr = d.toISOString().slice(0, 10);
-    if (nextStr <= localToday()) {
-      setSelectedDate(nextStr);
+  const handleScrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 140, behavior: 'smooth' });
+      setTimeout(checkScroll, 180);
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    if (!scrollContainerRef.current) return;
+    isDraggingRef.current = true;
+    dragMovedRef.current = false;
+    startXRef.current = e.pageX;
+    startScrollLeftRef.current = scrollContainerRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDraggingRef.current || !scrollContainerRef.current) return;
+    const dx = e.pageX - startXRef.current;
+    if (Math.abs(dx) > 4) {
+      dragMovedRef.current = true;
+    }
+    scrollContainerRef.current.scrollLeft = startScrollLeftRef.current - dx;
+    checkScroll();
+  };
+
+  const handleMouseUpOrLeave = () => {
+    isDraggingRef.current = false;
+  };
+
+  const handleWheel = (e) => {
+    if (!scrollContainerRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      scrollContainerRef.current.scrollLeft += e.deltaY;
+      checkScroll();
     }
   };
 
@@ -306,53 +375,72 @@ export const ThekedarDashboard = () => {
               : `${markedTodayCount} / ${workers.length} ${t('thekedarDash.marked', 'marked')} · ${t('thekedarDash.tapToChange', 'tap another code to change')}${onLeaveWorkers.length > 0 ? ` · ${onLeaveWorkers.length} ${t('thekedarDash.onLeave', 'on leave')}` : ''}`
           }
           action={
-            <div className="flex items-center gap-2 sm:gap-3 select-none">
+            <div className="flex items-center gap-1.5 sm:gap-2 select-none">
               <button
                 type="button"
-                onClick={handlePrevDay}
-                title="Previous Day"
-                className="p-1 text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 transition cursor-pointer"
+                onClick={handleScrollLeft}
+                disabled={!canScrollLeft}
+                title="Scroll Earlier Dates"
+                className={`p-1 transition shrink-0 ${
+                  canScrollLeft
+                    ? 'text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 cursor-pointer'
+                    : 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
+                }`}
               >
                 <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
               </button>
 
-              <div className="flex items-center gap-3 sm:gap-4">
-                {surroundingDays.map((d) => (
-                  <button
-                    key={d.dateStr}
-                    type="button"
-                    disabled={d.isFuture}
-                    onClick={() => setSelectedDate(d.dateStr)}
-                    className={`flex flex-col items-center justify-center transition cursor-pointer min-w-[34px] sm:min-w-[40px] text-center ${
-                      d.isSelected
-                        ? 'text-amber-800 dark:text-amber-300 scale-105'
-                        : d.isFuture
-                        ? 'text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
-                        : 'text-amber-700/70 hover:text-amber-900 dark:text-amber-400/70 dark:hover:text-amber-200'
-                    }`}
-                  >
-                    <span className={`text-[10px] sm:text-[11px] leading-tight ${d.isSelected ? 'font-black' : 'font-semibold'}`}>
-                      {d.weekday}
-                    </span>
-                    <span className={`leading-none my-0.5 ${d.isSelected ? 'text-lg sm:text-xl font-black' : 'text-base sm:text-lg font-bold'}`}>
-                      {d.dayNum}
-                    </span>
-                    <span className={`text-[10px] sm:text-[11px] leading-tight ${d.isSelected ? 'font-black' : 'font-medium'}`}>
-                      {d.month}
-                    </span>
-                  </button>
-                ))}
+              {/* Horizontally scrollable date strip (swipe/drag/wheel left-right strictly up till today) */}
+              <div
+                ref={scrollContainerRef}
+                onScroll={checkScroll}
+                onWheel={handleWheel}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUpOrLeave}
+                onMouseLeave={handleMouseUpOrLeave}
+                className="flex items-center gap-3 sm:gap-4 overflow-x-auto scroll-smooth touch-pan-x w-[160px] sm:w-[220px] md:w-[260px] py-1 px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing"
+              >
+                {scrollableDays.map((d) => {
+                  const isSelected = d.dateStr === selectedDate;
+                  return (
+                    <button
+                      key={d.dateStr}
+                      ref={isSelected ? selectedDayRef : null}
+                      type="button"
+                      onClick={() => {
+                        if (dragMovedRef.current) return;
+                        setSelectedDate(d.dateStr);
+                      }}
+                      className={`flex flex-col items-center justify-center transition cursor-pointer min-w-[34px] sm:min-w-[40px] text-center shrink-0 ${
+                        isSelected
+                          ? 'text-amber-800 dark:text-amber-300 scale-105'
+                          : 'text-amber-700/70 hover:text-amber-900 dark:text-amber-400/70 dark:hover:text-amber-200'
+                      }`}
+                    >
+                      <span className={`text-[10px] sm:text-[11px] leading-tight ${isSelected ? 'font-black' : 'font-semibold'}`}>
+                        {d.weekday}
+                      </span>
+                      <span className={`leading-none my-0.5 ${isSelected ? 'text-lg sm:text-xl font-black' : 'text-base sm:text-lg font-bold'}`}>
+                        {d.dayNum}
+                      </span>
+                      <span className={`text-[10px] sm:text-[11px] leading-tight ${isSelected ? 'font-black' : 'font-medium'}`}>
+                        {d.month}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
               <button
                 type="button"
-                onClick={handleNextDay}
-                disabled={isToday}
-                title="Next Day"
-                className={`p-1 transition ${
-                  isToday
-                    ? 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
-                    : 'text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 cursor-pointer'
+                onClick={handleScrollRight}
+                disabled={!canScrollRight}
+                title="Scroll Later Dates"
+                className={`p-1 transition shrink-0 ${
+                  canScrollRight
+                    ? 'text-amber-700 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300 cursor-pointer'
+                    : 'text-slate-300 dark:text-slate-700 cursor-not-allowed opacity-40'
                 }`}
               >
                 <ChevronRight className="h-5 w-5 stroke-[2.5]" />
@@ -360,7 +448,7 @@ export const ThekedarDashboard = () => {
 
               <label
                 title="Pick a date"
-                className="relative p-1 text-slate-400 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer transition ml-0.5"
+                className="relative p-1 text-slate-400 hover:text-amber-700 dark:hover:text-amber-400 cursor-pointer transition ml-0.5 shrink-0"
               >
                 <Calendar className="h-4 w-4" />
                 <input
