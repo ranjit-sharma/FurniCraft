@@ -211,23 +211,13 @@ export const Navbar = () => {
                       setProfileOpen(false);
                       setGuideModalOpen(true);
                     }}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-950 dark:text-amber-200 transition hover:bg-amber-100/70 dark:hover:bg-amber-950/60 bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 cursor-pointer"
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                      <div className="text-left">
-                        <div className="flex items-center gap-1.5">
-                          <span>{t('profile.thekedarGuide', 'Thekedar User Guide')}</span>
-                          <span className="rounded bg-amber-500 text-white text-[9px] font-black px-1.5 py-0.2 tracking-wide">
-                            PHOTOS
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-amber-700/90 dark:text-amber-400/90 block font-normal">
-                          {t('profile.thekedarGuideSub', 'Full instructions & shift codes')}
-                        </span>
-                      </div>
+                      <BookOpen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span>{t('profile.thekedarGuide', 'Thekedar User Guide')}</span>
                     </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                   </button>
                 )}
 
