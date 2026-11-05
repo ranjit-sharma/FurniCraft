@@ -6,7 +6,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
-import { HelpCenterModal } from '../components/common/HelpCenterModal';
 import {
   HardHat,
   Users,
@@ -18,7 +17,6 @@ import {
   RefreshCw,
   ChevronRight,
   ArrowUpRight,
-  LifeBuoy,
 } from 'lucide-react';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
@@ -60,7 +58,6 @@ export const OwnerDashboard = () => {
   const [loadError, setLoadError] = useState(null);
   const [dbHealth, setDbHealth] = useState(null);
   const [dbChecking, setDbChecking] = useState(false);
-  const [helpModalOpen, setHelpModalOpen] = useState(false);
 
   const fetchDashboard = async () => {
     try {
@@ -124,14 +121,6 @@ export const OwnerDashboard = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setHelpModalOpen(true)}
-              className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-bold border border-amber-400/50 bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 transition cursor-pointer shadow-xs hover:scale-105"
-            >
-              <LifeBuoy className="h-3.5 w-3.5 text-amber-300" />
-              <span>{t('help.thekedarRequests', 'Thekedar Requests')}</span>
-            </button>
             <button
               type="button"
               onClick={fetchDbHealth}
@@ -288,9 +277,6 @@ export const OwnerDashboard = () => {
           )}
         </Card>
       </div>
-
-      {/* Help & Support Center Modal (Thekedar Requests view for Owner) */}
-      <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} initialTab="all" />
     </div>
   );
 };
