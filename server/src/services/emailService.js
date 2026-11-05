@@ -12,7 +12,6 @@ class ServiceUnavailableError extends AppError {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const LOGO_PATH = path.resolve(__dirname, '../assets/furnicraft-logo.png');
 
 const EMAIL_UNAVAILABLE = 'We could not send the verification email right now. Please try again in a few minutes or contact your administrator.';
 const DEFAULT_SENDER_EMAIL = 'furnicraft.erp@gmail.com';
@@ -203,17 +202,6 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
 
   const subject = `FurniCraft ERP: Your Verification Code is ${otp}`;
 
-  const attachments = [];
-  let logoCid = null;
-  if (fs.existsSync(LOGO_PATH)) {
-    logoCid = 'furnicraftlogo@furnicraft.erp';
-    attachments.push({
-      filename: 'furnicraft-logo.png',
-      path: LOGO_PATH,
-      cid: logoCid,
-    });
-  }
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -240,8 +228,6 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
         .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
         .container { max-width: 540px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .header { background: #0f172a; padding: 28px 20px; text-align: center; color: #ffffff; }
-        .logo-container { margin-bottom: 14px; text-align: center; }
-        .logo-img { height: 52px; max-width: 200px; object-fit: contain; display: inline-block; }
         .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
@@ -271,12 +257,6 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="logo-container">
-              ${logoCid 
-                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-                : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="52" alt="FurniCraft ERP Logo" class="logo-img" />`
-              }
-            </div>
             <h1 class="brand-title">
               <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
             </h1>
@@ -322,9 +302,6 @@ export const sendOtpEmail = async ({ to, name, otp, purpose = 'PASSWORD_RESET' }
     text: textContent,
     html: htmlContent,
   };
-  if (attachments.length > 0) {
-    mailOptions.attachments = attachments;
-  }
 
   const result = await sendMailWithResilience(mailOptions);
   if (result.success) {
@@ -372,17 +349,6 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
   const fromAddress = getCleanFromAddress();
   const subject = 'Your FurniCraft Account Password';
 
-  const attachments = [];
-  let logoCid = null;
-  if (fs.existsSync(LOGO_PATH)) {
-    logoCid = 'furnicraftlogo@furnicraft.erp';
-    attachments.push({
-      filename: 'furnicraft-logo.png',
-      path: LOGO_PATH,
-      cid: logoCid,
-    });
-  }
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -409,8 +375,6 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
         .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f8fafc; padding: 20px 10px; margin: 0; }
         .container { max-width: 560px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .header { background: #0f172a; padding: 28px 20px; text-align: center; color: #ffffff; }
-        .logo-container { margin-bottom: 14px; text-align: center; }
-        .logo-img { height: 52px; max-width: 200px; object-fit: contain; display: inline-block; }
         .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
@@ -440,12 +404,6 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="logo-container">
-              ${logoCid 
-                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-                : `<img src="${env.CLIENT_URL || 'http://localhost:5173'}/furnicraft-logo.png" height="52" alt="FurniCraft ERP Logo" class="logo-img" />`
-              }
-            </div>
             <h1 class="brand-title">
               <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
             </h1>
@@ -494,9 +452,6 @@ export const sendPasswordEmail = async ({ to, name, newPassword }) => {
     text: textContent,
     html: htmlContent,
   };
-  if (attachments.length > 0) {
-    mailOptions.attachments = attachments;
-  }
 
   const result = await sendMailWithResilience(mailOptions);
   if (result.success) {
@@ -544,17 +499,6 @@ export const sendSupportTicketEmail = async ({
     timeStyle: 'short',
   });
 
-  const attachments = [];
-  let logoCid = null;
-  if (fs.existsSync(LOGO_PATH)) {
-    logoCid = 'furnicraftlogo@furnicraft.erp';
-    attachments.push({
-      filename: 'furnicraft-logo.png',
-      path: LOGO_PATH,
-      cid: logoCid,
-    });
-  }
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -579,8 +523,6 @@ export const sendSupportTicketEmail = async ({
         .wrapper { width: 100% !important; min-width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
         .container { max-width: 580px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .header { background: #0f172a; padding: 24px 20px; text-align: center; color: #ffffff; }
-        .logo-container { margin-bottom: 12px; text-align: center; }
-        .logo-img { height: 48px; max-width: 190px; object-fit: contain; display: inline-block; }
         .brand-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
         .brand-name-furni { color: #d97706; }
         .brand-name-craft { color: #60a5fa; }
@@ -679,12 +621,6 @@ export const sendSupportTicketEmail = async ({
       <div class="wrapper">
         <div class="container">
           <div class="header">
-            <div class="logo-container">
-              ${logoCid 
-                ? `<img src="cid:${logoCid}" alt="FurniCraft ERP Logo" class="logo-img" />`
-                : `<span style="font-size: 26px; font-weight: 900; color: #fff;">FurniCraft</span>`
-              }
-            </div>
             <h1 class="brand-title">
               <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge">SUPPORT</span>
             </h1>
@@ -790,9 +726,6 @@ ${message}
     text: textContent,
     html: htmlContent,
   };
-  if (attachments.length > 0) {
-    mailOptions.attachments = attachments;
-  }
 
   const result = await sendMailWithResilience(mailOptions);
   if (result.success) {
