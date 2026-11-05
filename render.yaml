@@ -27,6 +27,8 @@ services:
         value: '"FurniCraft ERP Security" <furnicraft.erp@gmail.com>'
       - key: BREVO_API_KEY
         sync: false
+      - key: BREVO_SENDER
+        sync: false
       - key: RESEND_API_KEY
         sync: false
 
