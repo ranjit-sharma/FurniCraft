@@ -361,20 +361,15 @@ export const ThekedarDashboard = () => {
                 <ChevronRight className="h-6 w-6 stroke-[2.5]" />
               </button>
 
-              {/* Pending attendance for today badge with number in round */}
+              {/* Only show number of attendance to take with suitable style */}
               {isAttendancePending && (
-                <div
-                  title={`${unmarkedWorkersCount} ${t('thekedarDash.pending', 'Pending')} ${t('thekedarDash.today', 'Today')}`}
-                  className="flex items-center gap-1.5 rounded-full bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/80 pl-1 pr-2.5 py-0.5 ml-2 sm:ml-3 shadow-2xs shrink-0 select-none animate-fade-in"
+                <span
+                  title={`${unmarkedWorkersCount} attendance to take today`}
+                  className="relative flex h-6 min-w-[24px] px-1.5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-xs font-black shadow-xs ring-2 ring-rose-100 dark:ring-rose-950 ml-1.5 sm:ml-2.5 select-none animate-fade-in cursor-default"
                 >
-                  <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white text-[11px] font-black shadow-xs">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-60" />
-                    <span className="relative">{unmarkedWorkersCount}</span>
-                  </span>
-                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300">
-                    {t('thekedarDash.pending', 'Pending')}
-                  </span>
-                </div>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-50" />
+                  <span className="relative">{unmarkedWorkersCount}</span>
+                </span>
               )}
             </div>
           }
