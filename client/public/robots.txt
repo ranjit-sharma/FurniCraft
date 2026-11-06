@@ -1,0 +1,18 @@
+# FurniCraft ERP Robots Configuration
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /api/v1/
+Disallow: /login
+Disallow: /register-thekedar
+Disallow: /register
+Disallow: /dashboard
+Disallow: /projects
+Disallow: /workers
+Disallow: /expenses
+Disallow: /audit
+Disallow: /members
+Disallow: /transactions
+
+# Sitemap location
+Sitemap: https://furnicraft-erp.onrender.com/sitemap.xml
