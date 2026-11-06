@@ -14,6 +14,7 @@ import {
   forgotPasswordOtpRequestSchema,
   verifyResetOtpSchema,
   resetPasswordWithOtpSchema,
+  inviteThekedarSchema,
 } from '../validators/schemas.js';
 import { ROLES } from '../config/constants.js';
 
@@ -65,5 +66,13 @@ router.post('/logout', authController.logout);
 router.get('/me', authController.getCurrentUser);
 router.post('/change-password', validate(changePasswordSchema), authController.changePassword);
 router.post('/revoke-sessions/:userId', requireRole(ROLES.OWNER), authController.revokeSessions);
+
+// Invite / Refer Thekedar (Owner & Thekedar only)
+router.post(
+  '/invite-thekedar',
+  requireRole(ROLES.OWNER, ROLES.THEKEDAR),
+  validate(inviteThekedarSchema),
+  authController.inviteThekedar
+);
 
 export default router;

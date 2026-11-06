@@ -4,7 +4,8 @@ import { signToken, getCookieOptions, clearCookieOptions, COOKIE_NAME } from '..
 import { BadRequestError, UnauthorizedError, ConflictError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { recordAuditLog } from './auditService.js';
 import { ROLES, USER_STATUS } from '../config/constants.js';
-import { sendPasswordEmail, sendOtpEmail } from './emailService.js';
+import { env } from '../config/env.js';
+import { sendPasswordEmail, sendOtpEmail, sendThekedarInviteEmail } from './emailService.js';
 import { normalizePhone, findUserByIdentifier } from '../utils/phone.js';
 import { sendOtpSms } from './smsService.js';
 import { generateUniqueWorkerCode } from '../utils/codeGenerator.js';
@@ -700,6 +701,82 @@ export const resetPasswordWithOtp = async ({ email, resetToken, newPassword, req
   return {
     status: 'success',
     message: 'Your password has been reset successfully. Please log in with your new password.',
+  };
+};
+
+/**
+ * Invite / Refer a new Thekedar to register on FurniCraft ERP
+ * @param {Object} options
+ * @param {string} [options.name] - Invitee full name
+ * @param {string} [options.phone] - Invitee phone
+ * @param {string} [options.email] - Invitee email
+ * @param {string} [options.customMessage] - Personal invitation message
+ * @param {Object} options.inviter - User sending invitation (Owner or Thekedar)
+ * @param {Object} options.req - Express request
+ */
+export const inviteThekedar = async ({ name, phone, email, customMessage, inviter, req }) => {
+  if (!email && !phone) {
+    throw new BadRequestError('Please provide at least a mobile number or email address for the contractor.');
+  }
+
+  if (email && email.trim()) {
+    const cleanEmail = email.toLowerCase().trim();
+    const existingEmail = await User.findOne({ email: cleanEmail });
+    if (existingEmail) {
+      throw new ConflictError(`An account with email "${cleanEmail}" is already registered on FurniCraft.`);
+    }
+  }
+
+  if (phone && phone.trim()) {
+    const rawPhone = phone.trim();
+    const normalizedPhone = normalizePhone(rawPhone);
+    const existingPhone = await User.findOne({
+      $or: [{ phone: rawPhone }, { phone: normalizedPhone }],
+    });
+    if (existingPhone) {
+      throw new ConflictError(`An account with mobile number "${rawPhone}" is already registered on FurniCraft.`);
+    }
+  }
+
+  // Build the direct referral link
+  const clientUrl = env.CLIENT_URL || (req?.get ? req.get('origin') : 'http://localhost:5173') || 'http://localhost:5173';
+  const refParam = encodeURIComponent(inviter?.name || inviter?.phone || 'furnicraft');
+  const inviteUrl = `${clientUrl}/register-thekedar?ref=${refParam}`;
+
+  let emailSent = false;
+  if (email && email.trim()) {
+    await sendThekedarInviteEmail({
+      to: email.toLowerCase().trim(),
+      inviteeName: name?.trim() || 'Contractor',
+      inviterName: inviter.name,
+      inviterRole: inviter.role,
+      inviteUrl,
+      customMessage: customMessage?.trim() || undefined,
+    });
+    emailSent = true;
+  }
+
+  await recordAuditLog({
+    req,
+    actorId: inviter._id,
+    actorName: inviter.name,
+    actorRole: inviter.role,
+    action: 'INVITE_THEKEDAR',
+    targetType: 'User',
+    details: {
+      inviteeName: name?.trim(),
+      inviteeEmail: email?.toLowerCase().trim(),
+      inviteePhone: phone?.trim(),
+      emailSent,
+    },
+  });
+
+  return {
+    inviteUrl,
+    emailSent,
+    message: emailSent
+      ? `Official invitation email sent successfully to ${email}!`
+      : 'Contractor invitation link generated successfully!',
   };
 };
 

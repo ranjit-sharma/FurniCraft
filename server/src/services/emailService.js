@@ -809,3 +809,146 @@ ${status ? `Status: ${status}\n` : ''}Ticket: ${ticketNumber}
   console.log(`[EmailService - Simulated Owner Response] Delivered to: ${to} | Ticket: ${ticketNumber}`);
   return { success: true, mode: 'simulated' };
 };
+
+/**
+ * Dispatch Thekedar / Contractor invitation email via Brevo HTTPS API
+ * @param {Object} options
+ * @param {string} options.to - Contractor email
+ * @param {string} [options.inviteeName] - Contractor name
+ * @param {string} options.inviterName - Name of the person inviting (Owner or Thekedar)
+ * @param {string} options.inviterRole - Role of the person inviting
+ * @param {string} options.inviteUrl - Direct registration link
+ * @param {string} [options.customMessage] - Optional personal message
+ */
+export const sendThekedarInviteEmail = async ({
+  to,
+  inviteeName = 'Contractor',
+  inviterName,
+  inviterRole,
+  inviteUrl,
+  customMessage,
+}) => {
+  if (process.env.NODE_ENV === 'test') {
+    return { success: true, mode: 'test_simulated', messageId: `<test-invite-${Date.now()}@furnicraft.test>` };
+  }
+
+  const roleTitle = inviterRole === 'OWNER' ? 'Executive Business Owner' : 'Furniture Contractor (Thekedar)';
+  const emailSubject = `FurniCraft ERP: ${inviterName} has invited you to join as a Contractor`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <title>${emailSubject}</title>
+      <style>
+        *, *:before, *:after { box-sizing: border-box !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          background-color: #f1f5f9;
+          color: #1e293b;
+        }
+        .wrapper { width: 100% !important; background-color: #f1f5f9; padding: 20px 10px; margin: 0; }
+        .container { max-width: 560px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .header { background: #0f172a; padding: 28px 20px; text-align: center; color: #ffffff; }
+        .brand-title { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #ffffff; line-height: 1.2; }
+        .brand-name-furni { color: #d97706; }
+        .brand-name-craft { color: #60a5fa; }
+        .brand-badge-erp { background: rgba(217, 119, 6, 0.2); border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 6px; font-size: 12px; color: #fbbf24; vertical-align: middle; margin-left: 6px; }
+        .brand-subtitle { font-size: 11px; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+        .invite-badge { display: inline-block; background: #1e293b; border: 1px solid #334155; padding: 5px 14px; border-radius: 9999px; font-size: 11px; font-weight: 700; color: #38bdf8; margin-top: 12px; }
+        .content { padding: 28px 24px; }
+        .greeting { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 12px; }
+        .message { font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 20px; }
+        .quote-box { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 14px 16px; border-radius: 0 10px 10px 0; margin-bottom: 20px; font-size: 13px; color: #92400e; font-style: italic; }
+        .features-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+        .features-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #334155; margin-bottom: 10px; }
+        .feature-item { font-size: 13px; color: #475569; margin-bottom: 8px; }
+        .btn-wrapper { text-align: center; margin: 28px 0; }
+        .btn { display: inline-block; background: #d97706; color: #ffffff !important; font-weight: 800; font-size: 14px; text-decoration: none; padding: 14px 28px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.3); }
+        .link-box { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #475569; word-break: break-all; margin-top: 16px; }
+        .footer { padding: 18px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.5; }
+      </style>
+    </head>
+    <body>
+      <div class="wrapper">
+        <div class="container">
+          <div class="header">
+            <h1 class="brand-title">
+              <span class="brand-name-furni">Furni</span><span class="brand-name-craft">Craft</span><span class="brand-badge-erp">ERP</span>
+            </h1>
+            <div class="brand-subtitle">Modern Furniture Production & Site Management</div>
+            <div class="invite-badge">Contractor Network Invitation</div>
+          </div>
+          <div class="content">
+            <div class="greeting">Hello ${inviteeName || 'Contractor'},</div>
+            <p class="message">
+              <strong>${inviterName}</strong> (${roleTitle}) has invited you to join <strong>FurniCraft ERP</strong> as an official Thekedar / Furniture Contractor.
+            </p>
+            ${customMessage ? `<div class="quote-box">"${customMessage}"</div>` : ''}
+            <div class="features-card">
+              <div class="features-title">What you can do on FurniCraft:</div>
+              <div class="feature-item">&#10003; Manage your furniture projects, site progress & deadlines</div>
+              <div class="feature-item">&#10003; Maintain your craftsman workforce & skill rosters (Mistry, Helper)</div>
+              <div class="feature-item">&#10003; Daily attendance with automated wage calculation & monthly PDF reports</div>
+              <div class="feature-item">&#10003; Fast advance disbursements, pay net calculation & ledger tracking</div>
+            </div>
+            <div class="btn-wrapper">
+              <a href="${inviteUrl}" class="btn">Accept Invitation & Register Account</a>
+            </div>
+            <p style="font-size: 12px; color: #64748b; text-align: center;">Or copy and paste this link into your browser:</p>
+            <div class="link-box">${inviteUrl}</div>
+          </div>
+          <div class="footer">
+            FurniCraft ERP • Designed for Furniture Contractors & Manufacturers<br>
+            If you did not expect this invitation, you can safely disregard this message.
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `.trim();
+
+  const textContent = `
+FurniCraft ERP: Contractor Network Invitation
+
+Hello ${inviteeName || 'Contractor'},
+
+${inviterName} (${roleTitle}) has invited you to join FurniCraft ERP as an official Contractor (Thekedar).
+${customMessage ? `\nPersonal Note from ${inviterName}: "${customMessage}"\n` : ''}
+Register your contractor account using this link:
+${inviteUrl}
+
+FurniCraft ERP allows you to manage furniture sites, worker attendance, daily wages, and financial advance ledgers.
+
+FurniCraft ERP Team
+  `.trim();
+
+  const fromAddress = getCleanFromAddress();
+  const mailOptions = {
+    from: fromAddress,
+    fromAddress,
+    to,
+    name: inviteeName || 'Contractor',
+    subject: emailSubject,
+    text: textContent,
+    html: htmlContent,
+  };
+
+  const result = await sendMailWithResilience(mailOptions);
+  if (result.success) {
+    console.log(`[EmailService] Thekedar invite email delivered to ${to}: ${result.info?.messageId || result.messageId}`);
+    return {
+      success: true,
+      mode: 'brevo_https',
+      messageId: result.info?.messageId || result.messageId,
+    };
+  }
+
+  console.log(`[EmailService - Simulated Thekedar Invite] Delivered to: ${to}`);
+  return { success: true, mode: 'simulated' };
+};

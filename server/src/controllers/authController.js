@@ -214,3 +214,22 @@ export const resetPasswordWithOtp = async (req, res, next) => {
   }
 };
 
+export const inviteThekedar = async (req, res, next) => {
+  try {
+    const result = await authService.inviteThekedar({
+      name: req.body.name,
+      phone: req.body.phone,
+      email: req.body.email,
+      customMessage: req.body.customMessage,
+      inviter: req.user,
+      req,
+    });
+    res.status(200).json({
+      status: 'success',
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

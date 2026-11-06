@@ -34,6 +34,16 @@ export const sendRegistrationOtpSchema = z.object({
   phone: z.string().min(10, 'Valid 10-digit mobile number required').max(16),
 });
 
+export const inviteThekedarSchema = z.object({
+  name: z.string().trim().max(100).optional(),
+  phone: z.string().trim().optional(),
+  email: z.string().email('Invalid email address format').optional().or(z.literal('')),
+  customMessage: z.string().trim().max(500).optional(),
+}).refine((data) => (data.phone && data.phone.trim()) || (data.email && data.email.trim()), {
+  message: 'Please provide either a mobile number or an email address to invite.',
+  path: ['phone'],
+});
+
 export const forgotPasswordOtpRequestSchema = z.object({
   email: z.string().email('Valid registered email address is required'),
 });

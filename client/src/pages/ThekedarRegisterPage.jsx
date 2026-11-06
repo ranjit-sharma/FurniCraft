@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '../components/common/BrandLogo';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,6 +37,11 @@ export const ThekedarRegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  const referrer = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return new URLSearchParams(window.location.search).get('ref');
+  }, []);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -142,6 +147,16 @@ export const ThekedarRegisterPage = () => {
               {t('thekedarRegister.subtitle', 'Create your contractor account to manage furniture sites, attendance, and workforce ledgers.')}
             </p>
           </div>
+
+          {/* Referral Banner */}
+          {referrer && (
+            <div className="mt-4 rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50/90 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2.5">
+              <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div className="leading-relaxed">
+                <span>Invited by <strong>{referrer}</strong> to join FurniCraft ERP.</span>
+              </div>
+            </div>
+          )}
 
           {/* Policy Note: Thekedar Only */}
           <div className="mt-4 rounded-xl border border-blue-100 dark:border-blue-900/60 bg-blue-50/80 dark:bg-blue-950/40 p-3 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5">

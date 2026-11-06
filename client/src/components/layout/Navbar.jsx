@@ -3,11 +3,12 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, X } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, X, UserPlus } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { HelpCenterModal } from '../common/HelpCenterModal';
 import { ThekedarGuideModal } from '../common/ThekedarGuideModal';
+import { InviteThekedarModal } from '../common/InviteThekedarModal';
 
 const LogoLinkWithRouter = ({ children }) => {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ export const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const profileRef = useRef(null);
 
   // Close profile dropdown when clicking outside
@@ -237,6 +239,22 @@ export const Navbar = () => {
                   <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                 </button>
 
+                {/* Invite & Refer Thekedar (Directly below Help) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    setInviteModalOpen(true);
+                  }}
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <UserPlus className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <span>{t('profile.inviteThekedar', 'Invite & Refer Thekedar')}</span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                </button>
+
                 <button
                   onClick={() => {
                     setProfileOpen(false);
@@ -257,6 +275,8 @@ export const Navbar = () => {
       <HelpCenterModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
       {/* Thekedar User Guide Modal */}
       <ThekedarGuideModal isOpen={guideModalOpen} onClose={() => setGuideModalOpen(false)} />
+      {/* Invite & Refer Thekedar Modal */}
+      <InviteThekedarModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
     </header>
   );
 };
