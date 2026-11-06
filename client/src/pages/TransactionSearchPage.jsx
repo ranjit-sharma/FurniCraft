@@ -680,11 +680,16 @@ export const TransactionSearchPage = () => {
                 )}
 
                 {/* Salary & Deductions Breakdown (If Available) */}
-                {selectedTx.breakdown && selectedTx.breakdown.baseEarned > 0 && (
+                {selectedTx.breakdown && (selectedTx.breakdown.baseEarned > 0 || (selectedTx.breakdown.additionalWages || 0) > 0) && (
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-5 bg-white dark:bg-slate-900/60 space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                      {t('transactionSearch.wagesDeductionsAudit') || 'Wages & Deductions Detailed Audit'}
-                    </h4>
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                        {t('transactionSearch.wagesDeductionsAudit') || 'Wages & Deductions Detailed Audit'}
+                      </h4>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
+                        {t('transactionSearch.bonusAllowance') || 'Bonus / Allowance'}: +₹{(selectedTx.breakdown.additionalWages || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                       <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-3 border border-slate-100 dark:border-slate-700">
@@ -692,6 +697,9 @@ export const TransactionSearchPage = () => {
                         <strong className="text-sm font-black text-slate-900 dark:text-white">
                           ₹{selectedTx.breakdown.baseEarned?.toLocaleString('en-IN')}
                         </strong>
+                        <div className="text-[10px] text-teal-700 dark:text-teal-400 font-semibold mt-0.5">
+                          +₹{(selectedTx.breakdown.additionalWages || 0).toLocaleString('en-IN')} {t('transactionSearch.bonusAllowance') || 'Bonus / Allowance'}
+                        </div>
                       </div>
 
                       <div className="rounded-xl bg-rose-50 dark:bg-rose-950/60 p-3 border border-rose-100 dark:border-rose-900">

@@ -524,7 +524,7 @@ export const payWorkerNet = async ({
             notes ||
             (netPayable > 0
               ? `Direct net wage payment (Base: ₹${numBaseEarned}, Adv Cut: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction}, Bonus: ₹${numAdditionalWages})`
-              : `Net wage settlement (Base: ₹${numBaseEarned} offset against Adv: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction})`),
+              : `Net wage settlement (Base: ₹${numBaseEarned}${numAdditionalWages > 0 ? `, Bonus: ₹${numAdditionalWages}` : ''} offset against Adv: ₹${numAdvanceDeduction}, Food: ₹${numFoodDeduction}, Room: ₹${numRoomRentDeduction})`),
           transactionDate: new Date(),
         },
       ],
