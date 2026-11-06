@@ -373,7 +373,7 @@ export const MembersOverviewPage = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>
+                        {m.email && <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>}
                       </div>
                     </div>
                     <Badge variant={getRoleBadgeVariant(m.role)} size="sm">
@@ -465,7 +465,7 @@ export const MembersOverviewPage = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>
+                          {m.email && <div className="text-[11px] text-slate-500 dark:text-slate-400">{m.email}</div>}
                         </div>
                       </div>
                     </td>

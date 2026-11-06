@@ -704,22 +704,22 @@ export const createWorker = async (req, res, next) => {
         // Auto-generate strictly unique, gap-safe sequential Worker ID
         const workerCode = await generateUniqueWorkerCode('FC-WRK');
 
-        // Auto-generate safe managed internal email if not provided
-        const internalEmail = email && email.trim()
-          ? email.trim().toLowerCase()
-          : `worker.${Date.now()}.${Math.floor(1000 + Math.random() * 9000)}@furnicraft.local`;
-
         // Unusable password hash since workers cannot log in
         const workerSecuredPassword = `WorkerSecured_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        createdUser = await User.create({
+        const workerUserData = {
           name: name.trim(),
-          email: internalEmail,
           phone: phone.trim(),
           password: workerSecuredPassword,
           role: ROLES.WORKER,
           assignedThekedar: thekedarId,
           status: USER_STATUS.ACTIVE,
-        });
+        };
+        // Worker email is optional and never automatically generated
+        if (email && typeof email === 'string' && email.trim()) {
+          workerUserData.email = email.trim().toLowerCase();
+        }
+
+        createdUser = await User.create(workerUserData);
 
         const wage = parseFloat(defaultDailyWage) || 750;
         const skillsList = trade ? [trade] : (Array.isArray(skills) && skills.length > 0 ? skills : ['Mistry']);

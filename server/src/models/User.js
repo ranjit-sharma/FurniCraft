@@ -13,11 +13,20 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
-      unique: true,
+      required: function () {
+        return this.role !== ROLES.WORKER;
+      },
       lowercase: true,
       trim: true,
-      index: true,
+      set: function (val) {
+        if (!val || typeof val !== 'string' || !val.trim()) return undefined;
+        return val.trim().toLowerCase();
+      },
+      index: {
+        unique: true,
+        sparse: true,
+        partialFilterExpression: { email: { $type: 'string' } },
+      },
     },
     phone: {
       type: String,
