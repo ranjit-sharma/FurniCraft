@@ -116,6 +116,7 @@ export const WorkersPage = () => {
 
   // Register Worker Modal
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [registerSubmitting, setRegisterSubmitting] = useState(false);
   const [workerName, setWorkerName] = useState('');
   const [workerPhone, setWorkerPhone] = useState('');
   const [workerTrade, setWorkerTrade] = useState('Mistry');
@@ -244,6 +245,7 @@ export const WorkersPage = () => {
 
   const handleRegisterWorker = async (e) => {
     e.preventDefault();
+    setRegisterSubmitting(true);
     try {
       const res = await api.post('/users/workers', {
         name: workerName.trim(),
@@ -262,6 +264,8 @@ export const WorkersPage = () => {
       fetchWorkers();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
+    } finally {
+      setRegisterSubmitting(false);
     }
   };
 
@@ -900,40 +904,46 @@ export const WorkersPage = () => {
       <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Add New Craftsman to Workforce">
         <form onSubmit={handleRegisterWorker} className="space-y-4">
           <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
-            Craftsmen are managed workforce records. A unique Worker ID (e.g. <strong>FC-WRK-{String(workers.length + 1).padStart(4, '0')}</strong>) will be auto-generated. Workers do not need a password or login account.
+            Workers are managed business entities under your supervisory contract. A unique Worker ID will be automatically generated.
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Full Name *</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Full Name *
+            </label>
             <input
               type="text"
               required
               value={workerName}
               onChange={(e) => setWorkerName(e.target.value)}
               placeholder="Craftsman name"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Phone Number *</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Mobile Number *
+              </label>
               <input
-                type="text"
+                type="tel"
                 required
                 value={workerPhone}
                 onChange={(e) => setWorkerPhone(e.target.value)}
-                placeholder="10-digit mobile number"
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+                placeholder="10-digit number"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Primary Trade / Skill</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Primary Trade / Skill
+              </label>
               <select
                 value={workerTrade}
                 onChange={(e) => setWorkerTrade(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
                 <option value="Mistry">Mistry</option>
                 <option value="Helper">Helper</option>
@@ -942,7 +952,9 @@ export const WorkersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Default Daily Wage (₹/day) *</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Daily Wage Rate (₹/day) *
+            </label>
             <input
               type="number"
               min="0"
@@ -950,20 +962,20 @@ export const WorkersPage = () => {
               required
               value={defaultWage}
               onChange={(e) => setDefaultWage(e.target.value)}
-              placeholder="Custom rate e.g. 754"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              placeholder="Custom rate e.g. 750"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
             />
           </div>
 
           {/* Permanent Thekedar Selection */}
-          {isOwner ? (
+          {isOwner && (
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Permanent Assigned Thekedar *</label>
               <select
                 required
                 value={selectedThekedarId}
                 onChange={(e) => setSelectedThekedarId(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
                 {thekedarsList.map((th) => (
                   <option key={th._id} value={th._id}>
@@ -975,15 +987,15 @@ export const WorkersPage = () => {
                 A worker can permanently work only under this Thekedar and on their projects.
               </p>
             </div>
-          ) : (
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/50 p-2.5 text-xs text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              <span className="font-semibold">Permanent Thekedar:</span> {user?.name} (Craftsman will be permanently registered under your contractor roster).
-            </div>
           )}
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
-            <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Add Worker to Roster</Button>
+          <div className="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="secondary" onClick={() => setRegisterModalOpen(false)} className="w-full sm:w-auto justify-center">
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" disabled={registerSubmitting} className="w-full sm:w-auto justify-center min-h-[42px]">
+              {registerSubmitting ? 'Registering...' : 'Add Worker to Roster'}
+            </Button>
           </div>
         </form>
       </Modal>
