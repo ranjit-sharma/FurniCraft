@@ -125,31 +125,26 @@ export const ThekedarRegisterPage = () => {
       <div className="relative z-10 mx-auto w-full max-w-lg">
         <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 shadow-xl shadow-slate-200/60 dark:shadow-2xl">
           
-          {/* Brand Logo & Language Header inside Card */}
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <div className="hidden sm:block">
-                  <BrandLogo size="lg" variant={isDark ? 'dark' : 'light'} />
-                </div>
-                <div className="sm:hidden">
-                  <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} />
-                </div>
-              </div>
-              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
-                <span className="sm:hidden text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Globe className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                  <span>Language:</span>
-                </span>
-                <LanguageSelector variant="pill" />
-              </div>
+          {/* Brand Logo Header */}
+          <div className="mb-4">
+            <div className="hidden sm:block">
+              <BrandLogo size="lg" variant={isDark ? 'dark' : 'light'} />
             </div>
+            <div className="sm:hidden">
+              <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} />
+            </div>
+          </div>
 
-            <div className="mt-3.5 flex flex-wrap items-center gap-2">
+          {/* Badges & Language Selector Bar */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-amber-900 dark:text-amber-200">
                 <HardHat className="h-3 w-3 text-amber-600 dark:text-amber-400" /> {t('thekedarRegister.badge', 'Thekedar Registration')}
               </span>
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400">{t('thekedarRegister.contractorErp', 'Contractor ERP')}</span>
+              <span className="hidden sm:inline text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400">{t('thekedarRegister.contractorErp', 'Contractor ERP')}</span>
+            </div>
+            <div className="shrink-0">
+              <LanguageSelector variant="pill" />
             </div>
           </div>
 
