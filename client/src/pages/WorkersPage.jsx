@@ -761,7 +761,7 @@ export const WorkersPage = () => {
           )}
           {(isOwner || isThekedar) && (
             <Button variant="primary" onClick={() => setRegisterModalOpen(true)} icon={UserPlus} className="flex-1 sm:flex-initial justify-center">
-              {t('workers.registerWorker', 'Register Worker')}
+              {t('workers.addWorker', 'Add Worker')}
             </Button>
           )}
         </div>
@@ -896,8 +896,8 @@ export const WorkersPage = () => {
         </div>
       )}
 
-      {/* Modal: Register Worker */}
-      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Register Craftsman to Workforce">
+      {/* Modal: Add Worker */}
+      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Add New Craftsman to Workforce">
         <form onSubmit={handleRegisterWorker} className="space-y-4">
           <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
             Craftsmen are managed workforce records. A unique Worker ID (e.g. <strong>FC-WRK-{String(workers.length + 1).padStart(4, '0')}</strong>) will be auto-generated. Workers do not need a password or login account.
@@ -983,7 +983,7 @@ export const WorkersPage = () => {
 
           <div className="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setRegisterModalOpen(false)}>Cancel</Button>
-            <Button type="submit">Register Craftsman</Button>
+            <Button type="submit">Add Worker to Roster</Button>
           </div>
         </form>
       </Modal>

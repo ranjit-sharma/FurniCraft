@@ -802,7 +802,8 @@ export const translations = {
     "workers": {
       "registryTitle": "Workforce & Craftsmen Registry",
       "registrySub": "Carpenters, edge banders, cabinet fitters, polishers, assigned tasks, and daily wage agreements.",
-      "registerWorker": "Register Worker",
+      "addWorker": "Add Worker",
+      "registerWorker": "Add Worker",
       "deleteWorker": "Delete Worker",
       "noWorkersRegistered": "No workers currently registered.",
       "dailyWageRate": "Standard Daily Wage",
@@ -1731,6 +1732,7 @@ export const translations = {
     "workers": {
       "registryTitle": "कार्यबल एवं कारीगर रजिस्टर",
       "registrySub": "बढ़ई, एज बेंडर, कैबिनेट फिटर, पॉलिशर, सौंपे गए कार्य एवं दैनिक मजदूरी समझौते।",
+      "addWorker": "कारीगर जोड़ें",
       "registerWorker": "कारीगर जोड़ें",
       "deleteWorker": "कारीगर हटाएं",
       "noWorkersRegistered": "वर्तमान में कोई कारीगर पंजीकृत नहीं है।",
@@ -2660,6 +2662,7 @@ export const translations = {
       "workers": {
           "registryTitle": "Workforce aur Karigar Registry",
           "registrySub": "Carpenters, edge banders, cabinet fitters, polishers, unke kaam aur rozana ki dehadi agreements.",
+          "addWorker": "Worker Jodein",
           "registerWorker": "Naya Karigar Jodein",
           "deleteWorker": "Karigar Hatayein",
           "noWorkersRegistered": "Abhi koi karigar registered nahi hai.",
