@@ -139,25 +139,25 @@ export const InviteThekedarModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Prominent Quick Share Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
             {/* WhatsApp */}
             <button
               type="button"
               onClick={handleShareWhatsApp}
-              className="flex items-center justify-center gap-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-4 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold transition shadow-sm cursor-pointer min-w-0"
             >
-              <MessageCircle className="h-4 w-4" />
-              <span>{t('invite.shareWhatsApp', 'Share via WhatsApp')}</span>
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('invite.shareWhatsApp', 'Share via WhatsApp')}</span>
             </button>
 
             {/* More Options / Share Sheet */}
             <button
               type="button"
               onClick={handleNativeShare}
-              className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-4 py-2.5 text-xs font-bold transition cursor-pointer"
+              className="flex items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs font-bold transition cursor-pointer min-w-0"
             >
-              <Share2 className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              <span>{t('invite.moreOptions', 'More Options')}</span>
+              <Share2 className="h-4 w-4 shrink-0 text-slate-600 dark:text-slate-400" />
+              <span className="truncate">{t('invite.moreOptions', 'More Options')}</span>
             </button>
           </div>
         </div>
