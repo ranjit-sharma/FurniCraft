@@ -31,6 +31,9 @@ export const getCleanFromAddress = () => {
  * Send email via Brevo HTTPS REST API (Port 443 - Fast, reliable cloud delivery, never blocked by firewalls)
  */
 export const sendViaBrevo = async ({ to, name, subject, html, text, fromAddress, replyTo, attachments = [] }) => {
+  if (process.env.NODE_ENV === 'test') {
+    return { success: true, mode: 'test_simulated', messageId: `<test-simulated-${Date.now()}@furnicraft.test>` };
+  }
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) return null;
 

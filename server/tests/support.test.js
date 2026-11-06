@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/app.js';
-import { User, SupportTicket } from '../src/models/index.js';
+import { User, SupportTicket, Notification } from '../src/models/index.js';
 import { signToken } from '../src/utils/jwt.js';
 import * as emailService from '../src/services/emailService.js';
 
@@ -61,6 +61,7 @@ describe('Support & Help Center API Verification', () => {
 
     // Clean up
     await SupportTicket.deleteMany({ userId: testUser._id });
+    await Notification.deleteMany({ recipientId: testUser._id });
     await User.deleteOne({ _id: testUser._id });
     emailSpy.mockRestore();
   });
@@ -167,6 +168,7 @@ describe('Support & Help Center API Verification', () => {
 
     // Clean up
     await SupportTicket.deleteMany({ userId: { $in: [thekedarUser._id, ownerUser._id] } });
+    await Notification.deleteMany({ recipientId: { $in: [thekedarUser._id, ownerUser._id] } });
     await User.deleteMany({ _id: { $in: [thekedarUser._id, ownerUser._id] } });
   });
 });
