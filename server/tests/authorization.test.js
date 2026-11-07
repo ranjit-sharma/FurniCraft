@@ -436,4 +436,19 @@ describe('Authorization & RBAC API Tests', () => {
     await WorkerProfile.deleteOne({ userId: tempWorker._id });
     await User.deleteOne({ _id: tempWorker._id });
   });
+
+  it('allows Owner to fetch members overview successfully and verifies summary structure', async () => {
+    const res = await request(app)
+      .get('/api/v1/reports/members-overview')
+      .set('Authorization', `Bearer ${ownerToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('success');
+    expect(res.body.data).toBeDefined();
+    expect(res.body.data.summary).toBeDefined();
+    expect(res.body.data.summary.totalMembers).toBeGreaterThanOrEqual(1);
+    expect(res.body.data.summary.visitsByRole).toBeDefined();
+    expect(res.body.data.summary.visitsByRole.WORKER).toBe(0);
+    expect(Array.isArray(res.body.data.members)).toBe(true);
+  });
 });

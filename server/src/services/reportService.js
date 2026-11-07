@@ -198,7 +198,7 @@ export const getMembersOverview = async ({ role, search } = {}) => {
       totalVisits,
       todayVisits,
       visitsByRole: {
-        WORKER: workerVisits,
+        WORKER: 0,
         THEKEDAR: thekedarVisits,
         OWNER: ownerVisits,
       },
