@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -7,12 +7,26 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { PageHeader } from '../components/common/PageHeader';
-import { IndianRupee, Plus } from 'lucide-react';
+import { IndianRupee, Plus, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const getCurrentMonthStr = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const getMonthLabel = (mStr) => {
+  if (!mStr || mStr === 'ALL') return 'All Months';
+  const [y, m] = mStr.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  return d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+};
 
 export const ExpensesPage = () => {
   const { isThekedar } = useAuth();
   const { t } = useLanguage();
 
+  // Month-wise view: defaults strictly to the current month (e.g. 2026-11)
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthStr);
   const [payments, setPayments] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +36,7 @@ export const ExpensesPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [projectId, setProjectId] = useState('');
   const [amount, setAmount] = useState('');
+  const [receivedDate, setReceivedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [stage, setStage] = useState('Advance Booking');
   const [paymentMethod, setPaymentMethod] = useState('BANK_TRANSFER');
   const [receiptReference, setReceiptReference] = useState('');
@@ -53,6 +68,20 @@ export const ExpensesPage = () => {
     fetchData();
   }, []);
 
+  const handlePrevMonth = () => {
+    const base = selectedMonth && selectedMonth !== 'ALL' ? selectedMonth : getCurrentMonthStr();
+    const [y, m] = base.split('-').map(Number);
+    const prev = new Date(y, m - 2, 1);
+    setSelectedMonth(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`);
+  };
+
+  const handleNextMonth = () => {
+    const base = selectedMonth && selectedMonth !== 'ALL' ? selectedMonth : getCurrentMonthStr();
+    const [y, m] = base.split('-').map(Number);
+    const next = new Date(y, m, 1);
+    setSelectedMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
+  };
+
   const handleRecordPayment = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -60,6 +89,7 @@ export const ExpensesPage = () => {
     try {
       await api.post(`/projects/${projectId}/money-received`, {
         amount: parseFloat(amount),
+        receivedDate: receivedDate || undefined,
         stage,
         paymentMethod,
         receiptReference: receiptReference || undefined,
@@ -72,6 +102,14 @@ export const ExpensesPage = () => {
       setReceiptReference('');
       setPayerName('');
       setNotes('');
+      setReceivedDate(new Date().toISOString().slice(0, 10));
+      // Auto sync selected month if receipt was recorded for a specific month
+      if (receivedDate) {
+        const entryMonth = receivedDate.slice(0, 7);
+        if (selectedMonth !== 'ALL' && selectedMonth !== entryMonth) {
+          setSelectedMonth(entryMonth);
+        }
+      }
       fetchData();
     } catch (err) {
       setMessage({ type: 'error', text: err.message });
@@ -80,8 +118,21 @@ export const ExpensesPage = () => {
     }
   };
 
-  const totalMoneyReceived = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-  const uniqueProjectsCount = new Set(payments.map((p) => p.projectId?._id || p.projectId)).size;
+  // Filter payments month-wise
+  const filteredPayments = useMemo(() => {
+    if (selectedMonth === 'ALL') return payments;
+    return payments.filter((p) => {
+      const d = new Date(p.receivedDate || p.createdAt);
+      if (isNaN(d.getTime())) return false;
+      const yyyyMm = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      return yyyyMm === selectedMonth;
+    });
+  }, [payments, selectedMonth]);
+
+  const monthMoneyReceived = filteredPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const allTimeMoneyReceived = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const uniqueProjectsInMonth = new Set(filteredPayments.map((p) => p.projectId?._id || p.projectId)).size;
+  const uniqueProjectsAllTime = new Set(payments.map((p) => p.projectId?._id || p.projectId)).size;
 
   return (
     <div className="space-y-6">
@@ -105,30 +156,146 @@ export const ExpensesPage = () => {
         </div>
       )}
 
-      {/* Summary: total + counts in one compact card */}
-      <div className="rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 p-4 text-white shadow-sm">
-        <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">{t('expenses.totalMoneyReceived', 'Total money received')}</div>
-        <div className="text-3xl font-black">₹{totalMoneyReceived.toLocaleString('en-IN')}</div>
-        <div className="mt-2 text-xs text-emerald-100/90">
-          {payments.length} {t('expenses.receiptsLower', 'receipts')} · {uniqueProjectsCount} {t('expenses.projectsLower', 'projects')}
+      {/* Month Navigation & Filter Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400">
+            <Calendar className="h-5 w-5 shrink-0" />
+          </div>
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+              {t('expenses.showingPeriod', 'Showing Period')}
+            </span>
+            <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+              {getMonthLabel(selectedMonth)}
+            </span>
+          </div>
         </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          {/* Previous Month */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handlePrevMonth}
+            disabled={selectedMonth === 'ALL'}
+            icon={ChevronLeft}
+            title="Previous Month"
+          >
+            <span className="hidden sm:inline">Prev</span>
+          </Button>
+
+          {/* Month Input Picker */}
+          <input
+            type="month"
+            value={selectedMonth === 'ALL' ? '' : selectedMonth}
+            onChange={(e) => e.target.value && setSelectedMonth(e.target.value)}
+            aria-label="Select month"
+            className="rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-xs font-bold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
+            title="Pick month"
+          />
+
+          {/* Next Month */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleNextMonth}
+            disabled={selectedMonth === 'ALL'}
+            title="Next Month"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="h-4 w-4 sm:ml-1" />
+          </Button>
+
+          {/* Current Month Shortcut */}
+          <Button
+            type="button"
+            variant={selectedMonth === getCurrentMonthStr() ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedMonth(getCurrentMonthStr())}
+            className="text-xs"
+          >
+            Current Month
+          </Button>
+
+          {/* All Months Toggle */}
+          <Button
+            type="button"
+            variant={selectedMonth === 'ALL' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedMonth(selectedMonth === 'ALL' ? getCurrentMonthStr() : 'ALL')}
+            className="text-xs"
+          >
+            {selectedMonth === 'ALL' ? 'Current Month' : 'All Months'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Summary: month-wise total + all-time total */}
+      <div className="rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 p-4 sm:p-5 text-white shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">
+            {selectedMonth === 'ALL'
+              ? t('expenses.totalMoneyReceivedAllTime', 'Total Money Received (All Time)')
+              : `${t('expenses.totalMoneyReceivedMonth', 'Money Received')} — ${getMonthLabel(selectedMonth)}`}
+          </div>
+          <div className="text-3xl font-black mt-1">₹{monthMoneyReceived.toLocaleString('en-IN')}</div>
+          <div className="mt-2 text-xs text-emerald-100/90">
+            {filteredPayments.length} {t('expenses.receiptsLower', 'receipts')} · {uniqueProjectsInMonth} {t('expenses.projectsLower', 'projects')}
+          </div>
+        </div>
+
+        {selectedMonth !== 'ALL' && (
+          <div className="border-t sm:border-t-0 sm:border-l border-emerald-600/60 pt-3 sm:pt-0 sm:pl-6 text-left sm:text-right">
+            <div className="text-[11px] font-semibold uppercase text-emerald-200">
+              {t('expenses.allTimeTotal', 'All-Time Total')}
+            </div>
+            <div className="text-xl font-bold text-white mt-0.5">
+              ₹{allTimeMoneyReceived.toLocaleString('en-IN')}
+            </div>
+            <div className="text-[11px] text-emerald-200/80">
+              {payments.length} {t('expenses.receiptsLower', 'receipts')} across {uniqueProjectsAllTime} {t('expenses.projectsLower', 'projects')}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Transactions Table */}
       <Card className="overflow-hidden">
-        <div className="border-b border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">{t('expenses.ledgerTitle', 'Receipts')}</h3>
+        <div className="border-b border-slate-200 dark:border-slate-800 px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              {t('expenses.ledgerTitle', 'Receipts & Inflows Ledger')}
+              <span className="ml-2 text-xs font-normal text-slate-500 dark:text-slate-400">
+                ({getMonthLabel(selectedMonth)})
+              </span>
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {t('expenses.ledgerSubtitle', 'Recorded receipts of funds received from clients for modern furniture manufacturing, assembly, and site installation.')}
+            </p>
+          </div>
+          <Badge variant="success" size="sm">
+            {filteredPayments.length} {t('expenses.receiptsLower', 'receipts')}
+          </Badge>
         </div>
 
         {loading ? (
           <div className="flex h-48 items-center justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
           </div>
-        ) : payments.length === 0 ? (
+        ) : filteredPayments.length === 0 ? (
           <div className="p-12 text-center">
             <IndianRupee className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" />
-            <h3 className="mt-3 text-base font-bold text-slate-800 dark:text-slate-200">{t('expenses.noPaymentsRecorded') || 'No client payments recorded'}</h3>
-            <p className="mt-1 text-xs text-slate-700 dark:text-slate-400">{t('expenses.noPaymentsDesc') || 'Record advances or milestone payments received from project clients.'}</p>
+            <h3 className="mt-3 text-base font-bold text-slate-800 dark:text-slate-200">
+              {selectedMonth === 'ALL'
+                ? (t('expenses.noPaymentsRecorded') || 'No client payments recorded')
+                : `No client payments recorded for ${getMonthLabel(selectedMonth)}`}
+            </h3>
+            <p className="mt-1 text-xs text-slate-700 dark:text-slate-400">
+              {t('expenses.noPaymentsDesc') || 'Record advances or milestone payments received from project clients.'}
+            </p>
             {isThekedar && (
               <Button size="sm" className="mt-4" onClick={() => setModalOpen(true)}>
                 <Plus className="mr-1.5 h-4 w-4" /> {t('expenses.recordFirstPayment') || 'Record First Payment'}
@@ -139,7 +306,7 @@ export const ExpensesPage = () => {
           <div>
             {/* Mobile / Small Screen Card Layout: Single View, Zero Side Scroll */}
             <div className="block lg:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4 space-y-3">
-              {payments.map((p) => (
+              {filteredPayments.map((p) => (
                 <div key={p._id} className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 space-y-2.5 shadow-xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <span className="font-mono font-bold text-emerald-800 dark:text-emerald-400 text-xs">{p.receiptCode}</span>
@@ -179,7 +346,7 @@ export const ExpensesPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {payments.map((p) => (
+                  {filteredPayments.map((p) => (
                     <tr key={p._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4">
                         <span className="font-mono font-bold text-emerald-800 dark:text-emerald-400 text-xs">{p.receiptCode}</span>
@@ -235,17 +402,31 @@ export const ExpensesPage = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.amountReceived') || 'Amount Received (INR ₹) *'}</label>
-            <input
-              type="number"
-              required
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g. 75000"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.amountReceived') || 'Amount Received (INR ₹) *'}</label>
+              <input
+                type="number"
+                required
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="e.g. 75000"
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {t('expenses.paymentDate', 'Payment Received Date *')}
+              </label>
+              <input
+                type="date"
+                required
+                value={receivedDate}
+                onChange={(e) => setReceivedDate(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

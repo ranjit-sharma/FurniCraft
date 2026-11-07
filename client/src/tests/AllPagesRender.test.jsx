@@ -225,9 +225,11 @@ describe('All Pages Render Verification - Zero Blank Screen Test', () => {
     expect(container).not.toBeEmptyDOMElement();
   });
 
-  it('renders ExpensesPage without crashing or blank screen', async () => {
+  it('renders ExpensesPage without crashing or blank screen and shows month navigation', async () => {
     const { container } = renderWithProviders(ExpensesPage);
     expect(container).not.toBeEmptyDOMElement();
+    expect(await screen.findByText('Showing Period')).toBeInTheDocument();
+    expect(screen.getByText('Current Month')).toBeInTheDocument();
   });
 
   it('renders AuditLogsPage without crashing or blank screen', async () => {

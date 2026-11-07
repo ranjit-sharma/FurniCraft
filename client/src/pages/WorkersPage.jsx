@@ -1758,6 +1758,7 @@ export const WorkersPage = () => {
       >
         {advanceWorker && (() => {
           const outstanding = advanceWorker.outstandingAdvanceBalance || 0;
+          const amount = parseFloat(advanceAmount) || 0;
           return (
             <form onSubmit={handleGiveAdvance} className="space-y-4">
               <div className="grid grid-cols-2 gap-2 text-center">
@@ -1810,8 +1811,8 @@ export const WorkersPage = () => {
                   Advance becomes <strong>₹{(outstanding + amount).toLocaleString('en-IN')}</strong> and is deducted from the next net payment. A transaction and bill are recorded.
                 </p>
               )}
-              <Button type="submit" variant="danger" className="w-full" size="lg" loading={advanceSubmitting} disabled={amount <= 0 || amount > room}>
-                Give ₹{amount.toLocaleString('en-IN')} Advance
+              <Button type="submit" variant="danger" className="w-full" size="lg" loading={advanceSubmitting} disabled={amount <= 0}>
+                {amount > 0 ? `Give ₹${amount.toLocaleString('en-IN')} Advance` : 'Give Advance'}
               </Button>
             </form>
           );
