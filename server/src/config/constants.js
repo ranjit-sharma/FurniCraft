@@ -19,6 +19,7 @@ export const ATTENDANCE_CODES = {
   PPP: 'PPP',     // 3.0x daily wage (3 shifts)
   SHIFT_2_5: '2.5', // 2.5 shift alias
   SHIFT_3: '3',     // 3 shift alias
+  A: 'A',           // Absent alias
   ABSENT: 'ABSENT', // 0x
   LEAVE: 'LEAVE',   // 0x
 };

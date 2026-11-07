@@ -60,7 +60,7 @@ const ATTENDANCE_CODE_OPTIONS = [
   { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
   { code: 'P2/5', label: '2.5x (2.5 Shifts)', desc: '2.5 Shifts' },
   { code: 'PPP', label: '3.0x (3 Shifts)', desc: '3 Shifts' },
-  { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
+  { code: 'ABSENT', label: 'A (0.0x)', desc: 'Absent' },
   { code: 'LEAVE', label: 'Leave (0.0x)', desc: 'On Leave' },
 ];
 

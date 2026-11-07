@@ -20,6 +20,7 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
       case 'CRITICAL':
       case 'REJECTED':
       case 'ABSENT':
+      case 'A':
       case 'LOST':
       case 'DAMAGED':
         return 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-800';

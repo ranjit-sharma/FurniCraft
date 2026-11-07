@@ -703,6 +703,9 @@ export const AttendanceCalendar = ({
         <span className="flex items-center gap-1">
           <Badge variant="PPP" size="sm">3x</Badge> 3 Shifts (3.0x)
         </span>
+        <span className="flex items-center gap-1">
+          <Badge variant="A" size="sm">A</Badge> Absent (0x)
+        </span>
         <div className="flex items-center gap-2 sm:border-l sm:border-slate-300 dark:sm:border-slate-700 sm:pl-3">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-emerald-600" /> {t('common.approved') || 'Approved'}

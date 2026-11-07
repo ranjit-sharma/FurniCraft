@@ -28,7 +28,7 @@ const QUICK_CODES = [
   { code: 'PP', label: '2x', title: 'Till midnight (2.0x)' },
   { code: 'P2/5', label: '2.5x', title: '2.5 Shifts (2.5x)' },
   { code: 'PPP', label: '3x', title: '3 Shifts (3.0x)' },
-  { code: 'ABSENT', label: 'Absent', title: 'Absent (no wage)' },
+  { code: 'ABSENT', label: 'A', title: 'Absent (no wage)' },
 ];
 
 const PROJECT_KEY = 'furnicraft_attendance_project';

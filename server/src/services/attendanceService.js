@@ -43,6 +43,7 @@ export const normalizeAttendanceCode = (c) => {
   if (!c) return c;
   if (c === '2.5' || c === '2.5x') return ATTENDANCE_CODES.P2_5;
   if (c === '3' || c === '3.0' || c === '3x') return ATTENDANCE_CODES.PPP;
+  if (c === 'A') return ATTENDANCE_CODES.ABSENT;
   return c;
 };
 
