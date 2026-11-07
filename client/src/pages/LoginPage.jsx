@@ -299,9 +299,18 @@ export const LoginPage = () => {
 
               <div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                  {t('login.title', 'Sign in to your account')}
+                  FurniCraft | Official Furniture Workforce Management Platform
                 </h1>
-                <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
+                <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
+                  FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, wages, payroll, payments, and business operations.
+                </p>
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  {t('login.title', 'Sign in to your account')}
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   {t('login.subtitle', 'Enter your email or registered mobile number to manage furniture sites and ledgers.')}
                 </p>
               </div>
@@ -427,10 +436,10 @@ export const LoginPage = () => {
             <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> FurniCraft ERP — Official Platform
           </span>
           <h2 className="mt-2 text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            Modern Furniture Workforce &amp; Contractor Platform
+            Core Platform Capabilities
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Discover FurniCraft, a modern furniture workforce management platform for contractors to manage workers, projects, attendance, wages, payroll, and business operations.
+            FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, wages, payroll, payments, and business operations.
           </p>
         </div>
 
@@ -543,7 +552,7 @@ export const LoginPage = () => {
           </div>
         </div>
         <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
-          &copy; 2026 FurniCraft. All rights reserved. FurniCraft – Official Furniture Workforce Management Platform.
+          &copy; 2026 FurniCraft. All rights reserved. FurniCraft | Official Furniture Workforce Management Platform.
         </p>
       </footer>
 
