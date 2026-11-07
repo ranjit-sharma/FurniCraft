@@ -1,11 +1,26 @@
-import { beforeAll } from 'vitest';
+import { beforeAll, afterAll } from 'vitest';
 import mongoose from 'mongoose';
-import { connectDB } from '../src/config/db.js';
-import { env } from '../src/config/env.js';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+
+let mongod;
 
 beforeAll(async () => {
-  if (mongoose.connection.readyState !== 1) {
-    const testUri = process.env.MONGODB_URI || env.MONGODB_URI;
-    await connectDB(testUri);
+  if (process.env.USE_LIVE_DB === 'true') {
+    const testUri = process.env.TEST_MONGODB_URI || process.env.MONGODB_URI;
+    await mongoose.connect(testUri);
+  } else {
+    // Isolated in-memory database: guarantees tests NEVER touch, pollute, or delete live production data
+    mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+    await mongoose.connect(uri);
+  }
+});
+
+afterAll(async () => {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+  if (mongod) {
+    await mongod.stop();
   }
 });

@@ -44,6 +44,39 @@ const financialTransactionSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    // Immutable snapshot fields so transaction vouchers retain worker & contractor details even if profiles are later deleted
+    workerName: {
+      type: String,
+      trim: true,
+      default: null,
+      index: true,
+    },
+    workerCode: {
+      type: String,
+      trim: true,
+      default: null,
+      index: true,
+    },
+    workerPhone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    thekedarName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    thekedarBusinessName: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+    thekedarPhone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
     thekedarId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

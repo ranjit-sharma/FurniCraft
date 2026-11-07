@@ -218,6 +218,9 @@ export const listTransactions = async (req, res, next) => {
       filter.$or = [
         { transactionId: { $regex: cleanSearch, $options: 'i' } },
         { receiptReference: { $regex: cleanSearch, $options: 'i' } },
+        { workerName: { $regex: cleanSearch, $options: 'i' } },
+        { workerCode: { $regex: cleanSearch, $options: 'i' } },
+        { workerPhone: { $regex: cleanSearch, $options: 'i' } },
       ];
     }
 
@@ -267,6 +270,9 @@ export const searchTransactionById = async (req, res, next) => {
         { transactionId: { $regex: `^${safeRegex}$`, $options: 'i' } },
         { transactionId: { $regex: safeRegex, $options: 'i' } },
         { receiptReference: { $regex: safeRegex, $options: 'i' } },
+        { workerName: { $regex: safeRegex, $options: 'i' } },
+        { workerCode: { $regex: safeRegex, $options: 'i' } },
+        { workerPhone: { $regex: safeRegex, $options: 'i' } },
       ],
     };
 

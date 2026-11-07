@@ -622,6 +622,11 @@ export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lan
   const profile = txn.workerId ? await WorkerProfile.findOne({ userId: txn.workerId._id }).lean() : null;
   const thekedar = txn.thekedarId || {};
   const worker = txn.workerId || {};
+  const thekedarName = thekedar.name || txn.thekedarName || '—';
+  const thekedarPhone = thekedar.phone || txn.thekedarPhone || '';
+  const workerName = worker.name || txn.workerName || '—';
+  const workerPhone = worker.phone || txn.workerPhone || '';
+  const workerCode = profile?.workerCode || txn.workerCode || '';
   const isWage = txn.category === 'SALARY_PAYMENT';
   const isAdvance = txn.category === 'ADVANCE_DISBURSEMENT';
   const title = isWage ? L.wageReceipt : isAdvance ? L.advanceReceipt : L.paymentReceipt;
@@ -635,8 +640,8 @@ export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lan
   });
 
   y = drawInfoCards(doc, y, [
-    { label: L.paidBy, value: thekedar.name || '—', sub: thekedar.phone ? `${L.thekedar} · ${thekedar.phone}` : L.thekedar },
-    { label: L.paidTo, value: worker.name || '—', sub: [profile?.workerCode, worker.phone].filter(Boolean).join(' · ') },
+    { label: L.paidBy, value: thekedarName, sub: thekedarPhone ? `${L.thekedar} · ${thekedarPhone}` : L.thekedar },
+    { label: L.paidTo, value: workerName, sub: [workerCode, workerPhone].filter(Boolean).join(' · ') },
     {
       label: L.payment,
       value: (txn.paymentMethod || 'CASH').replace('_', ' '),

@@ -422,8 +422,8 @@ export const TransactionSearchPage = () => {
                           </Badge>
                         </div>
                         <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                          {tx.workerId ? (
-                            <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
+                          {(tx.workerId?.name || tx.workerName) ? (
+                            <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId?.name || tx.workerName}</strong>{tx.workerCode ? <span className="text-[11px] text-slate-500 ml-1">({tx.workerCode})</span> : null}</span>
                           ) : (
                             <span>{t('transactionSearch.generalLedger', 'Workshop General Ledger')}</span>
                           )}
@@ -482,8 +482,8 @@ export const TransactionSearchPage = () => {
                             </Badge>
                           </div>
                           <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                            {tx.workerId ? (
-                              <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId.name}</strong></span>
+                            {(tx.workerId?.name || tx.workerName) ? (
+                              <span>{t('transactionSearch.craftsman', 'Craftsman:')} <strong className="text-slate-900 dark:text-white">{tx.workerId?.name || tx.workerName}</strong>{tx.workerCode ? <span className="text-[11px] text-slate-500 ml-1">({tx.workerCode})</span> : null}</span>
                             ) : (
                               <span>{t('transactionSearch.generalLedger', 'Workshop General Ledger')}</span>
                             )}
@@ -620,14 +620,26 @@ export const TransactionSearchPage = () => {
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                       <User className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" /> {t('transactionSearch.recipientCraftsman') || 'Recipient Craftsman'}
                     </div>
-                    {selectedTx.workerId ? (
+                    {(selectedTx.workerId?.name || selectedTx.workerName) ? (
                       <div>
-                        <div className="font-bold text-base text-slate-900 dark:text-white">{selectedTx.workerId.name}</div>
-                        {selectedTx.workerId.phone && (
-                          <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Phone: {selectedTx.workerId.phone}</div>
+                        <div className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                          <span>{selectedTx.workerId?.name || selectedTx.workerName}</span>
+                          {(selectedTx.workerCode || (!selectedTx.workerId && selectedTx.workerName)) && (
+                            <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono">
+                              {selectedTx.workerCode || 'Archived'}
+                            </span>
+                          )}
+                        </div>
+                        {(selectedTx.workerId?.phone || selectedTx.workerPhone) && (
+                          <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Phone: {selectedTx.workerId?.phone || selectedTx.workerPhone}</div>
                         )}
-                        {selectedTx.workerId.email && (
+                        {selectedTx.workerId?.email && (
                           <div className="text-xs text-slate-500 dark:text-slate-400">{selectedTx.workerId.email}</div>
+                        )}
+                        {!selectedTx.workerId && (
+                          <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1">
+                            (Worker profile deleted from active workforce; ledger voucher preserved for audit)
+                          </div>
                         )}
                       </div>
                     ) : (
@@ -640,14 +652,14 @@ export const TransactionSearchPage = () => {
                     <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                       <Building className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> {t('transactionSearch.thekedarSupervisor') || 'Contractor / Thekedar'}
                     </div>
-                    {selectedTx.thekedarId ? (
+                    {(selectedTx.thekedarId?.name || selectedTx.thekedarName) ? (
                       <div>
-                        <div className="font-bold text-base text-slate-900 dark:text-white">{selectedTx.thekedarId.name}</div>
-                        {selectedTx.thekedarId.phone && (
-                          <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Phone: {selectedTx.thekedarId.phone}</div>
+                        <div className="font-bold text-base text-slate-900 dark:text-white">{selectedTx.thekedarId?.name || selectedTx.thekedarName}</div>
+                        {(selectedTx.thekedarId?.phone || selectedTx.thekedarPhone) && (
+                          <div className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Phone: {selectedTx.thekedarId?.phone || selectedTx.thekedarPhone}</div>
                         )}
-                        {selectedTx.thekedarId.email && (
-                          <div className="text-xs text-slate-500 dark:text-slate-400">{selectedTx.thekedarId.email}</div>
+                        {(selectedTx.thekedarId?.email || selectedTx.thekedarBusinessName) && (
+                          <div className="text-xs text-slate-500 dark:text-slate-400">{selectedTx.thekedarId?.email || selectedTx.thekedarBusinessName}</div>
                         )}
                       </div>
                     ) : (

@@ -117,6 +117,11 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
     );
   }
 
+  const [workerUser, thekedarUser] = await Promise.all([
+    User.findById(advanceRequest.workerId).select('name phone').lean(),
+    User.findById(advanceRequest.thekedarId).select('name phone businessName').lean(),
+  ]);
+
   try {
     const transaction = await withDuplicateRetry(async () => {
       const transactionId = await generateUniqueTransactionId('DISB');
@@ -128,7 +133,13 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
         paymentMethod: paymentMethod || PAYMENT_METHODS.CASH,
         receiptReference: receiptReference || null,
         workerId: advanceRequest.workerId,
+        workerName: workerUser?.name || null,
+        workerCode: workerProfile?.workerCode || null,
+        workerPhone: workerUser?.phone || null,
         thekedarId: advanceRequest.thekedarId,
+        thekedarName: thekedarUser?.name || null,
+        thekedarPhone: thekedarUser?.phone || null,
+        thekedarBusinessName: thekedarUser?.businessName || null,
         projectId: advanceRequest.projectId,
         advanceRequestId: advanceRequest._id,
         recordedBy: recordedBy._id,
@@ -218,6 +229,12 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
     );
   }
 
+  const [workerUser, thekedarUser, workerProfile] = await Promise.all([
+    User.findById(payroll.workerId).select('name phone').lean(),
+    User.findById(payroll.thekedarId).select('name phone businessName').lean(),
+    WorkerProfile.findOne({ userId: payroll.workerId }).select('workerCode').lean(),
+  ]);
+
   const transaction = await withDuplicateRetry(async () => {
     const transactionId = await generateUniqueTransactionId('SAL');
     return await FinancialTransaction.create({
@@ -228,7 +245,13 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
       paymentMethod: paymentMethod || PAYMENT_METHODS.BANK_TRANSFER,
       receiptReference: receiptReference || null,
       workerId: payroll.workerId,
+      workerName: workerUser?.name || null,
+      workerCode: workerProfile?.workerCode || null,
+      workerPhone: workerUser?.phone || null,
       thekedarId: payroll.thekedarId,
+      thekedarName: thekedarUser?.name || null,
+      thekedarPhone: thekedarUser?.phone || null,
+      thekedarBusinessName: thekedarUser?.businessName || null,
       payrollId: payroll._id,
       recordedBy: recordedBy._id,
       notes: notes || `Salary payment for period ${payroll.periodMonth}/${payroll.periodYear}`,
@@ -460,6 +483,8 @@ export const payWorkerNet = async ({
     netPaid: netPayable,
   };
 
+  const thekedarUser = await User.findById(profile.thekedarId).select('name phone businessName').lean();
+
   const executePayment = async (session) => {
     const sessionOpt = session ? { session } : {};
     const txIdSalary = await generateUniqueTransactionId('NET');
@@ -473,7 +498,13 @@ export const payWorkerNet = async ({
           paymentMethod,
           receiptReference: receiptReference || null,
           workerId: worker._id,
+          workerName: worker.name,
+          workerCode: profile.workerCode,
+          workerPhone: worker.phone,
           thekedarId: profile.thekedarId,
+          thekedarName: thekedarUser?.name || payerUser.name,
+          thekedarPhone: thekedarUser?.phone || payerUser.phone,
+          thekedarBusinessName: thekedarUser?.businessName || null,
           recordedBy: payerUser._id,
           breakdown,
           notes:

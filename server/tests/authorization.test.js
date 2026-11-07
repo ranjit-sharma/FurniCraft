@@ -16,33 +16,27 @@ describe('Authorization & RBAC API Tests', () => {
 
   beforeAll(async () => {
     // 1. Owner
-    ownerUser = await User.findOne({ role: 'OWNER' });
-    if (!ownerUser) {
-      ownerUser = await User.create({
-        name: 'Test Owner',
-        email: `owner.auth.${ts}@furnicraft.com`,
-        phone: `9${String(ts).slice(-9)}`,
-        password: 'Password@2026',
-        role: 'OWNER',
-        status: 'ACTIVE',
-      });
-      ephemeralIds.push(ownerUser._id);
-    }
+    ownerUser = await User.create({
+      name: 'Auth Test Owner',
+      email: `owner.auth.${ts}@furnicraft.test`,
+      phone: `9${String(ts).slice(-9)}`,
+      password: 'Password@2026',
+      role: 'OWNER',
+      status: 'ACTIVE',
+    });
+    ephemeralIds.push(ownerUser._id);
     ownerToken = signToken({ id: ownerUser._id, role: 'OWNER' });
 
     // 2. Thekedar
-    thekedarUser = await User.findOne({ role: 'THEKEDAR', status: 'ACTIVE' });
-    if (!thekedarUser) {
-      thekedarUser = await User.create({
-        name: 'Test Thekedar',
-        email: `thekedar.auth.${ts}@furnicraft.com`,
-        phone: `8${String(ts).slice(-9)}`,
-        password: 'Password@2026',
-        role: 'THEKEDAR',
-        status: 'ACTIVE',
-      });
-      ephemeralIds.push(thekedarUser._id);
-    }
+    thekedarUser = await User.create({
+      name: 'Auth Test Thekedar',
+      email: `thekedar.auth.${ts}@furnicraft.test`,
+      phone: `8${String(ts).slice(-9)}`,
+      password: 'Password@2026',
+      role: 'THEKEDAR',
+      status: 'ACTIVE',
+    });
+    ephemeralIds.push(thekedarUser._id);
     thekedarToken = signToken({ id: thekedarUser._id, role: 'THEKEDAR' });
 
     // 3. Ephemeral Workers with known test credentials
