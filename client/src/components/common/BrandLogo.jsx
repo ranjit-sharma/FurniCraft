@@ -48,7 +48,7 @@ export const BrandLogo = ({
       <div className="shrink-0 transition-transform duration-200 hover:scale-105 cursor-pointer">
         <img
           src="/furnicraft-logo.png"
-          alt="FurniCraft FC Logo"
+          alt="FurniCraft – Furniture Workforce Management Platform"
           className={`${config.imgSize} object-contain select-none`}
         />
       </div>

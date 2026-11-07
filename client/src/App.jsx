@@ -53,6 +53,20 @@ const DashboardRouter = () => {
   return <Navigate to="/login" replace />;
 };
 
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <PageLoader />;
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return <AppLayout />;
+};
+
 export const App = () => {
   return (
     <ErrorBoundary>
@@ -68,11 +82,7 @@ export const App = () => {
 
               <Route
                 path="/"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
+                element={<RootRoute />}
               >
                 <Route index element={<DashboardRouter />} />
                 <Route path="dashboard" element={<Navigate to="/" replace />} />

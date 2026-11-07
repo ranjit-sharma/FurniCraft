@@ -22,6 +22,10 @@ import {
   RotateCcw,
   AlertCircle,
   AlertTriangle,
+  Users,
+  Briefcase,
+  CalendarCheck,
+  Building2,
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -415,6 +419,133 @@ export const LoginPage = () => {
 
         </div>
       </div>
+
+      {/* Core Platform Pillars */}
+      <section className="relative z-10 mt-8 sm:mt-12 w-full max-w-4xl mx-auto px-2">
+        <div className="text-center mb-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 px-3 py-1 text-xs font-bold text-amber-800 dark:text-amber-300 shadow-xs">
+            <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" /> FurniCraft ERP — Official Platform
+          </span>
+          <h2 className="mt-2 text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Modern Furniture Workforce &amp; Contractor Platform
+          </h2>
+          <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+            Discover FurniCraft, a modern furniture workforce management platform for contractors to manage workers, projects, attendance, wages, payroll, and business operations.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Pillar 1: Furniture Workforce Management */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 mb-3 border border-blue-200 dark:border-blue-900">
+              <Users className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
+              Furniture Workforce Management
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Centralized craftsman rosters, skill categories, and job site allocations for carpenters, polishers, and helpers across bespoke furniture projects.
+            </p>
+          </div>
+
+          {/* Pillar 2: Furniture Contractor Management */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 mb-3 border border-amber-200 dark:border-amber-900">
+              <Briefcase className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
+              Furniture Contractor Management
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Direct Thekedar tools for site supervisors to track carpentry milestones, manage labor rosters, and log real-time material expenditures.
+            </p>
+          </div>
+
+          {/* Pillar 3: Attendance and Payroll Management */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 mb-3 border border-emerald-200 dark:border-emerald-900">
+              <CalendarCheck className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
+              Attendance and Payroll Management
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Daily presence verification, automatic wage computation, cash advance tracking, and transparent payroll settlements for furniture workshop teams.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Meaningful About FurniCraft Section */}
+      <section className="relative z-10 mt-8 sm:mt-12 w-full max-w-4xl mx-auto rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+            <Building2 className="h-4 w-4" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              About FurniCraft
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Purpose-Built Operating System for the Furniture &amp; Carpentry Industry
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p>
+            <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft</strong> is an official digital operations platform engineered specifically for custom furniture workshops, carpentry contractors, and on-site fit-out supervisors. Built to unite workshop owners, contractors (Thekedars), and skilled artisans, FurniCraft streamlines daily workshop and job-site administration.
+          </p>
+          <p>
+            In traditional furniture production, tracking paper-based attendance slips, managing unrecorded daily cash advances, and reconciling weekly wages across distributed sites often results in financial disputes and lost hours. <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft ERP</strong> solves these operational bottlenecks by providing mobile-optimized digital attendance, automated wage ledgers, and real-time expense approvals.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5">
+              <div className="text-xs font-bold text-slate-900 dark:text-white mb-1">
+                For Furniture Contractors (Thekedars)
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Easily log daily craftsman attendance, assign site tasks, track advances, and submit completed project milestones directly from any mobile browser.
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5">
+              <div className="text-xs font-bold text-slate-900 dark:text-white mb-1">
+                For Workshop &amp; Business Owners
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Gain full financial oversight, track material purchases, audit transactional history, and settle worker payroll with complete ledger transparency.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Brand Consistent Footer */}
+      <footer className="relative z-10 mt-8 sm:mt-12 w-full max-w-4xl mx-auto pt-6 border-t border-slate-200/80 dark:border-slate-800 text-center">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200">FurniCraft</span>
+            <span>•</span>
+            <span>FurniCraft ERP</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/register-thekedar" className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline">
+              Contractor Registration
+            </Link>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer"
+            >
+              Sign In
+            </button>
+          </div>
+        </div>
+        <p className="mt-3 text-[11px] text-slate-400 dark:text-slate-500">
+          &copy; 2026 FurniCraft. All rights reserved. FurniCraft – Official Furniture Workforce Management Platform.
+        </p>
+      </footer>
 
       {/* OTP Password Recovery Modal */}
       <Modal
