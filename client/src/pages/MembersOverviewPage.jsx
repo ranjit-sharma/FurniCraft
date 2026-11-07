@@ -24,7 +24,7 @@ export const MembersOverviewPage = () => {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
-  const [selectedRole, setSelectedRole] = useState('ALL');
+  const [selectedRole, setSelectedRole] = useState('THEKEDAR');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState(null);
