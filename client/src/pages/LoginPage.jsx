@@ -26,6 +26,8 @@ import {
   Briefcase,
   CalendarCheck,
   Building2,
+  FolderKanban,
+  Receipt,
 } from 'lucide-react';
 
 export const LoginPage = () => {
@@ -302,7 +304,7 @@ export const LoginPage = () => {
                   FurniCraft | Official Furniture Workforce Management Platform
                 </h1>
                 <p className="mt-1.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-normal">
-                  FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, wages, payroll, payments, and business operations.
+                  FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations.
                 </p>
               </div>
 
@@ -429,7 +431,7 @@ export const LoginPage = () => {
         </div>
       </div>
 
-      {/* Core Platform Pillars */}
+      {/* Core Platform Capabilities */}
       <section className="relative z-10 mt-8 sm:mt-12 w-full max-w-4xl mx-auto px-2">
         <div className="text-center mb-6">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 px-3 py-1 text-xs font-bold text-amber-800 dark:text-amber-300 shadow-xs">
@@ -439,13 +441,13 @@ export const LoginPage = () => {
             Core Platform Capabilities
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, wages, payroll, payments, and business operations.
+            FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {/* Pillar 1: Furniture Workforce Management */}
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 mb-3 border border-blue-200 dark:border-blue-900">
               <Users className="h-5 w-5" />
             </div>
@@ -453,33 +455,46 @@ export const LoginPage = () => {
               Furniture Workforce Management
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Centralized craftsman rosters, skill categories, and job site allocations for carpenters, polishers, and helpers across bespoke furniture projects.
+              Centralized craftsman rosters, trade skill categories (Mistry, Helper, Polisher), shift earning rates, and site allocations.
             </p>
           </div>
 
-          {/* Pillar 2: Furniture Contractor Management */}
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+          {/* Pillar 2: Furniture Project Tracking */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 mb-3 border border-amber-200 dark:border-amber-900">
-              <Briefcase className="h-5 w-5" />
+              <FolderKanban className="h-5 w-5" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
-              Furniture Contractor Management
+              Furniture Project Tracking
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Direct Thekedar tools for site supervisors to track carpentry milestones, manage labor rosters, and log real-time material expenditures.
+              Manage carpentry site milestones, track client money received, and approve real-time material purchase expenses.
             </p>
           </div>
 
-          {/* Pillar 3: Attendance and Payroll Management */}
-          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+          {/* Pillar 3: Attendance & Shift Management */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 mb-3 border border-emerald-200 dark:border-emerald-900">
               <CalendarCheck className="h-5 w-5" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
-              Attendance and Payroll Management
+              Attendance &amp; Daily Earnings
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Daily presence verification, automatic earnings computation, cash advance tracking, and transparent payroll settlements for furniture workshop teams.
+              Daily presence verification, rapid shift multipliers (0.5, 1, 1.5, 2, 2.5, 3, A), and automated daily worker earnings.
+            </p>
+          </div>
+
+          {/* Pillar 4: Payroll & Advance Settlements */}
+          <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 mb-3 border border-purple-200 dark:border-purple-900">
+              <Receipt className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">
+              Payroll &amp; Advance Settlements
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Track cash advances (pesgi), calculate net dues automatically, and generate official payment voucher bills and PDF receipts.
             </p>
           </div>
         </div>
@@ -503,11 +518,12 @@ export const LoginPage = () => {
 
         <div className="space-y-3.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
           <p>
-            <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft</strong> is an official digital operations platform engineered specifically for custom furniture workshops, carpentry contractors, and on-site fit-out supervisors. Built to unite workshop owners, contractors (Thekedars), and skilled artisans, FurniCraft streamlines daily workshop and job-site administration.
+            <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft</strong> (also recognized as <strong className="text-slate-900 dark:text-white font-semibold">Furnicraft</strong>, <strong className="text-slate-900 dark:text-white font-semibold">Furni Craft</strong>, or <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft ERP</strong>) is the official digital operations platform engineered specifically for custom furniture workshops, carpentry contractors, and on-site fit-out supervisors. Built to unite workshop owners, contractors (Thekedars), and skilled artisans, FurniCraft streamlines daily workshop and job-site administration.
           </p>
           <p>
             In traditional furniture production, tracking paper-based attendance slips, managing unrecorded daily cash advances, and reconciling weekly earnings across distributed sites often results in financial disputes and lost hours. <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft ERP</strong> solves these operational bottlenecks by providing mobile-optimized digital attendance, automated earnings ledgers, and real-time expense approvals.
           </p>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5">
               <div className="text-xs font-bold text-slate-900 dark:text-white mb-1">
