@@ -39,6 +39,13 @@ export const getEffectiveWage = async (workerId, projectId) => {
   return 700; // Standard fallback
 };
 
+export const normalizeAttendanceCode = (c) => {
+  if (!c) return c;
+  if (c === '2.5' || c === '2.5x') return ATTENDANCE_CODES.P2_5;
+  if (c === '3' || c === '3.0' || c === '3x') return ATTENDANCE_CODES.PPP;
+  return c;
+};
+
 /**
  * Submit Attendance (by Worker or Thekedar)
  */
@@ -48,7 +55,8 @@ export const submitAttendance = async ({ data, user, req }) => {
     throw new BadRequestError('Worker ID is required');
   }
 
-  const { projectId, date, shift = 'GENERAL', code, checkInTime, checkOutTime, extraWorkCategory } = data;
+  let { projectId, date, shift = 'GENERAL', code, checkInTime, checkOutTime, extraWorkCategory } = data;
+  code = normalizeAttendanceCode(code);
 
   const workerProfile = await WorkerProfile.findOne({ userId: workerId });
   let project = null;
@@ -187,6 +195,7 @@ export const approveAttendance = async ({ attendanceId, approvedCode, dailyWage,
 
   // If approvedCode is specified, override code and multiplier
   if (approvedCode) {
+    approvedCode = normalizeAttendanceCode(approvedCode);
     if (!Object.values(ATTENDANCE_CODES).includes(approvedCode)) {
       throw new BadRequestError(`Invalid attendance code: ${approvedCode}`);
     }
@@ -265,6 +274,7 @@ export const rectifyAttendance = async ({ attendanceId, code, dailyWage, reason,
   const oldEarnings = attendance.calculatedEarnings;
 
   if (code) {
+    code = normalizeAttendanceCode(code);
     if (!Object.values(ATTENDANCE_CODES).includes(code)) {
       throw new BadRequestError(`Invalid attendance code: ${code}`);
     }
@@ -363,6 +373,7 @@ export const rejectAttendance = async ({ attendanceId, reason, reviewerUser, req
  * Worker Requests Attendance Correction
  */
 export const requestAttendanceCorrection = async ({ attendanceId, requestedCode, reason, user, req }) => {
+  requestedCode = normalizeAttendanceCode(requestedCode);
   const attendance = await Attendance.findById(attendanceId);
   if (!attendance) throw new NotFoundError('Attendance record not found');
 
@@ -597,13 +608,13 @@ export const getMonthlyAttendanceCalendar = async ({ workerId, projectId, year, 
   let totalApprovedEarnings = 0;
   let approvedDaysCount = 0;
   let totalDehadi = 0;
-  const codeCounts = { P: 0, HALF: 0, 'P1/5': 0, PP: 0, ABSENT: 0, LEAVE: 0 };
+  const codeCounts = { P: 0, HALF: 0, 'P1/5': 0, PP: 0, 'P2/5': 0, PPP: 0, ABSENT: 0, LEAVE: 0 };
 
   attendanceList.forEach((att) => {
     if (att.approvalStatus === ATTENDANCE_STATUS.APPROVED) {
       totalApprovedEarnings += att.calculatedEarnings;
       totalDehadi += (att.wageMultiplier || 0);
-      if (['P', 'HALF', 'P1/5', 'PP'].includes(att.code)) {
+      if (['P', 'HALF', 'P1/5', 'PP', 'P2/5', 'PPP'].includes(att.code)) {
         approvedDaysCount += 1;
       }
     }

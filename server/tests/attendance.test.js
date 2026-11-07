@@ -159,6 +159,42 @@ describe('Attendance & Calculation Engine API Tests', () => {
     expect(res.body.data.attendance.wageMultiplier).toBe(2.0);
   });
 
+  it('RULE: P2/5 or 2.5 shift computes 2.5x daily wage total (₹2000)', async () => {
+    const testDate = '2026-10-29';
+    const res = await request(app)
+      .post('/api/v1/attendance/submit')
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        workerId: workerUser._id,
+        projectId: project._id.toString(),
+        date: testDate,
+        code: 'P2/5',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.attendance.calculatedEarnings).toBe(2000);
+    expect(res.body.data.attendance.wageMultiplier).toBe(2.5);
+    expect(res.body.data.attendance.code).toBe('P2/5');
+  });
+
+  it('RULE: PPP or 3 shift computes 3.0x daily wage total (₹2400)', async () => {
+    const testDate = '2026-10-30';
+    const res = await request(app)
+      .post('/api/v1/attendance/submit')
+      .set('Authorization', `Bearer ${thekedarToken}`)
+      .send({
+        workerId: workerUser._id,
+        projectId: project._id.toString(),
+        date: testDate,
+        code: '3',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.data.attendance.calculatedEarnings).toBe(2400);
+    expect(res.body.data.attendance.wageMultiplier).toBe(3.0);
+    expect(res.body.data.attendance.code).toBe('PPP');
+  });
+
   it('RULE: Re-marking attendance on same day by thekedar updates entry in-place', async () => {
     const testDate = '2026-10-28';
     const res = await request(app)

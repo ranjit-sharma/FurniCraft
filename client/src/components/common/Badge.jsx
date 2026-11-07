@@ -40,7 +40,15 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
       case 'ISSUED':
       case 'FINALIZED':
         return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800';
+      case 'indigo':
+      case 'P2/5':
+      case '2.5':
+      case '2.5x':
+        return 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/70 dark:text-indigo-300 dark:border-indigo-800';
       case 'purple':
+      case 'PPP':
+      case '3':
+      case '3x':
       case 'LEAVE':
       case 'CORRECTION_REQUESTED':
         return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/70 dark:text-purple-300 dark:border-purple-800';

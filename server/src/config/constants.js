@@ -11,10 +11,14 @@ export const USER_STATUS = {
 };
 
 export const ATTENDANCE_CODES = {
-  P: 'P',         // 1.0x daily wage
-  HALF: 'HALF',   // 0.5x daily wage
-  P1_5: 'P1/5',   // 1.5x daily wage (extended work until 9 PM)
-  PP: 'PP',       // 2.0x daily wage (extended work until midnight)
+  P: 'P',         // 1.0x daily wage (1 shift)
+  HALF: 'HALF',   // 0.5x daily wage (0.5 shift)
+  P1_5: 'P1/5',   // 1.5x daily wage (1.5 shift, extended work until 9 PM)
+  PP: 'PP',       // 2.0x daily wage (2 shifts, extended work until midnight)
+  P2_5: 'P2/5',   // 2.5x daily wage (2.5 shifts)
+  PPP: 'PPP',     // 3.0x daily wage (3 shifts)
+  SHIFT_2_5: '2.5', // 2.5 shift alias
+  SHIFT_3: '3',     // 3 shift alias
   ABSENT: 'ABSENT', // 0x
   LEAVE: 'LEAVE',   // 0x
 };
@@ -24,6 +28,11 @@ export const ATTENDANCE_MULTIPLIERS = {
   'HALF': 0.5,
   'P1/5': 1.5,
   'PP': 2.0,
+  'P2/5': 2.5,
+  '2.5': 2.5,
+  'PPP': 3.0,
+  '3': 3.0,
+  '3.0': 3.0,
   'ABSENT': 0.0,
   'LEAVE': 0.0,
 };
@@ -81,7 +90,7 @@ export const ADVANCE_REQUEST_STATUS = {
   CANCELLED: 'CANCELLED',
 };
 
-export const MAX_ADVANCE_LIMIT = 25000;
+export const MAX_ADVANCE_LIMIT = Infinity; // Worker can take advance of any amount as per their choice (no upper limitation)
 
 export const PAYMENT_METHODS = {
   CASH: 'CASH',

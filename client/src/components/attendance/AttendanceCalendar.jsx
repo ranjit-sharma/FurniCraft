@@ -454,9 +454,9 @@ export const AttendanceCalendar = ({
           </div>
 
           <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/40 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium truncate">Overtime & Double Shift</div>
+            <div className="text-[11px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium truncate">Overtime & Multi-Shifts</div>
             <div className="text-xs sm:text-sm font-bold text-blue-900 dark:text-blue-300 mt-1 truncate">
-              {summary.codeCounts?.['P1/5'] || 0} OT / {summary.codeCounts?.PP || 0} Double
+              {summary.codeCounts?.['P1/5'] || 0} OT / {summary.codeCounts?.PP || 0} 2x / {(summary.codeCounts?.['P2/5'] || 0) + (summary.codeCounts?.PPP || 0)} Multi
             </div>
           </div>
         </div>
@@ -695,7 +695,13 @@ export const AttendanceCalendar = ({
           <Badge variant="P1/5" size="sm">P1/5</Badge> 9 PM (1.5x)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="PP" size="sm">PP</Badge> Midnight (2.0x)
+          <Badge variant="PP" size="sm">PP</Badge> 2 Shifts (2.0x)
+        </span>
+        <span className="flex items-center gap-1">
+          <Badge variant="P2/5" size="sm">2.5x</Badge> 2.5 Shifts (2.5x)
+        </span>
+        <span className="flex items-center gap-1">
+          <Badge variant="PPP" size="sm">3x</Badge> 3 Shifts (3.0x)
         </span>
         <div className="flex items-center gap-2 sm:border-l sm:border-slate-300 dark:sm:border-slate-700 sm:pl-3">
           <span className="flex items-center gap-1">

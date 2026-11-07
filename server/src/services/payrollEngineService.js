@@ -31,6 +31,8 @@ export const calculatePayrollPreview = async ({ workerId, periodMonth, periodYea
     HALF: { count: 0, earnings: 0 },
     'P1/5': { count: 0, earnings: 0 },
     PP: { count: 0, earnings: 0 },
+    'P2/5': { count: 0, earnings: 0 },
+    PPP: { count: 0, earnings: 0 },
     ABSENT: { count: 0 },
     LEAVE: { count: 0 },
   };
@@ -44,7 +46,7 @@ export const calculatePayrollPreview = async ({ workerId, periodMonth, periodYea
     const earned = record.calculatedEarnings || 0;
 
     if (breakdown[code]) {
-      if (['P', 'HALF', 'P1/5', 'PP'].includes(code)) {
+      if (['P', 'HALF', 'P1/5', 'PP', 'P2/5', 'PPP'].includes(code)) {
         breakdown[code].count += 1;
         breakdown[code].earnings = addMoney(breakdown[code].earnings, earned);
         totalApprovedDays += 1;

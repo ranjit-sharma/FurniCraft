@@ -54,6 +54,8 @@ const payrollSchema = new mongoose.Schema(
       HALF: { count: { type: Number, default: 0 }, earnings: { type: Number, default: 0 } },
       'P1/5': { count: { type: Number, default: 0 }, earnings: { type: Number, default: 0 } },
       PP: { count: { type: Number, default: 0 }, earnings: { type: Number, default: 0 } },
+      'P2/5': { count: { type: Number, default: 0 }, earnings: { type: Number, default: 0 } },
+      PPP: { count: { type: Number, default: 0 }, earnings: { type: Number, default: 0 } },
       ABSENT: { count: { type: Number, default: 0 } },
       LEAVE: { count: { type: Number, default: 0 } },
     },

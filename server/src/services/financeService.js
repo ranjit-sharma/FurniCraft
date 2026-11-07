@@ -14,19 +14,6 @@ export const createAdvanceRequest = async ({ workerId, projectId, amount, reason
   const workerProfile = await WorkerProfile.findOne({ userId: finalWorkerId });
   if (!workerProfile) throw new NotFoundError('Worker profile not found');
 
-  if (amount > MAX_ADVANCE_LIMIT) {
-    throw new BadRequestError(`Worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance (requested: ₹${amount.toLocaleString('en-IN')}).`);
-  }
-
-  const currentAdvance = workerProfile.outstandingAdvanceBalance || 0;
-  if (currentAdvance >= MAX_ADVANCE_LIMIT) {
-    throw new BadRequestError(`Worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance. Current outstanding advance is already ₹${currentAdvance.toLocaleString('en-IN')}.`);
-  }
-
-  if (addMoney(currentAdvance, amount) > MAX_ADVANCE_LIMIT) {
-    throw new BadRequestError(`Worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance. With current advance of ₹${currentAdvance.toLocaleString('en-IN')}, requesting ₹${amount.toLocaleString('en-IN')} pushes total to ₹${(currentAdvance + amount).toLocaleString('en-IN')}. Maximum additional advance allowed is ₹${(MAX_ADVANCE_LIMIT - currentAdvance).toLocaleString('en-IN')}.`);
-  }
-
   return await withDuplicateRetry(async () => {
     const requestCode = await generateUniqueAdvanceRequestCode();
 
@@ -75,19 +62,6 @@ export const reviewAdvanceRequest = async ({ requestId, status, reviewNotes, rev
     throw new BadRequestError(`Cannot review advance request that is already ${advanceRequest.status}`);
   }
 
-  if (status === ADVANCE_REQUEST_STATUS.APPROVED) {
-    const workerProfile = await WorkerProfile.findOne({ userId: advanceRequest.workerId });
-    if (workerProfile) {
-      const currentAdvance = workerProfile.outstandingAdvanceBalance || 0;
-      if (currentAdvance >= MAX_ADVANCE_LIMIT) {
-        throw new BadRequestError(`Cannot approve advance: worker already has ₹${currentAdvance.toLocaleString('en-IN')} advance (maximum allowed is ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')}).`);
-      }
-      if (addMoney(currentAdvance, advanceRequest.amount) > MAX_ADVANCE_LIMIT) {
-        throw new BadRequestError(`Cannot approve advance: worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance (current: ₹${currentAdvance.toLocaleString('en-IN')}, requested: ₹${advanceRequest.amount.toLocaleString('en-IN')}).`);
-      }
-    }
-  }
-
   advanceRequest.status = status;
   advanceRequest.reviewedBy = reviewerUser._id;
   advanceRequest.reviewedAt = new Date();
@@ -125,26 +99,13 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
     throw new BadRequestError('Only approved advance requests can be disbursed (or disbursement is already being processed)');
   }
 
-  const workerProfile = await WorkerProfile.findOne({ userId: advanceRequest.workerId });
-  if (workerProfile) {
-    const currentAdvance = workerProfile.outstandingAdvanceBalance || 0;
-    if (currentAdvance >= MAX_ADVANCE_LIMIT) {
-      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
-      throw new BadRequestError(`Cannot disburse advance: worker already has ₹${currentAdvance.toLocaleString('en-IN')} advance (maximum allowed is ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')}).`);
-    }
-    if (addMoney(currentAdvance, advanceRequest.amount) > MAX_ADVANCE_LIMIT) {
-      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
-      throw new BadRequestError(`Cannot disburse advance: worker cannot take more than ₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')} advance.`);
-    }
-  }
-
-  // Atomically reserve balance on WorkerProfile with max cap condition to prevent race condition
+  // Atomically update balance on WorkerProfile
   let updatedProfile = null;
+  const workerProfile = await WorkerProfile.findOne({ userId: advanceRequest.workerId });
   if (workerProfile) {
     updatedProfile = await WorkerProfile.findOneAndUpdate(
       {
         userId: advanceRequest.workerId,
-        outstandingAdvanceBalance: { $lte: MAX_ADVANCE_LIMIT - advanceRequest.amount },
       },
       {
         $inc: {
@@ -154,11 +115,6 @@ export const disburseAdvance = async ({ requestId, paymentMethod, receiptReferen
       },
       { new: true }
     );
-
-    if (!updatedProfile) {
-      await AdvanceRequest.findByIdAndUpdate(requestId, { status: ADVANCE_REQUEST_STATUS.APPROVED });
-      throw new BadRequestError(`Cannot disburse advance: worker advance limit (₹${MAX_ADVANCE_LIMIT.toLocaleString('en-IN')}) would be exceeded.`);
-    }
   }
 
   try {

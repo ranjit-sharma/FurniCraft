@@ -168,7 +168,7 @@ export const listAdvanceRequests = async (req, res, next) => {
       const wId = (r.workerId?._id || r.workerId)?.toString();
       const p = profileMap.get(wId);
       const currentAdvanceBalance = p?.outstandingAdvanceBalance || 0;
-      const exceedsLimit = currentAdvanceBalance >= MAX_ADVANCE_LIMIT || (currentAdvanceBalance + (r.amount || 0)) > MAX_ADVANCE_LIMIT;
+      const exceedsLimit = false; // No upper limit on advance
       return {
         ...r.toObject(),
         currentAdvanceBalance,

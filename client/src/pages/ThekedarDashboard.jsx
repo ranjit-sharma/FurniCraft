@@ -20,12 +20,14 @@ import {
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
 
-// Short labels so five codes fit on one row of a phone screen.
+// Short labels so shift codes fit nicely on phone screens.
 const QUICK_CODES = [
   { code: 'P', label: 'P', title: 'Full day (1.0x)' },
   { code: 'HALF', label: 'Half', title: 'Half day (0.5x)' },
   { code: 'P1/5', label: '1.5x', title: 'Till 9 PM (1.5x)' },
   { code: 'PP', label: '2x', title: 'Till midnight (2.0x)' },
+  { code: 'P2/5', label: '2.5x', title: '2.5 Shifts (2.5x)' },
+  { code: 'PPP', label: '3x', title: '3 Shifts (3.0x)' },
   { code: 'ABSENT', label: 'Absent', title: 'Absent (no wage)' },
 ];
 
@@ -417,7 +419,7 @@ export const ThekedarDashboard = () => {
                       </span>
                     )}
                   </div>
-                  <div className="mt-2.5 grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={`Attendance for ${w.name}`}>
+                  <div className="mt-2.5 grid grid-cols-7 gap-1 sm:gap-1.5" role="radiogroup" aria-label={`Attendance for ${w.name}`}>
                     {QUICK_CODES.map(({ code, label, title }) => {
                       const active = w.today?.code === code;
                       return (
@@ -429,7 +431,7 @@ export const ThekedarDashboard = () => {
                           title={title}
                           disabled={saving || locked}
                           onClick={() => handleMark(w, code)}
-                          className={`min-h-[44px] px-0.5 sm:px-1 truncate rounded-xl border text-[11px] sm:text-xs font-black transition active:scale-95 disabled:opacity-60 cursor-pointer ${
+                          className={`min-h-[42px] px-0.5 sm:px-1 truncate rounded-xl border text-[10px] sm:text-xs font-black transition active:scale-95 disabled:opacity-60 cursor-pointer ${
                             active
                               ? code === 'ABSENT'
                                 ? 'border-rose-500 bg-rose-500 text-white shadow-sm'

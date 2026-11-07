@@ -16,10 +16,12 @@ const seedDatabase = async () => {
           HALF: 0.5,
           'P1/5': 1.5,
           PP: 2.0,
+          'P2/5': 2.5,
+          PPP: 3.0,
           ABSENT: 0.0,
           LEAVE: 0.0,
         },
-        description: 'Standard modern furniture shop rule (P=1.0, HALF=0.5, P1/5=1.5, PP=2.0)',
+        description: 'Standard modern furniture shop rule (P=1.0, HALF=0.5, P1/5=1.5, PP=2.0, P2/5=2.5, PPP=3.0)',
         effectiveDate: new Date('2026-01-01'),
         isCurrent: true,
       });

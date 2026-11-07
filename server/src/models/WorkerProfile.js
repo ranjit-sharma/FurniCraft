@@ -84,7 +84,6 @@ const workerProfileSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: [0, 'Outstanding advance balance cannot be negative'],
-      max: [25000, 'Worker cannot take more than ₹25,000 advance'],
     },
     totalSalaryPaid: {
       type: Number,

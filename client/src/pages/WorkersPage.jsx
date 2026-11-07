@@ -58,11 +58,13 @@ const ATTENDANCE_CODE_OPTIONS = [
   { code: 'HALF', label: 'HALF (0.5x)', desc: 'Half Day' },
   { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
   { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
+  { code: 'P2/5', label: '2.5x (2.5 Shifts)', desc: '2.5 Shifts' },
+  { code: 'PPP', label: '3.0x (3 Shifts)', desc: '3 Shifts' },
   { code: 'ABSENT', label: 'Absent (0.0x)', desc: 'No Wage' },
   { code: 'LEAVE', label: 'Leave (0.0x)', desc: 'On Leave' },
 ];
 
-const MAX_ADVANCE = 25000; // mirrors MAX_ADVANCE_LIMIT on the server
+const MAX_ADVANCE = Infinity; // Worker can take advance of any amount as their choice (no limitation)
 
 const PaymentMethodPicker = ({ value, onChange }) => (
   <div>
@@ -1133,7 +1135,7 @@ export const WorkersPage = () => {
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
               Attendance Multiplier Code *
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mt-1">
               {ATTENDANCE_CODE_OPTIONS.map((item) => (
                 <button
                   type="button"
@@ -1472,8 +1474,6 @@ export const WorkersPage = () => {
                       ) : (
                         <div className="space-y-3">
                           {activityData.advanceRequests.map((adv) => {
-                            const currentAdvance = activityWorker?.outstandingAdvanceBalance || 0;
-                            const exceedsLimit = currentAdvance >= MAX_ADVANCE || (currentAdvance + (adv.amount || 0)) > MAX_ADVANCE;
                             return (
                               <div
                                 key={adv._id}
@@ -1508,14 +1508,10 @@ export const WorkersPage = () => {
                                   <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
                                     <button
                                       type="button"
-                                      disabled={reviewLoadingId === adv._id || exceedsLimit}
+                                      disabled={reviewLoadingId === adv._id}
                                       onClick={() => handleReviewAdvanceFromActivity(adv._id, 'APPROVED')}
-                                      title={exceedsLimit ? "Worker advance exceeds ₹25,000 limit - Cannot Approve" : "Approve advance request"}
-                                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
-                                        exceedsLimit
-                                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed'
-                                          : 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600'
-                                      }`}
+                                      title="Approve advance request"
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 disabled:opacity-50"
                                     >
                                       {reviewLoadingId === adv._id ? (
                                         <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -1541,19 +1537,12 @@ export const WorkersPage = () => {
                                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                                     <button
                                       type="button"
-                                      disabled={exceedsLimit}
                                       onClick={() => {
-                                        if (!exceedsLimit) {
-                                          setSelectedAdvanceForDisburse(adv);
-                                          setDisburseModalOpen(true);
-                                        }
+                                        setSelectedAdvanceForDisburse(adv);
+                                        setDisburseModalOpen(true);
                                       }}
-                                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer ${
-                                        exceedsLimit
-                                          ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                                          : 'bg-amber-600 hover:bg-amber-700 text-white'
-                                      }`}
-                                      title={exceedsLimit ? "Worker advance exceeds ₹25,000 limit" : "Disburse approved advance amount"}
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer bg-amber-600 hover:bg-amber-700 text-white"
+                                      title="Disburse approved advance amount"
                                     >
                                       <IndianRupee className="h-3.5 w-3.5" />
                                       <span>Disburse Advance</span>
@@ -1769,8 +1758,6 @@ export const WorkersPage = () => {
       >
         {advanceWorker && (() => {
           const outstanding = advanceWorker.outstandingAdvanceBalance || 0;
-          const room = Math.max(0, MAX_ADVANCE - outstanding);
-          const amount = parseFloat(advanceAmount) || 0;
           return (
             <form onSubmit={handleGiveAdvance} className="space-y-4">
               <div className="grid grid-cols-2 gap-2 text-center">
@@ -1779,8 +1766,8 @@ export const WorkersPage = () => {
                   <div className="text-lg font-black text-rose-700 dark:text-rose-300">₹{outstanding.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
-                  <div className="text-[11px] font-semibold uppercase text-slate-500">Can still give</div>
-                  <div className="text-lg font-black text-slate-900 dark:text-white">₹{room.toLocaleString('en-IN')}</div>
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Advance Limit</div>
+                  <div className="text-lg font-black text-emerald-700 dark:text-emerald-400">No Limit</div>
                 </div>
               </div>
               <div>
@@ -1789,7 +1776,6 @@ export const WorkersPage = () => {
                   type="number"
                   inputMode="decimal"
                   min="1"
-                  max={room}
                   step="any"
                   required
                   value={advanceAmount}

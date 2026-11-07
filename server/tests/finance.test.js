@@ -254,48 +254,35 @@ describe('Finance, Ledger & Immutable Payroll API Tests', () => {
     expect(profileCheck).toBeNull();
   });
 
-  it('RULE: Worker with ₹25,000 or more advance cannot request more advance', async () => {
+  it('RULE: Worker can request and take advance of any amount as their choice with no limitation', async () => {
     const profile = await WorkerProfile.findOne({ userId: workerUser._id });
     const originalBal = profile.outstandingAdvanceBalance;
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 25000 });
 
-    // Worker attempts to request advance when at 25000
+    // Worker can request advance exceeding 25k (e.g., 30000)
+    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 0 });
     const resOver = await request(app)
       .post('/api/v1/finance/advance-requests')
       .set('Authorization', `Bearer ${workerToken}`)
       .send({
-        amount: 500,
-        reason: 'Should be rejected due to 25k cap',
-      });
-
-    expect(resOver.status).toBe(400);
-    expect(resOver.body.message).toContain('25,000');
-
-    // Test exceeding total limit when balance is 24000 and requesting 2000
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 24000 });
-    const resExceed = await request(app)
-      .post('/api/v1/finance/advance-requests')
-      .set('Authorization', `Bearer ${workerToken}`)
-      .send({
-        amount: 2000,
-        reason: 'Should exceed 25k total',
-      });
-
-    expect(resExceed.status).toBe(400);
-    expect(resExceed.body.message).toContain('25,000');
-
-    // Test single request of 30000 even with 0 balance
-    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 0 });
-    const resSingleOver = await request(app)
-      .post('/api/v1/finance/advance-requests')
-      .set('Authorization', `Bearer ${workerToken}`)
-      .send({
         amount: 30000,
-        reason: 'Should be rejected for exceeding 25k limit',
+        reason: 'Large advance for family wedding',
       });
 
-    expect([400, 422]).toContain(resSingleOver.status);
-    expect(resSingleOver.body.message).toContain('25,000');
+    expect(resOver.status).toBe(201);
+    expect(resOver.body.data.advanceRequest.amount).toBe(30000);
+
+    // Worker can also request advance even when balance is already at or above 25000
+    await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: 25000 });
+    const resWhenHigh = await request(app)
+      .post('/api/v1/finance/advance-requests')
+      .set('Authorization', `Bearer ${workerToken}`)
+      .send({
+        amount: 5000,
+        reason: 'Additional advance with no cap',
+      });
+
+    expect(resWhenHigh.status).toBe(201);
+    expect(resWhenHigh.body.data.advanceRequest.amount).toBe(5000);
 
     // Restore original balance
     await WorkerProfile.updateOne({ userId: workerUser._id }, { outstandingAdvanceBalance: originalBal });

@@ -162,17 +162,17 @@ export const bulkApproveAttendanceSchema = z.object({
   attendanceIds: z.array(z.string()).min(1, 'At least one attendance ID required'),
 });
 
-// Advance Request Schemas
+// Advance Request Schemas (worker can take advance as their choice with no limitation)
 export const createAdvanceRequestSchema = z.object({
   workerId: z.string().optional(), // Inferred for worker
   projectId: z.string().optional().nullable(),
-  amount: z.number().min(1, 'Amount must be greater than 0').max(25000, 'Worker cannot take more than ₹25,000 advance'),
+  amount: z.number().min(1, 'Amount must be greater than 0'),
   reason: z.string().min(3, 'Reason is required'),
 });
 
 export const giveAdvanceSchema = z.object({
   workerId: z.string().optional(), // from the URL
-  amount: z.number().min(1, 'Amount must be greater than 0').max(25000, 'Worker cannot take more than ₹25,000 advance'),
+  amount: z.number().min(1, 'Amount must be greater than 0'),
   reason: z.string().trim().min(3, 'Please enter a reason (at least 3 letters)'),
   paymentMethod: z.enum(Object.values(PAYMENT_METHODS)).optional(),
   receiptReference: z.string().optional(),
