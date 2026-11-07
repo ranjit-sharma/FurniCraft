@@ -433,7 +433,7 @@ export const AttendanceCalendar = ({
           </div>
 
           <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/40 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate">{t('dashboard.approvedWages', 'Approved Gross Wages')}</div>
+            <div className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium truncate">{t('dashboard.approvedWages', 'Approved Gross Earnings')}</div>
             <div className="text-base sm:text-xl font-bold text-emerald-800 dark:text-emerald-300 mt-0.5">
               ₹{summary.totalApprovedEarnings?.toLocaleString('en-IN')}
             </div>
@@ -686,25 +686,25 @@ export const AttendanceCalendar = ({
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 text-[10px] sm:text-xs text-slate-700 dark:text-slate-400">
         <span className="font-bold text-slate-700 dark:text-slate-300">{t('calendar.legend') || 'Multiplier Legend:'}</span>
         <span className="flex items-center gap-1">
-          <Badge variant="P" size="sm">P</Badge> Full (1.0x)
+          <Badge variant="HALF" size="sm">0.5</Badge> Half (0.5)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="HALF" size="sm">0.5</Badge> Half (0.5x)
+          <Badge variant="1" size="sm">1</Badge> Full (1)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="1.5x" size="sm">1.5x</Badge> 9 PM (1.5x)
+          <Badge variant="1.5" size="sm">1.5</Badge> 9 PM (1.5)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="2x" size="sm">2x</Badge> 2 Shifts (2.0x)
+          <Badge variant="2" size="sm">2</Badge> 2 Shifts (2)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="P2/5" size="sm">2.5x</Badge> 2.5 Shifts (2.5x)
+          <Badge variant="2.5" size="sm">2.5</Badge> 2.5 Shifts (2.5)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="PPP" size="sm">3x</Badge> 3 Shifts (3.0x)
+          <Badge variant="3" size="sm">3</Badge> 3 Shifts (3)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="A" size="sm">A</Badge> Absent (0x)
+          <Badge variant="A" size="sm">A</Badge> Absent (0)
         </span>
         <div className="flex items-center gap-2 sm:border-l sm:border-slate-300 dark:sm:border-slate-700 sm:pl-3">
           <span className="flex items-center gap-1">

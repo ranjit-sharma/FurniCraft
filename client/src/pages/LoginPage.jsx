@@ -479,7 +479,7 @@ export const LoginPage = () => {
               Attendance and Payroll Management
             </h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Daily presence verification, automatic wage computation, cash advance tracking, and transparent payroll settlements for furniture workshop teams.
+              Daily presence verification, automatic earnings computation, cash advance tracking, and transparent payroll settlements for furniture workshop teams.
             </p>
           </div>
         </div>
@@ -506,7 +506,7 @@ export const LoginPage = () => {
             <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft</strong> is an official digital operations platform engineered specifically for custom furniture workshops, carpentry contractors, and on-site fit-out supervisors. Built to unite workshop owners, contractors (Thekedars), and skilled artisans, FurniCraft streamlines daily workshop and job-site administration.
           </p>
           <p>
-            In traditional furniture production, tracking paper-based attendance slips, managing unrecorded daily cash advances, and reconciling weekly wages across distributed sites often results in financial disputes and lost hours. <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft ERP</strong> solves these operational bottlenecks by providing mobile-optimized digital attendance, automated wage ledgers, and real-time expense approvals.
+            In traditional furniture production, tracking paper-based attendance slips, managing unrecorded daily cash advances, and reconciling weekly earnings across distributed sites often results in financial disputes and lost hours. <strong className="text-slate-900 dark:text-white font-semibold">FurniCraft ERP</strong> solves these operational bottlenecks by providing mobile-optimized digital attendance, automated earnings ledgers, and real-time expense approvals.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-3.5">

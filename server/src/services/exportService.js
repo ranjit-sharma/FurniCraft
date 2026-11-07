@@ -226,63 +226,67 @@ const PDF_TRANSLATIONS = {
 // Labels for the redesigned PDFs (Hindi kept in Latin script, like the rest of PDF_TRANSLATIONS).
 const PDF_LABELS = {
   en: {
-    attendanceTitle: 'Attendance Statement', allTime: 'All attendance', worker: 'Worker', dailyWage: 'Daily wage', thekedar: 'Thekedar',
+    attendanceTitle: 'Attendance Statement', allTime: 'All attendance', worker: 'Worker', dailyWage: 'Daily earning', thekedar: 'Thekedar',
     daysWorked: 'Days worked', manDays: 'Man-days', earned: 'Earned', unpaid: 'Unpaid', paid: 'Paid', date: 'Date', project: 'Project',
     shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'No attendance recorded for this period.', totalEarned: 'Total earned',
-    legend: 'Shift codes: P = full day (1x) · 0.5 = half day (0.5x) · 1.5x = till 9 PM (1.5x) · 2x = till midnight (2x) · 2.5x = 2.5 shifts (2.5x) · 3x = 3 shifts (3x) · A = no wage',
-    wageReceipt: 'Wage Payment Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Payment Receipt', paidBy: 'Paid by', paidTo: 'Paid to',
-    payment: 'Payment', description: 'Description', amount: 'Amount', wagesEarned: 'Wages earned (attendance)', bonus: 'Bonus / allowance',
+    legend: 'Shift codes: 0.5 = half day (0.5) · 1 = full day (1) · 1.5 = till 9 PM (1.5) · 2 = till midnight (2) · 2.5 = 2.5 shifts (2.5) · 3 = 3 shifts (3) · A = absent (0)',
+    wageReceipt: 'Earnings Payment Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Payment Receipt', paidBy: 'Paid by', paidTo: 'Paid to',
+    payment: 'Payment', description: 'Description', amount: 'Amount', wagesEarned: 'Earnings from attendance', bonus: 'Bonus / allowance',
     advanceCut: 'Advance recovered', food: 'Food / mess', room: 'Room rent', advanceGiven: 'Advance given', netPaid: 'Net paid',
-    advanceAfter: 'Advance balance after this payment', advanceNow: 'Advance balance now', remainingWages: 'Remaining unpaid wages in account', remainingBalance: 'Remaining net account balance', notes: 'Notes', authorised: 'Authorised by (Thekedar)',
-    received: 'Received by (worker signature / thumb)', statementOf: 'Attendance statement', deductNext: 'Deducted from the next wage payment',
+    advanceAfter: 'Advance balance after this payment', advanceNow: 'Advance balance now', remainingWages: 'Remaining unpaid earnings in account', remainingBalance: 'Remaining net account balance', notes: 'Notes', authorised: 'Authorised by (Thekedar)',
+    received: 'Received by (worker signature / thumb)', statementOf: 'Attendance statement', deductNext: 'Deducted from the next payment',
   },
   hinglish: {
-    attendanceTitle: 'Haziri Statement', allTime: 'Saari haziri', worker: 'Karigar', dailyWage: 'Dehadi', thekedar: 'Thekedar',
+    attendanceTitle: 'Haziri Statement', allTime: 'Saari haziri', worker: 'Karigar', dailyWage: 'Daily Earning (Dehadi)', thekedar: 'Thekedar',
     daysWorked: 'Kaam ke din', manDays: 'Man-days', earned: 'Kamai', unpaid: 'Baaki', paid: 'Paid', date: 'Tareekh', project: 'Project',
     shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'Is mahine koi haziri nahi.', totalEarned: 'Kul kamai',
-    legend: 'Shift code: P = pura din (1x) · 0.5 = aadha din (0.5x) · 1.5x = raat 9 baje tak (1.5x) · 2x = raat 12 baje tak (2x) · 2.5x = 2.5 shift (2.5x) · 3x = 3 shift (3x) · A = koi dehadi nahi',
-    wageReceipt: 'Dehadi Bhugtan Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Bhugtan Receipt', paidBy: 'Dene wale', paidTo: 'Lene wale',
+    legend: 'Shift code: 0.5 = aadha din (0.5) · 1 = pura din (1) · 1.5 = raat 9 baje tak (1.5) · 2 = raat 12 baje tak (2) · 2.5 = 2.5 shift (2.5) · 3 = 3 shift (3) · A = koi kamai nahi',
+    wageReceipt: 'Earnings Bhugtan Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Bhugtan Receipt', paidBy: 'Dene wale', paidTo: 'Lene wale',
     payment: 'Bhugtan', description: 'Vivaran', amount: 'Rakam', wagesEarned: 'Kamai (haziri se)', bonus: 'Bonus / bhatta',
     advanceCut: 'Advance kata', food: 'Khana / mess', room: 'Kamra kiraya', advanceGiven: 'Advance diya', netPaid: 'Kul diya',
-    advanceAfter: 'Is bhugtan ke baad advance', advanceNow: 'Abhi ka advance', remainingWages: 'Khate mein baki bachi dehadi balance', remainingBalance: 'Khate mein baki kul balance', notes: 'Notes', authorised: 'Thekedar ke hastakshar',
-    received: 'Karigar ke hastakshar / angutha', statementOf: 'Haziri statement', deductNext: 'Agli dehadi se kata jayega',
+    advanceAfter: 'Is bhugtan ke baad advance', advanceNow: 'Abhi ka advance', remainingWages: 'Khate mein baki bachi kamai balance', remainingBalance: 'Khate mein baki kul balance', notes: 'Notes', authorised: 'Thekedar ke hastakshar',
+    received: 'Karigar ke hastakshar / angutha', statementOf: 'Haziri statement', deductNext: 'Agli payment se kata jayega',
   },
   hi: {
-    attendanceTitle: 'Haziri Vivaran', allTime: 'Sampurn haziri', worker: 'Karigar', dailyWage: 'Dainik mazdoori', thekedar: 'Thekedar',
+    attendanceTitle: 'Haziri Vivaran', allTime: 'Sampurn haziri', worker: 'Karigar', dailyWage: 'Dainik Kamai (Earning)', thekedar: 'Thekedar',
     daysWorked: 'Kaarya divas', manDays: 'Man-days', earned: 'Arjit', unpaid: 'Shesh', paid: 'Bhugtan', date: 'Dinank', project: 'Pariyojana',
     shift: 'Shift', rate: 'Dar', status: 'Sthiti', noAttendance: 'Is avadhi mein koi haziri nahin.', totalEarned: 'Kul arjit',
-    legend: 'Shift code: P = poora din (1x) · 0.5 = aadha din (0.5x) · 1.5x = raat 9 baje tak (1.5x) · 2x = madhyaraatri tak (2x) · 2.5x = 2.5 shifts (2.5x) · 3x = 3 shifts (3x) · A = mazdoori nahin',
-    wageReceipt: 'Mazdoori Bhugtan Raseed', advanceReceipt: 'Agrim Raseed', paymentReceipt: 'Bhugtan Raseed', paidBy: 'Bhugtankarta', paidTo: 'Prapatkarta',
-    payment: 'Bhugtan', description: 'Vivaran', amount: 'Raashi', wagesEarned: 'Arjit mazdoori', bonus: 'Bonus / bhatta',
+    legend: 'Shift code: 0.5 = aadha din (0.5) · 1 = poora din (1) · 1.5 = raat 9 baje tak (1.5) · 2 = madhyaraatri tak (2) · 2.5 = 2.5 shifts (2.5) · 3 = 3 shifts (3) · A = arjit nahin',
+    wageReceipt: 'Kamai Bhugtan Raseed', advanceReceipt: 'Agrim Raseed', paymentReceipt: 'Bhugtan Raseed', paidBy: 'Bhugtankarta', paidTo: 'Prapatkarta',
+    payment: 'Bhugtan', description: 'Vivaran', amount: 'Raashi', wagesEarned: 'Arjit kamai', bonus: 'Bonus / bhatta',
     advanceCut: 'Agrim vasooli', food: 'Bhojan / mess', room: 'Kamra kiraya', advanceGiven: 'Agrim diya', netPaid: 'Shuddh bhugtan',
-    advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', remainingWages: 'Khate mein shesh mazdoori rashi', remainingBalance: 'Khate mein shesh shuddh balance', notes: 'Tippani', authorised: 'Thekedar hastakshar',
-    received: 'Karigar hastakshar / angutha', statementOf: 'Haziri vivaran', deductNext: 'Agli mazdoori se vasool hoga',
+    advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', remainingWages: 'Khate mein shesh kamai rashi', remainingBalance: 'Khate mein shesh shuddh balance', notes: 'Tippani', authorised: 'Thekedar hastakshar',
+    received: 'Karigar hastakshar / angutha', statementOf: 'Haziri vivaran', deductNext: 'Agli payment se vasool hoga',
   },
 };
 
 const formatAttendanceCode = (code) => {
   switch (String(code || '').trim()) {
     case 'P':
-      return 'P';
+    case '1':
+    case '1.0':
+    case '1x':
+      return '1';
     case 'HALF':
     case '0.5':
+    case '0.5x':
       return '0.5';
     case 'P1/5':
     case '1.5':
     case '1.5x':
-      return '1.5x';
+      return '1.5';
     case 'PP':
     case '2':
     case '2x':
-      return '2x';
+      return '2';
     case 'P2/5':
     case '2.5':
     case '2.5x':
-      return '2.5x';
+      return '2.5';
     case 'PPP':
     case '3':
     case '3x':
-      return '3x';
+      return '3';
     case 'ABSENT':
     case 'A':
       return 'A';

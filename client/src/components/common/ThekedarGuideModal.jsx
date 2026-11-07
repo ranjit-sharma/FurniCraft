@@ -55,49 +55,49 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             {
               step: '2',
               title: 'Tap the Shift Code for each Craftsman',
-              text: 'Each code automatically calculates their earnings based on their agreed daily wage (Dehadi rate):',
+              text: 'Each code automatically calculates their earnings based on their agreed daily earning rate:',
             },
           ],
           codes: [
             {
-              code: 'P',
-              name: 'Full Day (1.0x)',
-              desc: 'Full day worked. Worker earns 100% of daily wage (e.g., ₹800 daily wage = ₹800 earned).',
-              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
-            },
-            {
               code: '0.5',
-              name: 'Half Day (0.5x)',
-              desc: 'Worked till lunchtime or half shift. Worker earns 50% of wage (e.g., ₹800 wage = ₹400 earned).',
+              name: 'Half Day (0.5)',
+              desc: 'Worked till lunchtime or half shift. Worker earns 50% of daily earning (e.g., ₹800 daily earning = ₹400 earned).',
               color: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300',
             },
             {
-              code: '1.5x',
-              name: 'Dehadi + Half Overtime (1.5x)',
-              desc: 'Worked till 9:00 PM evening overtime. Worker earns 150% of wage (e.g., ₹800 wage = ₹1,200 earned).',
+              code: '1',
+              name: 'Full Day (1)',
+              desc: 'Full day worked. Worker earns 100% of daily earning (e.g., ₹800 daily earning = ₹800 earned).',
+              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
+            },
+            {
+              code: '1.5',
+              name: 'Dehadi + Half Overtime (1.5)',
+              desc: 'Worked till 9:00 PM evening overtime. Worker earns 150% of daily earning (e.g., ₹800 daily earning = ₹1,200 earned).',
               color: 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300',
             },
             {
-              code: '2x',
-              name: 'Double Dehadi (2.0x)',
-              desc: 'Night shift / double duty till midnight. Worker earns 200% of wage (e.g., ₹800 wage = ₹1,600 earned).',
+              code: '2',
+              name: 'Double Dehadi (2)',
+              desc: 'Night shift / double duty till midnight. Worker earns 200% of daily earning (e.g., ₹800 daily earning = ₹1,600 earned).',
               color: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/50 dark:text-orange-300',
             },
             {
-              code: '2.5x',
-              name: '2.5 Shifts (2.5x)',
-              desc: 'Extended duty / 2.5 shifts. Worker earns 250% of wage (e.g., ₹800 wage = ₹2,000 earned).',
+              code: '2.5',
+              name: '2.5 Shifts (2.5)',
+              desc: 'Extended duty / 2.5 shifts. Worker earns 250% of daily earning (e.g., ₹800 daily earning = ₹2,000 earned).',
               color: 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/50 dark:text-indigo-300',
             },
             {
-              code: '3x',
-              name: '3 Shifts (3.0x)',
-              desc: 'Triple duty / 3 shifts. Worker earns 300% of wage (e.g., ₹800 wage = ₹2,400 earned).',
+              code: '3',
+              name: '3 Shifts (3)',
+              desc: 'Triple duty / 3 shifts. Worker earns 300% of daily earning (e.g., ₹800 daily earning = ₹2,400 earned).',
               color: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300',
             },
             {
               code: 'A',
-              name: 'Absent (0x)',
+              name: 'Absent (0)',
               desc: 'Craftsman did not report to work. ₹0 calculated for the day.',
               color: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300',
             },
@@ -113,10 +113,10 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
         workers: {
           title: 'Managing Worker Profiles & Details',
           badge: 'Workforce Hub',
-          desc: 'Everything you need to know about worker balances, wage rates, and records.',
+          desc: 'Everything you need to know about worker balances, daily earning rates, and records.',
           highlights: [
             {
-              title: 'Daily Wage (₹/day)',
+              title: 'Daily Earning (₹/day)',
               desc: 'The agreed daily rate set by you for this craftsman (e.g. ₹800/day for Mistry, ₹700/day for Helper).',
             },
             {
@@ -134,9 +134,9 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           ],
         },
         finance: {
-          title: 'Giving Advances & Settling Net Wages',
+          title: 'Giving Advances & Settling Net Earnings',
           badge: 'Cash & Payouts',
-          desc: 'How to manage advances (pesgi) and settle weekly/monthly net wages with 100% mathematical accuracy.',
+          desc: 'How to manage advances (pesgi) and settle weekly/monthly net earnings with 100% mathematical accuracy.',
           giveAdvance: {
             title: '1. Giving Advance (पेशगी देना)',
             steps: [
@@ -147,9 +147,9 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             ],
           },
           payNet: {
-            title: '2. Paying Net Wages (नेट पगार चुकाना)',
+            title: '2. Paying Net Earnings (नेट पगार चुकाना)',
             steps: [
-              'Click "Pay Net Wages" inside the worker modal.',
+              'Click "Pay Net" inside the worker modal.',
               'The system automatically loads all unpaid earned shifts.',
               'You can choose how much advance to deduct (Cut Advance) and enter any room/food deduction or festival bonus.',
               'Review the final Net Cash to Pay and confirm payment.',
@@ -168,7 +168,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             },
             {
               title: 'Payment Bills & Receipts',
-              desc: 'Under the "Payment Bills" tab in the worker modal, tap any bill to download the official payment slip detailing base wages, advance deductions, and net cash paid.',
+              desc: 'Under the "Payment Bills" tab in the worker modal, tap any bill to download the official payment slip detailing base earnings, advance deductions, and net cash paid.',
             },
           ],
         },
@@ -189,7 +189,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           list: [
             'Mark attendance daily: Always log shifts before the day ends so daily totals stay up to date.',
             'Always record advances in FurniCraft: Never give unrecorded cash. Entering it immediately protects your money and keeps balances transparent.',
-            'Check Net Payable before paying: FurniCraft automatically calculates (Earned Wages − Advance Balance) so you never overpay.',
+            'Check Net Payable before paying: FurniCraft automatically calculates (Earned Amount − Advance Balance) so you never overpay.',
             'Download monthly PDFs at month-end: Keep a physical or digital copy of the muster roll for site records.',
           ],
         },
@@ -222,37 +222,49 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             {
               step: '2',
               title: 'काम के अनुसार सही कोड बटन दबाएं',
-              text: 'हर कोड कारीगर की तय दिहाड़ी (Daily Wage) के हिसाब से अपने आप सही कमाई जोड़ता है:',
+              text: 'हर कोड कारीगर की तय दैनिक कमाई दर (Daily Earning) के हिसाब से अपने आप सही कमाई जोड़ता है:',
             },
           ],
           codes: [
             {
-              code: 'P',
-              name: 'पूरा दिन (1.0x दिहाड़ी)',
-              desc: 'पूरा दिन काम किया। कारीगर को 100% दिहाड़ी मिलेगी (उदा: ₹800 दिहाड़ी = ₹800 कमाई)।',
-              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
-            },
-            {
-              code: 'Half',
-              name: 'आधा दिन (0.5x दिहाड़ी)',
-              desc: 'दोपहर तक या आधी शिफ्ट काम किया। 50% दिहाड़ी मिलेगी (उदा: ₹800 दिहाड़ी = ₹400 कमाई)।',
+              code: '0.5',
+              name: 'आधा दिन (0.5 दिहाड़ी)',
+              desc: 'दोपहर तक या आधी शिफ्ट काम किया। 50% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹400 कमाई)।',
               color: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300',
             },
             {
-              code: '1.5x',
-              name: 'डेढ़ दिहाड़ी (1.5x Overtime)',
-              desc: 'शाम 9:00 बजे तक ओवरटाइम किया। 150% दिहाड़ी मिलेगी (उदा: ₹800 दिहाड़ी = ₹1,200 कमाई)।',
+              code: '1',
+              name: 'पूरा दिन (1 दिहाड़ी)',
+              desc: 'पूरा दिन काम किया। कारीगर को 100% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹800 कमाई)।',
+              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
+            },
+            {
+              code: '1.5',
+              name: 'डेढ़ दिहाड़ी (1.5 Overtime)',
+              desc: 'शाम 9:00 बजे तक ओवरटाइम किया। 150% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹1,200 कमाई)।',
               color: 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300',
             },
             {
-              code: '2x',
-              name: 'डबल दिहाड़ी / PP (2.0x)',
-              desc: 'रात 12:00 बजे तक या नाइट शिफ्ट काम किया। 200% दिहाड़ी मिलेगी (उदा: ₹800 दिहाड़ी = ₹1,600 कमाई)।',
+              code: '2',
+              name: 'डबल दिहाड़ी / नाइट (2)',
+              desc: 'रात 12:00 बजे तक या नाइट शिफ्ट काम किया। 200% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹1,600 कमाई)।',
               color: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/50 dark:text-orange-300',
             },
             {
-              code: 'Absent',
-              name: 'अनुपस्थित / छुट्टी (0x)',
+              code: '2.5',
+              name: '2.5 शिफ्ट (2.5)',
+              desc: '2.5 शिफ्ट काम किया। 250% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹2,000 कमाई)।',
+              color: 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/50 dark:text-indigo-300',
+            },
+            {
+              code: '3',
+              name: '3 शिफ्ट (3)',
+              desc: 'लगातार 3 शिफ्ट काम किया। 300% कमाई मिलेगी (उदा: ₹800 दैनिक कमाई = ₹2,400 कमाई)।',
+              color: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300',
+            },
+            {
+              code: 'A',
+              name: 'अनुपस्थित / गैरहाजिर (0)',
               desc: 'कारीगर काम पर नहीं आया। उस दिन की कमाई ₹0 रहेगी।',
               color: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300',
             },
@@ -271,7 +283,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           desc: 'कारीगर का दिहाड़ी रेट, बाकी पेशगी और कुल बकाया राशि कैसे देखें।',
           highlights: [
             {
-              title: 'Daily Wage (रोजाना दिहाड़ी दर)',
+              title: 'Daily Earning (रोजाना कमाई दर)',
               desc: 'इस कारीगर का आपके साथ तय किया हुआ दैनिक रेट (उदा: ₹800/दिन)।',
             },
             {
@@ -302,9 +314,9 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             ],
           },
           payNet: {
-            title: '2. नेट पगार चुकाना (Pay Net Wages)',
+            title: '2. नेट पगार चुकाना (Pay Net)',
             steps: [
-              'कारीगर कार्ड में "Pay Net Wages" बटन दबाएं।',
+              'कारीगर कार्ड में "Pay Net" बटन दबाएं।',
               'सिस्टम अपने आप अब तक की सभी अनपेड हाजिरी की कमाई जोड़ लेगा।',
               'आप जितनी पेशगी काटना चाहते हैं (Advance Deduction) वह भरें, खाना/कमरा किराया या बोनस जोड़ें।',
               'स्क्रीन पर अंतिम नेट कैश (Net Paid) देखें और भुगतान कन्फर्म करें।',
@@ -377,49 +389,49 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             {
               step: '2',
               title: 'Shift ke hisab se sahi button dabayein',
-              text: 'Har code daily wage (dehadi) ke hisab se automatic calculation karta hai:',
+              text: 'Har code daily earning (dehadi) ke hisab se automatic calculation karta hai:',
             },
           ],
           codes: [
             {
-              code: 'P',
-              name: 'Pura Din (1.0x Dehadi)',
-              desc: 'Full day kaam kiya (e.g. ₹800 dehadi = ₹800 kamai).',
-              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
-            },
-            {
               code: '0.5',
-              name: 'Aadha Din (0.5x Dehadi)',
+              name: 'Aadha Din (0.5 Dehadi)',
               desc: 'Half day kaam kiya (e.g. ₹800 dehadi = ₹400 kamai).',
               color: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300',
             },
             {
-              code: '1.5x',
-              name: 'Dehadi + Overtime (1.5x)',
+              code: '1',
+              name: 'Pura Din (1 Dehadi)',
+              desc: 'Full day kaam kiya (e.g. ₹800 dehadi = ₹800 kamai).',
+              color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
+            },
+            {
+              code: '1.5',
+              name: 'Dehadi + Overtime (1.5)',
               desc: 'Shaam 9 PM tak overtime kiya (e.g. ₹800 dehadi = ₹1,200 kamai).',
               color: 'bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300',
             },
             {
-              code: '2x',
-              name: 'Double Dehadi / Night (2.0x)',
+              code: '2',
+              name: 'Double Dehadi / Night (2)',
               desc: 'Raat 12 baje tak ya double duty kiya (e.g. ₹800 dehadi = ₹1,600 kamai).',
               color: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/50 dark:text-orange-300',
             },
             {
-              code: '2.5x',
-              name: '2.5 Shift (2.5x Dehadi)',
+              code: '2.5',
+              name: '2.5 Shift (2.5 Dehadi)',
               desc: 'Extended 2.5 shift kaam kiya (e.g. ₹800 dehadi = ₹2,000 kamai).',
               color: 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/50 dark:text-indigo-300',
             },
             {
-              code: '3x',
-              name: '3 Shift (3.0x Dehadi)',
+              code: '3',
+              name: '3 Shift (3 Dehadi)',
               desc: 'Continuous 3 shift kaam kiya (e.g. ₹800 dehadi = ₹2,400 kamai).',
               color: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300',
             },
             {
               code: 'A',
-              name: 'Absent / Chhutti (0x)',
+              name: 'Absent / Chhutti (0)',
               desc: 'Karigar kaam par nahi aaya. Us din ka ₹0 hisab banega.',
               color: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300',
             },
@@ -435,10 +447,10 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
         workers: {
           title: 'Worker Profile & Balance Samajhna',
           badge: 'Workforce Details',
-          desc: 'Karigar ka daily wage, advance balance aur net payable dekhna.',
+          desc: 'Karigar ka daily earning, advance balance aur net payable dekhna.',
           highlights: [
             {
-              title: 'Daily Wage (Dehadi Dar)',
+              title: 'Daily Earning (Dehadi Dar)',
               desc: 'Aapke dwara tay kiya gaya daily rate (e.g. ₹800/day).',
             },
             {
@@ -469,9 +481,9 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             ],
           },
           payNet: {
-            title: '2. Net Pagar Chukana (Pay Net Wages)',
+            title: '2. Net Pagar Chukana (Pay Net)',
             steps: [
-              'Worker card me "Pay Net Wages" par click karein.',
+              'Worker card me "Pay Net" par click karein.',
               'System sabhi unpaid shifts ki kamai auto-calculate karega.',
               'Advance cut karein, room/food deduction daalein aur Net Cash confirm karein.',
               'Payment hote hi sabhi shifts "Paid & Locked" ho jayengi aur Payment Bill generate ho jayega.',
@@ -680,7 +692,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             {/* Shift Codes Breakdown Cards */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                {guideLang === 'en' ? 'Shift Codes & Wage Calculation' : 'शिफ्ट कोड्स और दिहाड़ी की गणना'}
+                {guideLang === 'en' ? 'Shift Codes & Earning Calculation' : 'शिफ्ट कोड्स और कमाई की गणना'}
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {sections.attendance.codes.map((c) => (
@@ -745,15 +757,15 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
               <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-inner">
                 <img
                   src="/guide/worker-card.png"
-                  alt="Worker Profile Card with Daily Wage, Advance, Net Payable, and Actions"
+                  alt="Worker Profile Card with Daily Earning, Advance, Net Payable, and Actions"
                   className="w-full max-h-80 object-contain bg-slate-100 dark:bg-slate-950"
                   loading="lazy"
                 />
               </div>
               <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400 italic">
                 {guideLang === 'en'
-                  ? 'Tap any craftsman in Workforce (/workers) to open this card. You can see Daily Wage, Advance Balance, Net Payable, Pay Net Wages, and Give Advance.'
-                  : 'कारीगर लिस्ट में किसी भी कारीगर के नाम पर टैप करें। यह कार्ड खुलेगा जहां दिहाड़ी दर, पेशगी बैलेंस, नेट देय रकम, पगार चुकाना व पेशगी देने के बटन हैं।'}
+                  ? 'Tap any craftsman in Workforce (/workers) to open this card. You can see Daily Earning, Advance Balance, Net Payable, Pay Net, and Give Advance.'
+                  : 'कारीगर लिस्ट में किसी भी कारीगर के नाम पर टैप करें। यह कार्ड खुलेगा जहां दैनिक कमाई दर, पेशगी बैलेंस, नेट देय रकम, पगार चुकाना व पेशगी देने के बटन हैं।'}
               </p>
             </div>
 
@@ -811,7 +823,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
                 </ul>
               </div>
 
-              {/* Pay Net Wages */}
+              {/* Pay Net */}
               <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 p-4">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
@@ -838,7 +850,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
                 {guideLang === 'en' ? 'Net Cash Payout Formula' : 'नेट कैश भुगतान का सटीक फॉर्मूला'}
               </span>
               <p className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-100 font-mono">
-                Net Paid = (Earned Wages + Bonus) − (Advance Cut + Food/Room)
+                Net Paid = (Earned Amount + Bonus) − (Advance Cut + Food/Room)
               </p>
             </div>
           </div>

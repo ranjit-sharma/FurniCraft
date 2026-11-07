@@ -222,7 +222,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
     },
     {
       id: 'ATTENDANCE_WAGES',
-      label: t('help.catAttendance', 'Attendance & Wages'),
+      label: t('help.catAttendance', 'Attendance & Earnings'),
       icon: CalendarCheck,
       color: 'text-amber-600 bg-amber-50 border-amber-200',
     },
@@ -266,7 +266,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
     if (match) return match.label;
     switch (catId) {
       case 'GENERAL_INQUIRY': return t('help.catGeneral', 'General Inquiry');
-      case 'ATTENDANCE_WAGES': return t('help.catAttendance', 'Attendance & Wages');
+      case 'ATTENDANCE_WAGES': return t('help.catAttendance', 'Attendance & Earnings');
       case 'PAYMENT_BILL': return t('help.catPayment', 'Payment & Advance');
       case 'PROJECT_SITE': return t('help.catProject', 'Project & Site');
       case 'TOOL_EQUIPMENT': return t('help.catTool', 'Tools & Machinery');
@@ -591,7 +591,7 @@ export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {
                                     [tkt._id]: e.target.value,
                                   }))
                                 }
-                                placeholder="Type response note for the contractor (e.g. Approved wage adjustment; payment transferred via UPI ref #1234)..."
+                                placeholder="Type response note for the contractor (e.g. Approved earnings adjustment; payment transferred via UPI ref #1234)..."
                                 className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 resize-none shadow-2xs"
                               />
                             </div>

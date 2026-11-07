@@ -54,14 +54,14 @@ const formatDate = (dateStr) => {
 };
 
 const ATTENDANCE_CODE_OPTIONS = [
-  { code: 'P', label: 'P', desc: 'Full Day (1.0x)' },
-  { code: 'HALF', label: '0.5', desc: 'Half Day (0.5x)' },
-  { code: 'P1/5', label: '1.5x', desc: 'Till 9 PM (1.5x)' },
-  { code: 'PP', label: '2x', desc: 'Till 12 AM (2.0x)' },
-  { code: 'P2/5', label: '2.5x', desc: '2.5 Shifts (2.5x)' },
-  { code: 'PPP', label: '3x', desc: '3 Shifts (3.0x)' },
-  { code: 'ABSENT', label: 'A', desc: 'Absent (0x)' },
-  { code: 'LEAVE', label: 'Leave', desc: 'On Leave (0x)' },
+  { code: 'HALF', label: '0.5', desc: 'Half Day (0.5)' },
+  { code: 'P', label: '1', desc: 'Full Day (1)' },
+  { code: 'P1/5', label: '1.5', desc: 'Till 9 PM (1.5)' },
+  { code: 'PP', label: '2', desc: 'Till 12 AM (2)' },
+  { code: 'P2/5', label: '2.5', desc: '2.5 Shifts (2.5)' },
+  { code: 'PPP', label: '3', desc: '3 Shifts (3)' },
+  { code: 'ABSENT', label: 'A', desc: 'Absent (0)' },
+  { code: 'LEAVE', label: 'Leave', desc: 'On Leave (0)' },
 ];
 
 const MAX_ADVANCE = Infinity; // Worker can take advance of any amount as their choice (no limitation)
@@ -887,7 +887,7 @@ export const WorkersPage = () => {
                     </strong>
                   </div>
                   <div className="text-right text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5">
-                    <div>{t('workers.unpaidWages', 'Wages')}: <strong className="text-slate-900 dark:text-white font-bold">₹{(w.totalEarned || 0).toLocaleString('en-IN')}</strong></div>
+                    <div>{t('workers.unpaidWages', 'Earnings')}: <strong className="text-slate-900 dark:text-white font-bold">₹{(w.totalEarned || 0).toLocaleString('en-IN')}</strong></div>
                     {(w.outstandingAdvanceBalance || 0) > 0 && (
                       <div className="text-rose-600 dark:text-rose-400">
                         {t('workers.advShort', 'Adv')}: <strong>-₹{(w.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</strong>
@@ -955,7 +955,7 @@ export const WorkersPage = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Wage Rate (₹/day) *
+              Daily Earning Rate (₹/day) *
             </label>
             <input
               type="number"
@@ -1041,7 +1041,7 @@ export const WorkersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Wage (₹/day) *</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Earning (₹/day) *</label>
             <input
               type="number"
               min="0"
@@ -1089,7 +1089,7 @@ export const WorkersPage = () => {
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  Daily Wage Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / day</strong>
+                  Daily Earning Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / day</strong>
                   {selectedAttendanceWorker?.userId?.phone && (
                     <span className="ml-2 text-slate-400 dark:text-slate-500">• {selectedAttendanceWorker?.userId?.phone}</span>
                   )}
@@ -1224,7 +1224,7 @@ export const WorkersPage = () => {
               {/* Fast Stats Pills */}
               <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
                 <div className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 shadow-sm border border-slate-200 dark:border-slate-700 text-center">
-                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Unpaid Wages</div>
+                  <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 uppercase">Unpaid Earnings</div>
                   <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
                     ₹{(activityData?.profile?.totalEarned ?? activityWorker.totalEarned ?? 0).toLocaleString('en-IN')}
                   </div>
@@ -1844,14 +1844,14 @@ export const WorkersPage = () => {
                   <div className="text-base font-black text-rose-700 dark:text-rose-300">₹{outstanding.toLocaleString('en-IN')}</div>
                 </div>
                 <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-2.5">
-                  <div className="text-[11px] font-semibold uppercase text-slate-500">Daily wage</div>
+                  <div className="text-[11px] font-semibold uppercase text-slate-500">Daily earning</div>
                   <div className="text-base font-black text-amber-800 dark:text-amber-300">₹{payWorker.defaultDailyWage || 0}</div>
                 </div>
               </div>
 
               <div className="rounded-2xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 <PayRow
-                  label="Wages to settle"
+                  label="Earnings to settle"
                   hint={
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
@@ -1860,12 +1860,12 @@ export const WorkersPage = () => {
                         </button>
                       </div>
                       <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
-                        ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')} → ₹{Math.max(0, (payWorker.totalEarned || 0) - base).toLocaleString('en-IN')} remaining unpaid wages
+                        ₹{(payWorker.totalEarned || 0).toLocaleString('en-IN')} → ₹{Math.max(0, (payWorker.totalEarned || 0) - base).toLocaleString('en-IN')} remaining unpaid earnings
                       </div>
                     </div>
                   }
                 >
-                  <input type="number" inputMode="decimal" min="0" step="any" required aria-label="Wages to settle" value={payBaseEarned} onChange={(e) => handleBaseEarnedChange(e.target.value)} className={inputCls} />
+                  <input type="number" inputMode="decimal" min="0" step="any" required aria-label="Earnings to settle" value={payBaseEarned} onChange={(e) => handleBaseEarnedChange(e.target.value)} className={inputCls} />
                 </PayRow>
                 <PayRow sign="+" label="Bonus / allowance" hint="Overtime, travel or festival bonus">
                   <input type="number" inputMode="decimal" min="0" step="any" aria-label="Bonus or allowance" value={payAdditionalWages} onChange={(e) => handleAdditionalWagesChange(e.target.value)} className={inputCls} />
@@ -1922,7 +1922,7 @@ export const WorkersPage = () => {
                           Remaining Account Balance After Payment
                         </span>
                         <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                          Unpaid Wages: <strong>₹{remWages.toLocaleString('en-IN')}</strong>
+                          Unpaid Earnings: <strong>₹{remWages.toLocaleString('en-IN')}</strong>
                           {remAdv > 0 && <span> · Advance: <strong className="text-rose-600">₹{remAdv.toLocaleString('en-IN')}</strong></span>}
                         </div>
                       </div>
@@ -1972,7 +1972,7 @@ export const WorkersPage = () => {
       <Modal
         isOpen={billModalOpen}
         onClose={() => setBillModalOpen(false)}
-        title="Payment Receipt & Wage Settlement Bill Generated"
+        title="Payment Receipt & Earnings Settlement Bill Generated"
       >
         {generatedBillData && (
           <div className="space-y-4">
@@ -2012,7 +2012,7 @@ export const WorkersPage = () => {
               {/* Itemized breakdown table */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-slate-700 dark:text-slate-300">
-                  <span>1. Base Approved Earned Wages:</span>
+                  <span>1. Base Approved Earnings:</span>
                   <span className="font-semibold text-slate-900 dark:text-white">₹{Number(generatedBillData.breakdown?.baseEarned ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-rose-700 dark:text-rose-400">
@@ -2032,7 +2032,7 @@ export const WorkersPage = () => {
                   </div>
                 )}
                 <div className="flex justify-between text-teal-700 dark:text-teal-400">
-                  <span>Additional Wages / Bonus:</span>
+                  <span>Additional Earnings / Bonus:</span>
                   <span className="font-semibold">+₹{Number(generatedBillData.breakdown?.additionalWages ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between font-black text-sm text-slate-900 dark:text-white">
@@ -2048,7 +2048,7 @@ export const WorkersPage = () => {
               </div>
               {Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0) > 0 && (
                 <div className="rounded-lg bg-blue-50 dark:bg-blue-950/40 p-2 border border-blue-200 dark:border-blue-800 text-[11px] flex items-center justify-between">
-                  <span className="text-blue-700 dark:text-blue-300 font-semibold">Remaining Unpaid Wages in Account:</span>
+                  <span className="text-blue-700 dark:text-blue-300 font-semibold">Remaining Unpaid Earnings in Account:</span>
                   <span className="font-bold text-blue-900 dark:text-blue-200">₹{Number(generatedBillData.breakdown?.remainingWages || generatedBillData.remainingWages || 0).toLocaleString('en-IN')}</span>
                 </div>
               )}
@@ -2228,7 +2228,7 @@ export const WorkersPage = () => {
                     {netBalance > 0 ? (
                       <p className="text-rose-800 dark:text-rose-300 leading-relaxed">
                         Worker <strong className="text-rose-950 dark:text-rose-100">{workerToDelete.userId?.name}</strong> has{' '}
-                        <strong className="text-rose-950 dark:text-rose-100 font-bold">₹{netBalance.toLocaleString('en-IN')}</strong> in unpaid earned wages dues.
+                        <strong className="text-rose-950 dark:text-rose-100 font-bold">₹{netBalance.toLocaleString('en-IN')}</strong> in unpaid earnings dues.
                         System rules strictly prohibit deleting workers with unsettled dues. You must settle and pay the net amount via <strong>Pay Net</strong> before deleting.
                       </p>
                     ) : (
@@ -2248,7 +2248,7 @@ export const WorkersPage = () => {
                         <span>Worker Eligible for Deletion (Net Balance = ₹0)</span>
                       </div>
                       <p className="text-emerald-800 dark:text-emerald-300">
-                        All wage earnings and cash advances for <strong className="text-emerald-950 dark:text-emerald-100">{workerToDelete.userId?.name}</strong> are completely settled at ₹0.
+                        All earnings and cash advances for <strong className="text-emerald-950 dark:text-emerald-100">{workerToDelete.userId?.name}</strong> are completely settled at ₹0.
                       </p>
                     </div>
 

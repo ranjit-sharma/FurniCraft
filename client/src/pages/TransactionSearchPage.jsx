@@ -155,7 +155,7 @@ export const TransactionSearchPage = () => {
   const getCategoryLabel = (cat) => {
     switch (cat) {
       case 'SALARY_PAYMENT':
-        return t('transactionSearch.wagesShort', 'Wages');
+        return t('transactionSearch.wagesShort', 'Earnings');
       case 'ADVANCE_DISBURSEMENT':
         return t('transactionSearch.advancesShort', 'Advances');
       default:
@@ -263,7 +263,7 @@ export const TransactionSearchPage = () => {
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2" role="tablist">
                 {[
                   { id: 'ALL', label: t('transactionSearch.allShort', 'All') },
-                  { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagesShort', 'Wages') },
+                  { id: 'SALARY_PAYMENT', label: t('transactionSearch.wagesShort', 'Earnings') },
                   { id: 'ADVANCE_DISBURSEMENT', label: t('transactionSearch.advancesShort', 'Advances') },
                 ].map((cat) => (
                   <button
@@ -684,7 +684,7 @@ export const TransactionSearchPage = () => {
                   <div className="rounded-2xl border border-slate-200 dark:border-slate-800 p-5 bg-white dark:bg-slate-900/60 space-y-3">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                        {t('transactionSearch.wagesDeductionsAudit') || 'Wages & Deductions Detailed Audit'}
+                        {t('transactionSearch.wagesDeductionsAudit') || 'Earnings & Deductions Detailed Audit'}
                       </h4>
                       <span className="text-[10px] sm:text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
                         {t('transactionSearch.bonusAllowance') || 'Bonus / Allowance'}: +₹{(selectedTx.breakdown.additionalWages || 0).toLocaleString('en-IN')}
@@ -739,7 +739,7 @@ export const TransactionSearchPage = () => {
 
                     {selectedTx.breakdown.remainingWages > 0 && (
                       <div className="rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 p-3 text-xs text-blue-900 dark:text-blue-300 flex items-center justify-between">
-                        <span>{t('transactionSearch.remainingWages') || 'Remaining Unpaid Wage Balance in Account:'}</span>
+                        <span>{t('transactionSearch.remainingWages') || 'Remaining Unpaid Earnings in Account:'}</span>
                         <strong className="font-black text-sm text-blue-950 dark:text-blue-200">
                           ₹{selectedTx.breakdown.remainingWages?.toLocaleString('en-IN')}
                         </strong>

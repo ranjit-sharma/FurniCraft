@@ -22,7 +22,7 @@ import {
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
 
 const TXN_LABELS = {
-  SALARY_PAYMENT: 'Wage payment',
+  SALARY_PAYMENT: 'Earnings payment',
   ADVANCE_DISBURSEMENT: 'Advance given',
   ADVANCE_RECOVERY: 'Advance recovered',
   REFUND_OR_REVERSAL: 'Reversal',
@@ -154,7 +154,7 @@ export const OwnerDashboard = () => {
           <div className="text-2xl sm:text-3xl font-black tracking-tight">{inr(m.netPayable)}</div>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
             <div className="min-w-0">
-              <div className="text-[11px] text-purple-200/80 truncate">{t('ownerDashboard.unpaidWages', 'Unpaid wages')}</div>
+              <div className="text-[11px] text-purple-200/80 truncate">{t('ownerDashboard.unpaidWages', 'Unpaid earnings')}</div>
               <div className="font-bold text-sm sm:text-base truncate">{inr(m.unpaidWages)}</div>
             </div>
             <div className="min-w-0">

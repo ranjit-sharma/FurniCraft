@@ -41,7 +41,7 @@ export const AuditLogsPage = () => {
       <LoadError message={loadError} onRetry={fetchLogs} />
       <PageHeader
         title={t('audit.pageTitle', 'Audit Log')}
-        subtitle={t('audit.pageSub', 'Every sign-in, wage change, payment and account action, newest first')}
+        subtitle={t('audit.pageSub', 'Every sign-in, earning rate change, payment and account action, newest first')}
       />
 
       {/* Audit Log Table */}

@@ -20,15 +20,15 @@ import {
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
 
-// Short labels so shift codes fit nicely on phone screens.
+// Short labels so shift codes fit nicely on phone screens: 0.5, 1, 1.5, 2, 2.5, 3, A
 const QUICK_CODES = [
-  { code: 'P', label: 'P', title: 'Full day (1.0x)' },
-  { code: 'HALF', label: '0.5', title: 'Half day (0.5x)' },
-  { code: 'P1/5', label: '1.5x', title: 'Till 9 PM (1.5x)' },
-  { code: 'PP', label: '2x', title: 'Till midnight (2.0x)' },
-  { code: 'P2/5', label: '2.5x', title: '2.5 Shifts (2.5x)' },
-  { code: 'PPP', label: '3x', title: '3 Shifts (3.0x)' },
-  { code: 'ABSENT', label: 'A', title: 'Absent (no wage)' },
+  { code: 'HALF', label: '0.5', title: 'Half day (0.5)' },
+  { code: 'P', label: '1', title: 'Full day (1)' },
+  { code: 'P1/5', label: '1.5', title: 'Till 9 PM (1.5)' },
+  { code: 'PP', label: '2', title: 'Till midnight (2)' },
+  { code: 'P2/5', label: '2.5', title: '2.5 Shifts (2.5)' },
+  { code: 'PPP', label: '3', title: '3 Shifts (3)' },
+  { code: 'ABSENT', label: 'A', title: 'Absent (no earning)' },
 ];
 
 const PROJECT_KEY = 'furnicraft_attendance_project';
@@ -231,7 +231,7 @@ export const ThekedarDashboard = () => {
           <div className="text-3xl font-black">{inr(m.netPayable)}</div>
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <div className="text-[11px] text-amber-100/80">{t('thekedarDash.unpaidWages', 'Unpaid wages')}</div>
+              <div className="text-[11px] text-amber-100/80">{t('thekedarDash.unpaidWages', 'Unpaid earnings')}</div>
               <div className="font-bold">{inr(m.unpaidWages)}</div>
             </div>
             <div>
@@ -510,7 +510,7 @@ export const ThekedarDashboard = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Wage Rate (₹/day) *
+              Daily Earning Rate (₹/day) *
             </label>
             <input
               type="number"

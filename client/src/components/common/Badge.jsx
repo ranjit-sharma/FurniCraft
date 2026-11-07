@@ -5,7 +5,11 @@ export const formatAttendanceCode = (code) => {
   const c = String(code).trim();
   switch (c) {
     case 'P':
-      return 'P';
+    case '1':
+    case '1.0':
+    case '1x':
+    case '1X':
+      return '1';
     case 'HALF':
     case '0.5':
     case '0.5x':
@@ -15,22 +19,22 @@ export const formatAttendanceCode = (code) => {
     case '1.5':
     case '1.5x':
     case '1.5X':
-      return '1.5x';
+      return '1.5';
     case 'PP':
     case '2':
     case '2x':
     case '2X':
-      return '2x';
+      return '2';
     case 'P2/5':
     case '2.5':
     case '2.5x':
     case '2.5X':
-      return '2.5x';
+      return '2.5';
     case 'PPP':
     case '3':
     case '3x':
     case '3X':
-      return '3x';
+      return '3';
     case 'ABSENT':
     case 'A':
       return 'A';
@@ -46,6 +50,9 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
     switch (variant) {
       case 'success':
       case 'APPROVED':
+      case '1':
+      case '1.0':
+      case '1x':
       case 'P':
       case 'AVAILABLE':
       case 'COMPLETED':

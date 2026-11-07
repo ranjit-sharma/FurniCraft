@@ -30,7 +30,7 @@ export const InviteThekedarModal = ({ isOpen, onClose }) => {
   const shareMessage = useMemo(() => {
     const inviterTitle = user?.role === 'OWNER' ? 'Executive Business Owner' : 'Furniture Contractor (Thekedar)';
     const sender = user?.name || 'FurniCraft';
-    return `Namaste! ${sender} (${inviterTitle}) has invited you to join FurniCraft ERP as an official Furniture Contractor (Thekedar).\n\nManage furniture sites, craftsman attendance, dehadi wages, and advance ledgers seamlessly.\n\nRegister your contractor account here:\n${inviteUrl}`;
+    return `Namaste! ${sender} (${inviterTitle}) has invited you to join FurniCraft ERP as an official Furniture Contractor (Thekedar).\n\nManage furniture sites, craftsman attendance, dehadi earnings, and advance ledgers seamlessly.\n\nRegister your contractor account here:\n${inviteUrl}`;
   }, [user, inviteUrl]);
 
   const handleCopyLink = async () => {
