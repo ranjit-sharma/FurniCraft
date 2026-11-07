@@ -23,7 +23,7 @@ const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
 // Short labels so shift codes fit nicely on phone screens.
 const QUICK_CODES = [
   { code: 'P', label: 'P', title: 'Full day (1.0x)' },
-  { code: 'HALF', label: 'Half', title: 'Half day (0.5x)' },
+  { code: 'HALF', label: '0.5', title: 'Half day (0.5x)' },
   { code: 'P1/5', label: '1.5x', title: 'Till 9 PM (1.5x)' },
   { code: 'PP', label: '2x', title: 'Till midnight (2.0x)' },
   { code: 'P2/5', label: '2.5x', title: '2.5 Shifts (2.5x)' },

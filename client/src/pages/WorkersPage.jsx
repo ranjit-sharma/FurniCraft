@@ -55,7 +55,7 @@ const formatDate = (dateStr) => {
 
 const ATTENDANCE_CODE_OPTIONS = [
   { code: 'P', label: 'P (1.0x)', desc: 'Full Day' },
-  { code: 'HALF', label: 'HALF (0.5x)', desc: 'Half Day' },
+  { code: 'HALF', label: '0.5 (0.5x)', desc: 'Half Day' },
   { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
   { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
   { code: 'P2/5', label: '2.5x (2.5 Shifts)', desc: '2.5 Shifts' },

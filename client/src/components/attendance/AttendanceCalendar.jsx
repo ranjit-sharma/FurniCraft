@@ -689,7 +689,7 @@ export const AttendanceCalendar = ({
           <Badge variant="P" size="sm">P</Badge> Full (1.0x)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="HALF" size="sm">HALF</Badge> Half (0.5x)
+          <Badge variant="HALF" size="sm">0.5</Badge> Half (0.5x)
         </span>
         <span className="flex items-center gap-1">
           <Badge variant="P1/5" size="sm">P1/5</Badge> 9 PM (1.5x)
