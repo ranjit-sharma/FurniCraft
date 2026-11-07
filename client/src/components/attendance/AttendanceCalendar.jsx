@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Badge } from '../common/Badge';
+import { Badge, formatAttendanceCode } from '../common/Badge';
 import { Button } from '../common/Button';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -163,12 +163,12 @@ export const AttendanceCalendar = ({
               {/* Desktop Badge */}
               <div className="hidden sm:block">
                 <Badge variant={singleRecord.code} size="sm">
-                  {singleRecord.code}
+                  {formatAttendanceCode(singleRecord.code)}
                 </Badge>
               </div>
               {/* Mobile Badge */}
               <span className="sm:hidden px-1 py-0.2 text-[8px] font-bold rounded bg-amber-100 text-amber-900 border border-amber-200 leading-tight">
-                {singleRecord.code}
+                {formatAttendanceCode(singleRecord.code)}
               </span>
             </>
           ) : dayRecords.length > 1 ? (
@@ -447,7 +447,7 @@ export const AttendanceCalendar = ({
           </div>
 
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3.5 shadow-sm">
-            <div className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-400 font-medium truncate">Full (P) / Half (HALF)</div>
+            <div className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-400 font-medium truncate">Full (P) / Half (0.5)</div>
             <div className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 mt-1 truncate">
               {summary.codeCounts?.P || 0} Full / {summary.codeCounts?.HALF || 0} Half
             </div>
@@ -456,7 +456,7 @@ export const AttendanceCalendar = ({
           <div className="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/50 dark:bg-blue-950/40 p-2.5 sm:p-3.5 shadow-sm">
             <div className="text-[11px] sm:text-xs text-blue-700 dark:text-blue-400 font-medium truncate">Overtime & Multi-Shifts</div>
             <div className="text-xs sm:text-sm font-bold text-blue-900 dark:text-blue-300 mt-1 truncate">
-              {summary.codeCounts?.['P1/5'] || 0} OT / {summary.codeCounts?.PP || 0} 2x / {(summary.codeCounts?.['P2/5'] || 0) + (summary.codeCounts?.PPP || 0)} Multi
+              {summary.codeCounts?.['P1/5'] || 0} 1.5x / {summary.codeCounts?.PP || 0} 2x / {(summary.codeCounts?.['P2/5'] || 0) + (summary.codeCounts?.PPP || 0)} Multi
             </div>
           </div>
         </div>
@@ -500,7 +500,7 @@ export const AttendanceCalendar = ({
                   <div key={r._id} className="flex items-center justify-between bg-white dark:bg-slate-800 px-2 py-1.5 rounded-lg border border-amber-200/60 dark:border-slate-700 text-xs">
                     <div className="truncate pr-2">
                       <span className="font-bold text-slate-900 dark:text-slate-100">{r.workerId?.name || (isWorker ? (t('nav.myDashboard') || 'My Shift') : (t('thekedarDashboard.tableWorker') || 'Worker'))}</span>
-                      <span className="text-[10px] text-slate-700 dark:text-slate-400 ml-1.5">({r.code} • {r.wageMultiplier}x)</span>
+                      <span className="text-[10px] text-slate-700 dark:text-slate-400 ml-1.5">({formatAttendanceCode(r.code)} • {r.wageMultiplier}x)</span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span className="font-bold text-slate-900 dark:text-slate-100 text-xs">₹{r.calculatedEarnings}</span>
@@ -615,7 +615,7 @@ export const AttendanceCalendar = ({
                     >
                       <div className="flex items-center gap-2">
                         <Badge variant={r.code} size="sm">
-                          {r.code} ({r.wageMultiplier}x)
+                          {formatAttendanceCode(r.code)} ({r.wageMultiplier}x)
                         </Badge>
                         <div>
                           <span className="font-bold text-slate-900 dark:text-slate-100">{r.workerId?.name || (isWorker ? 'My Shift' : 'Worker')}</span>
@@ -692,10 +692,10 @@ export const AttendanceCalendar = ({
           <Badge variant="HALF" size="sm">0.5</Badge> Half (0.5x)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="P1/5" size="sm">P1/5</Badge> 9 PM (1.5x)
+          <Badge variant="1.5x" size="sm">1.5x</Badge> 9 PM (1.5x)
         </span>
         <span className="flex items-center gap-1">
-          <Badge variant="PP" size="sm">PP</Badge> 2 Shifts (2.0x)
+          <Badge variant="2x" size="sm">2x</Badge> 2 Shifts (2.0x)
         </span>
         <span className="flex items-center gap-1">
           <Badge variant="P2/5" size="sm">2.5x</Badge> 2.5 Shifts (2.5x)

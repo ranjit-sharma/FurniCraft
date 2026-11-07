@@ -229,7 +229,7 @@ const PDF_LABELS = {
     attendanceTitle: 'Attendance Statement', allTime: 'All attendance', worker: 'Worker', dailyWage: 'Daily wage', thekedar: 'Thekedar',
     daysWorked: 'Days worked', manDays: 'Man-days', earned: 'Earned', unpaid: 'Unpaid', paid: 'Paid', date: 'Date', project: 'Project',
     shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'No attendance recorded for this period.', totalEarned: 'Total earned',
-    legend: 'Shift codes: P = full day (1x) · HALF = half day (0.5x) · P1/5 = till 9 PM (1.5x) · PP = till midnight (2x) · P2/5 = 2.5 shifts (2.5x) · PPP = 3 shifts (3x) · ABSENT = no wage',
+    legend: 'Shift codes: P = full day (1x) · 0.5 = half day (0.5x) · 1.5x = till 9 PM (1.5x) · 2x = till midnight (2x) · 2.5x = 2.5 shifts (2.5x) · 3x = 3 shifts (3x) · A = no wage',
     wageReceipt: 'Wage Payment Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Payment Receipt', paidBy: 'Paid by', paidTo: 'Paid to',
     payment: 'Payment', description: 'Description', amount: 'Amount', wagesEarned: 'Wages earned (attendance)', bonus: 'Bonus / allowance',
     advanceCut: 'Advance recovered', food: 'Food / mess', room: 'Room rent', advanceGiven: 'Advance given', netPaid: 'Net paid',
@@ -240,7 +240,7 @@ const PDF_LABELS = {
     attendanceTitle: 'Haziri Statement', allTime: 'Saari haziri', worker: 'Karigar', dailyWage: 'Dehadi', thekedar: 'Thekedar',
     daysWorked: 'Kaam ke din', manDays: 'Man-days', earned: 'Kamai', unpaid: 'Baaki', paid: 'Paid', date: 'Tareekh', project: 'Project',
     shift: 'Shift', rate: 'Rate', status: 'Status', noAttendance: 'Is mahine koi haziri nahi.', totalEarned: 'Kul kamai',
-    legend: 'Shift code: P = pura din (1x) · HALF = aadha din (0.5x) · P1/5 = raat 9 baje tak (1.5x) · PP = raat 12 baje tak (2x) · P2/5 = 2.5 shift (2.5x) · PPP = 3 shift (3x) · ABSENT = koi dehadi nahi',
+    legend: 'Shift code: P = pura din (1x) · 0.5 = aadha din (0.5x) · 1.5x = raat 9 baje tak (1.5x) · 2x = raat 12 baje tak (2x) · 2.5x = 2.5 shift (2.5x) · 3x = 3 shift (3x) · A = koi dehadi nahi',
     wageReceipt: 'Dehadi Bhugtan Receipt', advanceReceipt: 'Advance Receipt', paymentReceipt: 'Bhugtan Receipt', paidBy: 'Dene wale', paidTo: 'Lene wale',
     payment: 'Bhugtan', description: 'Vivaran', amount: 'Rakam', wagesEarned: 'Kamai (haziri se)', bonus: 'Bonus / bhatta',
     advanceCut: 'Advance kata', food: 'Khana / mess', room: 'Kamra kiraya', advanceGiven: 'Advance diya', netPaid: 'Kul diya',
@@ -251,13 +251,46 @@ const PDF_LABELS = {
     attendanceTitle: 'Haziri Vivaran', allTime: 'Sampurn haziri', worker: 'Karigar', dailyWage: 'Dainik mazdoori', thekedar: 'Thekedar',
     daysWorked: 'Kaarya divas', manDays: 'Man-days', earned: 'Arjit', unpaid: 'Shesh', paid: 'Bhugtan', date: 'Dinank', project: 'Pariyojana',
     shift: 'Shift', rate: 'Dar', status: 'Sthiti', noAttendance: 'Is avadhi mein koi haziri nahin.', totalEarned: 'Kul arjit',
-    legend: 'Shift code: P = poora din (1x) · HALF = aadha din (0.5x) · P1/5 = raat 9 baje tak (1.5x) · PP = madhyaraatri tak (2x) · P2/5 = 2.5 shifts (2.5x) · PPP = 3 shifts (3x) · ABSENT = mazdoori nahin',
+    legend: 'Shift code: P = poora din (1x) · 0.5 = aadha din (0.5x) · 1.5x = raat 9 baje tak (1.5x) · 2x = madhyaraatri tak (2x) · 2.5x = 2.5 shifts (2.5x) · 3x = 3 shifts (3x) · A = mazdoori nahin',
     wageReceipt: 'Mazdoori Bhugtan Raseed', advanceReceipt: 'Agrim Raseed', paymentReceipt: 'Bhugtan Raseed', paidBy: 'Bhugtankarta', paidTo: 'Prapatkarta',
     payment: 'Bhugtan', description: 'Vivaran', amount: 'Raashi', wagesEarned: 'Arjit mazdoori', bonus: 'Bonus / bhatta',
     advanceCut: 'Agrim vasooli', food: 'Bhojan / mess', room: 'Kamra kiraya', advanceGiven: 'Agrim diya', netPaid: 'Shuddh bhugtan',
     advanceAfter: 'Bhugtan ke baad agrim shesh', advanceNow: 'Vartaman agrim shesh', remainingWages: 'Khate mein shesh mazdoori rashi', remainingBalance: 'Khate mein shesh shuddh balance', notes: 'Tippani', authorised: 'Thekedar hastakshar',
     received: 'Karigar hastakshar / angutha', statementOf: 'Haziri vivaran', deductNext: 'Agli mazdoori se vasool hoga',
   },
+};
+
+const formatAttendanceCode = (code) => {
+  switch (String(code || '').trim()) {
+    case 'P':
+      return 'P';
+    case 'HALF':
+    case '0.5':
+      return '0.5';
+    case 'P1/5':
+    case '1.5':
+    case '1.5x':
+      return '1.5x';
+    case 'PP':
+    case '2':
+    case '2x':
+      return '2x';
+    case 'P2/5':
+    case '2.5':
+    case '2.5x':
+      return '2.5x';
+    case 'PPP':
+    case '3':
+    case '3x':
+      return '3x';
+    case 'ABSENT':
+    case 'A':
+      return 'A';
+    case 'LEAVE':
+      return 'Leave';
+    default:
+      return code || '—';
+  }
 };
 
 const formatDay = (ymd) => {
@@ -347,9 +380,10 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
   const rows = records.map((r, i) => {
     const project = r.projectId ? `${r.projectId.name}` : '—';
     const status = r.isPayrollProcessed ? L.paid : L.unpaid;
+    const codeDisplay = formatAttendanceCode(r.code);
     return worker
-      ? [String(i + 1), formatDay(r.date), project, r.code, inr(r.applicableDailyWage), inr(r.calculatedEarnings), status]
-      : [String(i + 1), formatDay(r.date), r.workerId?.name || '—', project, r.code, inr(r.calculatedEarnings), status];
+      ? [String(i + 1), formatDay(r.date), project, codeDisplay, inr(r.applicableDailyWage), inr(r.calculatedEarnings), status]
+      : [String(i + 1), formatDay(r.date), r.workerId?.name || '—', project, codeDisplay, inr(r.calculatedEarnings), status];
   });
 
   const running = `${L.attendanceTitle} · ${worker ? worker.name : thekedar?.name || ''} · ${period_}`;
@@ -392,7 +426,7 @@ export const generateAttendanceExcel = async (filterQuery) => {
     Worker: r.workerId?.name || 'N/A',
     Project: r.projectId?.name || 'N/A',
     ProjectCode: r.projectId?.projectCode || 'N/A',
-    Code: r.code,
+    Code: formatAttendanceCode(r.code),
     Shift: r.shift,
     Status: r.approvalStatus,
     WageRate: r.applicableDailyWage,

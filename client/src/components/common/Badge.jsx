@@ -1,5 +1,46 @@
 import React from 'react';
 
+export const formatAttendanceCode = (code) => {
+  if (!code) return '';
+  const c = String(code).trim();
+  switch (c) {
+    case 'P':
+      return 'P';
+    case 'HALF':
+    case '0.5':
+    case '0.5x':
+    case '0.5X':
+      return '0.5';
+    case 'P1/5':
+    case '1.5':
+    case '1.5x':
+    case '1.5X':
+      return '1.5x';
+    case 'PP':
+    case '2':
+    case '2x':
+    case '2X':
+      return '2x';
+    case 'P2/5':
+    case '2.5':
+    case '2.5x':
+    case '2.5X':
+      return '2.5x';
+    case 'PPP':
+    case '3':
+    case '3x':
+    case '3X':
+      return '3x';
+    case 'ABSENT':
+    case 'A':
+      return 'A';
+    case 'LEAVE':
+      return 'Leave';
+    default:
+      return code;
+  }
+};
+
 export const Badge = ({ children, variant = 'default', size = 'md', className = '' }) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -13,7 +54,11 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
       case 'SUBMITTED':
       case 'PENDING':
       case 'HALF':
+      case '0.5':
+      case '0.5x':
       case 'P1/5':
+      case '1.5':
+      case '1.5x':
       case 'IN_PROGRESS':
         return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800';
       case 'danger':
@@ -38,6 +83,8 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
         return 'bg-indigo-50 text-indigo-800 border-indigo-200 dark:bg-indigo-950/70 dark:text-indigo-300 dark:border-indigo-800';
       case 'info':
       case 'PP':
+      case '2':
+      case '2x':
       case 'ISSUED':
       case 'FINALIZED':
         return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800';
@@ -59,12 +106,13 @@ export const Badge = ({ children, variant = 'default', size = 'md', className = 
   };
 
   const sizeStyles = size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
+  const displayContent = typeof children === 'string' ? formatAttendanceCode(children) : children;
 
   return (
     <span
       className={`inline-flex items-center font-medium border rounded-md ${getVariantStyles()} ${sizeStyles} ${className}`}
     >
-      {children}
+      {displayContent}
     </span>
   );
 };

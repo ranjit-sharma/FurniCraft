@@ -6,7 +6,7 @@ import { downloadPdf } from '../utils/download';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
-import { Badge } from '../components/common/Badge';
+import { Badge, formatAttendanceCode } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import {
@@ -54,14 +54,14 @@ const formatDate = (dateStr) => {
 };
 
 const ATTENDANCE_CODE_OPTIONS = [
-  { code: 'P', label: 'P (1.0x)', desc: 'Full Day' },
-  { code: 'HALF', label: '0.5 (0.5x)', desc: 'Half Day' },
-  { code: 'P1/5', label: 'P1/5 (1.5x)', desc: 'Till 9 PM' },
-  { code: 'PP', label: 'PP (2.0x)', desc: 'Till 12 AM' },
-  { code: 'P2/5', label: '2.5x (2.5 Shifts)', desc: '2.5 Shifts' },
-  { code: 'PPP', label: '3.0x (3 Shifts)', desc: '3 Shifts' },
-  { code: 'ABSENT', label: 'A (0.0x)', desc: 'Absent' },
-  { code: 'LEAVE', label: 'Leave (0.0x)', desc: 'On Leave' },
+  { code: 'P', label: 'P', desc: 'Full Day (1.0x)' },
+  { code: 'HALF', label: '0.5', desc: 'Half Day (0.5x)' },
+  { code: 'P1/5', label: '1.5x', desc: 'Till 9 PM (1.5x)' },
+  { code: 'PP', label: '2x', desc: 'Till 12 AM (2.0x)' },
+  { code: 'P2/5', label: '2.5x', desc: '2.5 Shifts (2.5x)' },
+  { code: 'PPP', label: '3x', desc: '3 Shifts (3.0x)' },
+  { code: 'ABSENT', label: 'A', desc: 'Absent (0x)' },
+  { code: 'LEAVE', label: 'Leave', desc: 'On Leave (0x)' },
 ];
 
 const MAX_ADVANCE = Infinity; // Worker can take advance of any amount as their choice (no limitation)
@@ -1368,7 +1368,7 @@ export const WorkersPage = () => {
                                   <span className="text-xs font-bold text-slate-900 dark:text-white">
                                     {att.date || formatDate(att.createdAt)}
                                   </span>
-                                  <Badge variant={att.code} size="sm">{att.code}</Badge>
+                                  <Badge variant={att.code} size="sm">{formatAttendanceCode(att.code)}</Badge>
                                 </div>
                                 <div className="text-sm font-black text-amber-900 dark:text-amber-300">
                                   ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
@@ -1419,7 +1419,7 @@ export const WorkersPage = () => {
                                     {att.date || formatDate(att.createdAt)}
                                   </td>
                                   <td className="px-2 sm:px-4 py-2.5">
-                                    <Badge variant={att.code} size="sm">{att.code}</Badge>
+                                    <Badge variant={att.code} size="sm">{formatAttendanceCode(att.code)}</Badge>
                                   </td>
                                   <td className="px-2 sm:px-4 py-2.5 font-bold text-amber-900 dark:text-amber-300 whitespace-nowrap text-xs">
                                     ₹{(att.calculatedEarnings ?? 0).toLocaleString('en-IN')}
@@ -1706,7 +1706,7 @@ export const WorkersPage = () => {
             <div className="rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 text-sm">
               <div className="font-bold text-slate-900 dark:text-white">{activityWorker?.userId?.name}</div>
               <div className="text-xs text-slate-600 dark:text-slate-400">
-                Current shift: <strong>{editAttendance.code}</strong> (₹{(editAttendance.calculatedEarnings ?? 0).toLocaleString('en-IN')})
+                Current shift: <strong>{formatAttendanceCode(editAttendance.code)}</strong> (₹{(editAttendance.calculatedEarnings ?? 0).toLocaleString('en-IN')})
               </div>
             </div>
             <div>

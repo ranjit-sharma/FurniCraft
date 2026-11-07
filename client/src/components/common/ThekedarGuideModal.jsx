@@ -66,7 +66,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
               color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
             },
             {
-              code: 'Half',
+              code: '0.5',
               name: 'Half Day (0.5x)',
               desc: 'Worked till lunchtime or half shift. Worker earns 50% of wage (e.g., ₹800 wage = ₹400 earned).',
               color: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300',
@@ -79,12 +79,24 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
             },
             {
               code: '2x',
-              name: 'Double Dehadi / PP (2.0x)',
+              name: 'Double Dehadi (2.0x)',
               desc: 'Night shift / double duty till midnight. Worker earns 200% of wage (e.g., ₹800 wage = ₹1,600 earned).',
               color: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/50 dark:text-orange-300',
             },
             {
-              code: 'Absent',
+              code: '2.5x',
+              name: '2.5 Shifts (2.5x)',
+              desc: 'Extended duty / 2.5 shifts. Worker earns 250% of wage (e.g., ₹800 wage = ₹2,000 earned).',
+              color: 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/50 dark:text-indigo-300',
+            },
+            {
+              code: '3x',
+              name: '3 Shifts (3.0x)',
+              desc: 'Triple duty / 3 shifts. Worker earns 300% of wage (e.g., ₹800 wage = ₹2,400 earned).',
+              color: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300',
+            },
+            {
+              code: 'A',
               name: 'Absent (0x)',
               desc: 'Craftsman did not report to work. ₹0 calculated for the day.',
               color: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300',
@@ -376,7 +388,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
               color: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300',
             },
             {
-              code: 'Half',
+              code: '0.5',
               name: 'Aadha Din (0.5x Dehadi)',
               desc: 'Half day kaam kiya (e.g. ₹800 dehadi = ₹400 kamai).',
               color: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300',
@@ -394,7 +406,19 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
               color: 'bg-orange-50 text-orange-800 border-orange-300 dark:bg-orange-950/50 dark:text-orange-300',
             },
             {
-              code: 'Absent',
+              code: '2.5x',
+              name: '2.5 Shift (2.5x Dehadi)',
+              desc: 'Extended 2.5 shift kaam kiya (e.g. ₹800 dehadi = ₹2,000 kamai).',
+              color: 'bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/50 dark:text-indigo-300',
+            },
+            {
+              code: '3x',
+              name: '3 Shift (3.0x Dehadi)',
+              desc: 'Continuous 3 shift kaam kiya (e.g. ₹800 dehadi = ₹2,400 kamai).',
+              color: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300',
+            },
+            {
+              code: 'A',
               name: 'Absent / Chhutti (0x)',
               desc: 'Karigar kaam par nahi aaya. Us din ka ₹0 hisab banega.',
               color: 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300',
