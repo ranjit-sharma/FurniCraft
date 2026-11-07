@@ -229,10 +229,10 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
     );
   }
 
-  const [workerUser, thekedarUser, workerProfile] = await Promise.all([
+  const [workerUser, thekedarUser, workerProfileDoc] = await Promise.all([
     User.findById(payroll.workerId).select('name phone').lean(),
     User.findById(payroll.thekedarId).select('name phone businessName').lean(),
-    WorkerProfile.findOne({ userId: payroll.workerId }).select('workerCode').lean(),
+    WorkerProfile.findOne({ userId: payroll.workerId }),
   ]);
 
   const transaction = await withDuplicateRetry(async () => {
@@ -246,7 +246,7 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
       receiptReference: receiptReference || null,
       workerId: payroll.workerId,
       workerName: workerUser?.name || null,
-      workerCode: workerProfile?.workerCode || null,
+      workerCode: workerProfileDoc?.workerCode || null,
       workerPhone: workerUser?.phone || null,
       thekedarId: payroll.thekedarId,
       thekedarName: thekedarUser?.name || null,
@@ -271,11 +271,10 @@ export const recordSalaryPayment = async ({ payrollId, amount, paymentMethod, re
   await payroll.save();
 
   // Update WorkerProfile outstanding salary balance
-  const workerProfile = await WorkerProfile.findOne({ userId: payroll.workerId });
-  if (workerProfile) {
-    workerProfile.totalSalaryPaid = addMoney(workerProfile.totalSalaryPaid, amount);
-    workerProfile.outstandingSalaryBalance = Math.max(0, subtractMoney(workerProfile.outstandingSalaryBalance, amount));
-    await workerProfile.save();
+  if (workerProfileDoc) {
+    workerProfileDoc.totalSalaryPaid = addMoney(workerProfileDoc.totalSalaryPaid, amount);
+    workerProfileDoc.outstandingSalaryBalance = Math.max(0, subtractMoney(workerProfileDoc.outstandingSalaryBalance, amount));
+    await workerProfileDoc.save();
   }
 
   await recordAuditLog({
