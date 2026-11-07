@@ -137,11 +137,11 @@ export const ExpensesPage = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={t('expenses.pageTitle', 'Money Received')}
+        title={t('expenses.pageTitle', 'Project Income')}
         subtitle={t('expenses.pageSub', 'Payments from clients for your projects')}
         actions={isThekedar && (
           <Button variant="primary" onClick={() => setModalOpen(true)} icon={Plus}>
-            {t('expenses.recordMoneyReceived', 'Record Money Received')}
+            {t('expenses.recordMoneyReceived', 'Record Income')}
           </Button>
         )}
       />
@@ -238,8 +238,8 @@ export const ExpensesPage = () => {
         <div>
           <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">
             {selectedMonth === 'ALL'
-              ? t('expenses.totalMoneyReceivedAllTime', 'Total Money Received (All Time)')
-              : `${t('expenses.totalMoneyReceivedMonth', 'Money Received')} — ${getMonthLabel(selectedMonth)}`}
+              ? t('expenses.totalMoneyReceivedAllTime', 'Total Project Income (All Time)')
+              : `${t('expenses.totalMoneyReceivedMonth', 'Project Income')} — ${getMonthLabel(selectedMonth)}`}
           </div>
           <div className="text-3xl font-black mt-1">₹{monthMoneyReceived.toLocaleString('en-IN')}</div>
           <div className="mt-2 text-xs text-emerald-100/90">
@@ -383,8 +383,8 @@ export const ExpensesPage = () => {
         )}
       </Card>
 
-      {/* Modal: Record Money Received */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t('expenses.recordModalTitle') || 'Record Project Money Received'}>
+      {/* Modal: Record Project Income */}
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={t('expenses.recordModalTitle') || 'Record Project Income'}>
         <form onSubmit={handleRecordPayment} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('expenses.selectProject') || 'Target Furniture Project *'}</label>

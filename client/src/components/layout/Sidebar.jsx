@@ -22,7 +22,7 @@ export const useNavLinks = () => {
       { to: '/', label: t('nav.thekedarDashboard', 'Thekedar Dashboard'), short: t('navShort.home', 'Home'), icon: LayoutDashboard },
       { to: '/projects', label: t('nav.furnitureProjects', 'Furniture Projects'), short: t('navShort.projects', 'Projects'), icon: FolderKanban },
       { to: '/workers', label: t('nav.workersAndWages', 'Workers & Earnings'), short: t('navShort.workers', 'Workers'), icon: Users },
-      { to: '/expenses', label: t('nav.expenses', 'Project Money Received'), short: t('navShort.money', 'Money'), icon: IndianRupee },
+      { to: '/expenses', label: t('nav.expenses', 'Project Income'), short: t('navShort.income', 'Income'), icon: IndianRupee },
       { to: '/transactions/search', label: t('nav.transactionHistory', t('nav.transactionSearch', 'Transaction History')), short: t('navShort.history', 'History'), icon: History },
     ];
   }

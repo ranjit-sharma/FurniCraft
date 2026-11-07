@@ -278,7 +278,7 @@ export const ProjectDetailPage = () => {
           <div className="flex flex-wrap items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {t('projectDetail.moneyReceivedTitle', 'Project Money Received')}
+                {t('projectDetail.moneyReceivedTitle', 'Project Income')}
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">
                 {t(
@@ -357,11 +357,11 @@ export const ProjectDetailPage = () => {
           )}
         </Card>
 
-      {/* Modal: Record Money Received (Exclusively preserved) */}
+      {/* Modal: Record Project Income */}
       <Modal
         isOpen={moneyModalOpen}
         onClose={() => setMoneyModalOpen(false)}
-        title={t('projectDetail.recordMoneyModalTitle', 'Record Project Money Received')}
+        title={t('projectDetail.recordMoneyModalTitle', 'Record Project Income')}
       >
         <form onSubmit={handleRecordMoneyReceived} className="space-y-4">
           <div>
