@@ -383,9 +383,13 @@ export const MembersOverviewPage = () => {
 
                   <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg gap-2">
                     <div>Phone: <strong className="text-slate-800 dark:text-slate-200">{m.phone || 'N/A'}</strong></div>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-indigo-700 dark:text-indigo-400">
-                      <Eye className="h-3 w-3" /> {m.visitCount || 0} visits
-                    </span>
+                    {m.role === 'WORKER' ? (
+                      <span className="text-slate-400 text-[11px] font-medium">—</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-black text-indigo-700 dark:text-indigo-400">
+                        <Eye className="h-3 w-3" /> {m.visitCount || 0} visits
+                      </span>
+                    )}
                   </div>
 
                   {m.role === 'WORKER' && m.assignedThekedar && (
@@ -395,7 +399,9 @@ export const MembersOverviewPage = () => {
                   )}
 
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2">
-                    <span className="text-[11px] text-slate-500">Active: {formatDateTime(m.lastLoginAt)}</span>
+                    <span className="text-[11px] text-slate-500">
+                      Active: {m.role === 'WORKER' ? '—' : formatDateTime(m.lastLoginAt)}
+                    </span>
                     <div className="flex items-center gap-2">
                       <Badge variant={m.status === 'ACTIVE' ? 'success' : 'danger'} size="sm">
                         {m.status}
@@ -501,15 +507,23 @@ export const MembersOverviewPage = () => {
 
                     {/* App Visits */}
                     <td className="px-4 py-3 text-center">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 text-xs font-black text-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                        <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                        {m.visitCount || 0}
-                      </span>
+                      {m.role === 'WORKER' ? (
+                        <span className="text-slate-400 text-xs font-medium">—</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 text-xs font-black text-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                          <Eye className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
+                          {m.visitCount || 0}
+                        </span>
+                      )}
                     </td>
 
                     {/* Last Active */}
                     <td className="px-4 py-3 text-slate-700 dark:text-slate-300 text-xs">
-                      {formatDateTime(m.lastLoginAt)}
+                      {m.role === 'WORKER' ? (
+                        <span className="text-slate-400 text-xs font-medium">—</span>
+                      ) : (
+                        formatDateTime(m.lastLoginAt)
+                      )}
                     </td>
 
                     {/* Status & Management */}

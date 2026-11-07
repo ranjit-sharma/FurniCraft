@@ -131,18 +131,22 @@ export const getMembersOverview = async ({ role, search } = {}) => {
   const totalOwners = await User.countDocuments({ role: ROLES.OWNER });
   const activeOwners = await User.countDocuments({ role: ROLES.OWNER, status: 'ACTIVE' });
 
-  // Visit tracking metrics
+  // Visit tracking metrics (only Thekedar and Owner visits count)
   const visitActions = ['USER_LOGIN', 'APP_VISIT'];
-  const totalVisits = await AuditLog.countDocuments({ action: { $in: visitActions } });
+  const thekedarOwnerRoles = [ROLES.THEKEDAR, ROLES.OWNER];
+  const totalVisits = await AuditLog.countDocuments({
+    action: { $in: visitActions },
+    actorRole: { $in: thekedarOwnerRoles },
+  });
 
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   const todayVisits = await AuditLog.countDocuments({
     action: { $in: visitActions },
+    actorRole: { $in: thekedarOwnerRoles },
     createdAt: { $gte: startOfToday },
   });
 
-  const workerVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.WORKER });
   const thekedarVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.THEKEDAR });
   const ownerVisits = await AuditLog.countDocuments({ action: { $in: visitActions }, actorRole: ROLES.OWNER });
 
@@ -160,21 +164,25 @@ export const getMembersOverview = async ({ role, search } = {}) => {
     if (uid) wpMap.set(uid, wp);
   });
 
-  // Recent visits stream
-  const recentVisits = await AuditLog.find({ action: { $in: visitActions } })
+  // Recent visits stream (only Thekedar and Owner visits)
+  const recentVisits = await AuditLog.find({
+    action: { $in: visitActions },
+    actorRole: { $in: thekedarOwnerRoles },
+  })
     .sort({ createdAt: -1 })
     .limit(15);
 
   const members = users.map((u) => {
     const uObj = u.toObject();
     const wp = wpMap.get(u._id.toString());
+    const isWorker = uObj.role === ROLES.WORKER;
     return {
       ...uObj,
       workerCode: wp?.workerCode || null,
       defaultDailyWage: wp?.defaultDailyWage || null,
       outstandingAdvanceBalance: wp?.outstandingAdvanceBalance || 0,
       outstandingSalaryBalance: wp?.outstandingSalaryBalance || 0,
-      visitCount: uObj.visitCount || 0,
+      visitCount: isWorker ? null : (uObj.visitCount || 0),
     };
   });
 
