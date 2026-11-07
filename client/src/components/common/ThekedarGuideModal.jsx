@@ -116,8 +116,8 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           desc: 'Everything you need to know about worker balances, daily earning rates, and records.',
           highlights: [
             {
-              title: 'Daily Earning (₹/day)',
-              desc: 'The agreed daily rate set by you for this craftsman (e.g. ₹800/day for Mistry, ₹700/day for Helper).',
+              title: 'Earning Rate (₹/shift)',
+              desc: 'The agreed daily rate set by you for this craftsman (e.g. ₹800/shift for Mistry, ₹700/shift for Helper).',
             },
             {
               title: 'Advance Balance (₹)',
@@ -284,7 +284,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           highlights: [
             {
               title: 'Daily Earning (रोजाना कमाई दर)',
-              desc: 'इस कारीगर का आपके साथ तय किया हुआ दैनिक रेट (उदा: ₹800/दिन)।',
+              desc: 'इस कारीगर का आपके साथ तय किया हुआ दैनिक रेट (उदा: ₹800/शिफ्ट)।',
             },
             {
               title: 'Advance Balance (बाकी पेशगी)',
@@ -451,7 +451,7 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
           highlights: [
             {
               title: 'Daily Earning (Dehadi Dar)',
-              desc: 'Aapke dwara tay kiya gaya daily rate (e.g. ₹800/day).',
+              desc: 'Aapke dwara tay kiya gaya daily rate (e.g. ₹800/shift).',
             },
             {
               title: 'Advance Balance (Baaki Pesgi)',

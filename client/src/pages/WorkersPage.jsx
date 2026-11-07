@@ -855,7 +855,7 @@ export const WorkersPage = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">{w.userId?.name || 'Worker'}</h3>
                       <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                        ₹{w.defaultDailyWage || 750}/day
+                        ₹{w.defaultDailyWage || 750}/shift
                       </span>
                     </div>
                     <p className="text-xs text-slate-700 dark:text-slate-400">{w.userId?.phone || 'No phone'}</p>
@@ -955,7 +955,7 @@ export const WorkersPage = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Earning Rate (₹/day) *
+              Daily Earning Rate (₹/shift) *
             </label>
             <input
               type="number"
@@ -1041,7 +1041,7 @@ export const WorkersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Earning (₹/day) *</label>
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Daily Earning (₹/shift) *</label>
             <input
               type="number"
               min="0"
@@ -1089,7 +1089,7 @@ export const WorkersPage = () => {
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                  Daily Earning Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / day</strong>
+                  Daily Earning Rate: <strong className="text-amber-800 dark:text-amber-300 font-black">₹{selectedAttendanceWorker?.defaultDailyWage || 750} / shift</strong>
                   {selectedAttendanceWorker?.userId?.phone && (
                     <span className="ml-2 text-slate-400 dark:text-slate-500">• {selectedAttendanceWorker?.userId?.phone}</span>
                   )}
@@ -1185,7 +1185,7 @@ export const WorkersPage = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">{activityWorker.userId?.name || 'Worker'}</h3>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                      ₹{activityWorker.defaultDailyWage || 750}/day
+                      ₹{activityWorker.defaultDailyWage || 750}/shift
                     </span>
                     {(() => {
                       const actTrade = (Array.isArray(activityData?.profile?.skills) && activityData.profile.skills.length > 0 ? activityData.profile.skills[0] : null)

@@ -476,7 +476,7 @@ export const ThekedarsPage = () => {
                                     {w.name}
                                   </span>
                                   <span className="shrink-0 px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                    ₹{w.defaultDailyWage || 750}/day
+                                    ₹{w.defaultDailyWage || 750}/shift
                                   </span>
                                 </div>
                                 <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 font-medium shrink-0 flex items-center gap-1">
@@ -806,7 +806,7 @@ export const ThekedarsPage = () => {
                             {w.workerCode}
                           </span>
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                            ₹{w.defaultDailyWage || 750}/day
+                            ₹{w.defaultDailyWage || 750}/shift
                           </span>
                           <span
                             className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold border ${

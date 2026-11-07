@@ -402,7 +402,7 @@ export const ThekedarDashboard = () => {
                       <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 mt-0.5">
                         <span className="font-mono">{w.workerCode}</span>
                         <span>·</span>
-                        <span>{inr(w.defaultDailyWage)}/day</span>
+                        <span>{inr(w.defaultDailyWage)}/shift</span>
                         <span>·</span>
                         <span className="font-medium text-slate-700 dark:text-slate-300">{w.trade || (Array.isArray(w.skills) && w.skills[0]) || 'Mistry'}</span>
                         {w.today && (
@@ -510,7 +510,7 @@ export const ThekedarDashboard = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Earning Rate (₹/day) *
+              Daily Earning Rate (₹/shift) *
             </label>
             <input
               type="number"

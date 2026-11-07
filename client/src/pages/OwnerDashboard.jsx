@@ -232,7 +232,7 @@ export const OwnerDashboard = () => {
                         <span className="truncate max-w-[120px] sm:max-w-none">{tx.workerId?.name || 'Worker'}</span>
                         {tx.workerWage ? (
                           <span className="inline-flex shrink-0 items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                            ₹{tx.workerWage}/day
+                            ₹{tx.workerWage}/shift
                           </span>
                         ) : null}
                       </div>
