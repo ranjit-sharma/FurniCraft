@@ -50,10 +50,13 @@ export const listWorkers = async (req, res, next) => {
     }
 
     const safeLimit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 1000);
-    const workerProfiles = await WorkerProfile.find(filter)
+    const rawWorkerProfiles = await WorkerProfile.find(filter)
       .populate('userId', 'name email phone status')
       .populate('thekedarId', 'name phone')
       .limit(safeLimit);
+
+    // Defensive: filter out any orphaned worker profiles whose User record is missing
+    const workerProfiles = rawWorkerProfiles.filter((w) => w && w.userId && w.userId._id);
 
     // Aggregate unpaid approved attendance earnings for each worker
     const workerUserIds = workerProfiles.map((w) => w.userId?._id).filter(Boolean);
@@ -198,7 +201,7 @@ export const getWorkerProfile = async (req, res, next) => {
       .populate('userId', 'name email phone status')
       .populate('thekedarId', 'name phone email');
 
-    if (!profile) throw new NotFoundError('Worker profile not found');
+    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
 
     // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
     if (req.user.role === ROLES.THEKEDAR) {
@@ -303,7 +306,7 @@ export const updateWorkerWage = async (req, res, next) => {
     }
 
     const profile = await WorkerProfile.findOne({ userId: targetUserId });
-    if (!profile) throw new NotFoundError('Worker profile not found');
+    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
 
     // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
     if (req.user.role === ROLES.THEKEDAR) {
@@ -800,7 +803,7 @@ export const updateWorker = async (req, res, next) => {
     }
 
     const profile = await WorkerProfile.findOne({ userId });
-    if (!profile) throw new NotFoundError('Worker profile not found');
+    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
 
     // Strict Scope: Thekedar can ONLY edit their own workers
     if (req.user.role === ROLES.THEKEDAR) {

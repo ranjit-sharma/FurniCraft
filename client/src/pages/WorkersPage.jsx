@@ -211,7 +211,8 @@ export const WorkersPage = () => {
       setLoadError(null);
       const res = await api.get('/users/workers');
       const list = res.data.workers || [];
-      const sorted = [...list].sort((a, b) => {
+      const valid = list.filter((w) => w && (w.userId?._id || (typeof w.userId === 'string' && w.userId)));
+      const sorted = [...valid].sort((a, b) => {
         const aLeave = !!a.isOnLeave;
         const bLeave = !!b.isOnLeave;
         if (aLeave !== bLeave) return aLeave ? 1 : -1;
@@ -434,16 +435,21 @@ export const WorkersPage = () => {
 
   const handleGiveAdvance = async (e) => {
     e.preventDefault();
+    const targetUserId = advanceWorker?.userId?._id || (typeof advanceWorker?.userId === 'string' ? advanceWorker.userId : null) || advanceWorker?._id;
+    if (!targetUserId) {
+      setMessage({ type: 'error', text: 'Worker profile is missing account details.' });
+      return;
+    }
     setAdvanceSubmitting(true);
     try {
-      const res = await api.post(`/finance/workers/${advanceWorker.userId?._id}/advance`, {
+      const res = await api.post(`/finance/workers/${targetUserId}/advance`, {
         amount: parseFloat(advanceAmount),
         reason: advanceReason.trim(),
         paymentMethod: advanceMethod,
         receiptReference: advanceReference.trim() || undefined,
       });
       const txId = res.data?.transaction?.transactionId;
-      setMessage({ type: 'success', text: `Advance of ₹${parseFloat(advanceAmount).toLocaleString('en-IN')} given to ${advanceWorker.userId?.name}${txId ? ` (${txId})` : ''}. It will be deducted at the next payment.` });
+      setMessage({ type: 'success', text: `Advance of ₹${parseFloat(advanceAmount).toLocaleString('en-IN')} given to ${advanceWorker?.userId?.name || 'Worker'}${txId ? ` (${txId})` : ''}. It will be deducted at the next payment.` });
       const worker = advanceWorker;
       setAdvanceWorker(null);
       fetchWorkers();
@@ -504,13 +510,18 @@ export const WorkersPage = () => {
   };
 
   const handleOpenActivity = async (w, initialTab = 'attendance') => {
+    const targetUserId = w?.userId?._id || (typeof w?.userId === 'string' ? w.userId : null) || w?._id;
+    if (!targetUserId) {
+      setMessage({ type: 'error', text: 'Worker profile is missing account details or has been removed.' });
+      return;
+    }
     setActivityWorker(w);
     setActivityModalOpen(true);
     setActivityLoading(true);
     setActiveTab(initialTab);
     setActivityData(null);
     try {
-      const res = await api.get(`/users/workers/${w.userId._id}`);
+      const res = await api.get(`/users/workers/${targetUserId}`);
       setActivityData(res.data);
     } catch (err) {
       setMessage({ type: 'error', text: `Failed to load worker activities: ${err.message}` });
@@ -557,9 +568,14 @@ export const WorkersPage = () => {
 
   const handleSubmitPayNet = async (e) => {
     e.preventDefault();
+    const targetUserId = payWorker?.userId?._id || (typeof payWorker?.userId === 'string' ? payWorker.userId : null) || payWorker?._id;
+    if (!targetUserId) {
+      setMessage({ type: 'error', text: 'Worker profile is missing account details.' });
+      return;
+    }
     setPaySubmitting(true);
     try {
-      const res = await api.post(`/finance/workers/${payWorker.userId._id}/pay-net`, {
+      const res = await api.post(`/finance/workers/${targetUserId}/pay-net`, {
         baseEarned: parseFloat(payBaseEarned) || 0,
         advanceDeduction: parseFloat(payAdvanceDeduction) || 0,
         foodDeduction: parseFloat(payFoodDeduction) || 0,
@@ -660,12 +676,18 @@ export const WorkersPage = () => {
 
   const handleConfirmDelete = async () => {
     if (!workerToDelete) return;
+    const targetUserId = workerToDelete?.userId?._id || (typeof workerToDelete?.userId === 'string' ? workerToDelete.userId : null) || workerToDelete?._id;
+    if (!targetUserId) {
+      setMessage({ type: 'error', text: 'Worker user account ID not found' });
+      return;
+    }
+    const workerName = workerToDelete?.userId?.name || workerToDelete?.name || 'Worker';
     setDeleteSubmitting(true);
     try {
-      const res = await api.delete(`/users/workers/${workerToDelete.userId._id}`);
+      const res = await api.delete(`/users/workers/${targetUserId}`);
       setMessage({
         type: 'success',
-        text: res.message || `Worker ${workerToDelete.userId.name} deleted successfully from workforce.`,
+        text: res.message || `Worker ${workerName} deleted successfully from workforce.`,
       });
       setDeleteModalOpen(false);
       setWorkerToDelete(null);
@@ -690,8 +712,9 @@ export const WorkersPage = () => {
         type: 'success',
         text: `Advance request marked as ${status === 'APPROVED' ? 'approved' : 'denied'}!`,
       });
-      if (activityWorker?.userId?._id) {
-        const res = await api.get(`/users/workers/${activityWorker.userId._id}`);
+      const targetUserId = activityWorker?.userId?._id || (typeof activityWorker?.userId === 'string' ? activityWorker.userId : null) || activityWorker?._id;
+      if (targetUserId) {
+        const res = await api.get(`/users/workers/${targetUserId}`);
         setActivityData(res.data);
       }
       fetchWorkers();
@@ -715,8 +738,9 @@ export const WorkersPage = () => {
       setDisburseModalOpen(false);
       setSelectedAdvanceForDisburse(null);
       setDisburseReceiptReference('');
-      if (activityWorker?.userId?._id) {
-        const res = await api.get(`/users/workers/${activityWorker.userId._id}`);
+      const targetUserId = activityWorker?.userId?._id || (typeof activityWorker?.userId === 'string' ? activityWorker.userId : null) || activityWorker?._id;
+      if (targetUserId) {
+        const res = await api.get(`/users/workers/${targetUserId}`);
         setActivityData(res.data);
       }
       fetchWorkers();
