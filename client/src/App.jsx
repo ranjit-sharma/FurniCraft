@@ -20,6 +20,7 @@ const ExpensesPage = page('ExpensesPage');
 const AuditLogsPage = page('AuditLogsPage');
 const TransactionSearchPage = page('TransactionSearchPage');
 const MembersOverviewPage = page('MembersOverviewPage');
+const QuotationsPage = page('QuotationsPage');
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -124,6 +125,14 @@ export const App = () => {
                   element={
                     <ProtectedRoute allowedRoles={['OWNER']}>
                       <MembersOverviewPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="quotations"
+                  element={
+                    <ProtectedRoute allowedRoles={['THEKEDAR']}>
+                      <QuotationsPage />
                     </ProtectedRoute>
                   }
                 />

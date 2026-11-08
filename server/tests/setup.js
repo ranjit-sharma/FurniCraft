@@ -5,6 +5,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 let mongod;
 
 beforeAll(async () => {
+  if (process.env.SKIP_DB === 'true') return;
   if (process.env.USE_LIVE_DB === 'true') {
     const testUri = process.env.TEST_MONGODB_URI || process.env.MONGODB_URI;
     await mongoose.connect(testUri);

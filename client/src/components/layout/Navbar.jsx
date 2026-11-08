@@ -3,7 +3,7 @@ import { useInRouterContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
-import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, UserPlus } from 'lucide-react';
+import { LogOut, Phone, Mail, CheckCircle2, Globe, LifeBuoy, ChevronRight, BookOpen, User, UserPlus, FileText } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { HelpCenterModal } from '../common/HelpCenterModal';
@@ -205,6 +205,21 @@ export const Navbar = () => {
 
               {/* Menu Actions */}
               <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                {/* Quotations Generator (Only visible to Thekedars) */}
+                {user.role === 'THEKEDAR' && (
+                  <a
+                    href="/quotations"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-bold text-amber-900 dark:text-amber-200 transition hover:bg-amber-50 dark:hover:bg-amber-950/40 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FileText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span>{t('profile.quotations', 'Quotations')}</span>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                  </a>
+                )}
+
                 {/* Thekedar User Guide (Only visible to Thekedars, hidden from Owner) */}
                 {user.role === 'THEKEDAR' && (
                   <button

@@ -16,3 +16,5 @@ export { Notification } from './Notification.js';
 export { RevokedToken } from './RevokedToken.js';
 export { OtpRecord } from './OtpRecord.js';
 export { SupportTicket } from './SupportTicket.js';
+export { Quotation, DEFAULT_TERMS_AND_CONDITIONS } from './Quotation.js';
+export { QuotationSequence } from './QuotationSequence.js';

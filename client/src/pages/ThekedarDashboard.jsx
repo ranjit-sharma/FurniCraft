@@ -16,6 +16,7 @@ import {
   Lock,
   CheckCircle2,
   CalendarOff,
+  FileText,
 } from 'lucide-react';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;
@@ -213,6 +214,11 @@ export const ThekedarDashboard = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Link to="/quotations">
+              <Button variant="outline-white" size="sm" icon={FileText}>
+                {t('nav.quotations', 'Quotations')}
+              </Button>
+            </Link>
             <Button variant="outline-white" size="sm" icon={UserPlus} onClick={() => setAddWorkerModalOpen(true)}>
               {t('thekedarDash.addWorker', 'Add Worker')}
             </Button>

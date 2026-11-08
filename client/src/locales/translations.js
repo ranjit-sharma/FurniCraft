@@ -123,6 +123,7 @@ export const translations = {
       "transactionHistory": "Transaction History",
       "audit": "Security & Audit Logs",
       "members": "Whole Members & Visits",
+      "quotations": "Quotations",
       "logout": "Sign Out"
     },
     "profile": {
@@ -148,6 +149,8 @@ export const translations = {
       "helpCenter": "Help & Support Center",
       "thekedarGuide": "Thekedar User Guide",
       "thekedarGuideSub": "Complete instructions with photos",
+      "quotations": "Quotations",
+      "quotationsSub": "Generate & manage client quotations",
       "inviteThekedar": "Invite & Refer Thekedar",
       "inviteThekedarSub": "Invite new contractors to FurniCraft"
     },
@@ -1097,6 +1100,8 @@ export const translations = {
       "helpCenter": "सहायता एवं समर्थन केंद्र",
       "thekedarGuide": "ठेकेदार यूज़र गाइड",
       "thekedarGuideSub": "फोटो सहित आसान निर्देश",
+      "quotations": "कोटेशन (Quotations)",
+      "quotationsSub": "ग्राहकों के लिए कोटेशन बनाएं",
       "inviteThekedar": "ठेकेदार को आमंत्रित करें (Refer)",
       "inviteThekedarSub": "नए ठेकेदारों को FurniCraft में आमंत्रित करें"
     },
@@ -2046,6 +2051,8 @@ export const translations = {
           "helpCenter": "Madad aur Support Center",
           "thekedarGuide": "Thekedar User Guide",
           "thekedarGuideSub": "Photo ke saath aasan guide",
+          "quotations": "Quotations",
+          "quotationsSub": "Grahak ke liye quotations banayein",
           "inviteThekedar": "Thekedar Invite aur Refer Karein",
           "inviteThekedarSub": "Naye thekedaro ko FurniCraft me jodein"
       },

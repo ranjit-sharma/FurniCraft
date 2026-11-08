@@ -75,6 +75,23 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: {
       type: Date,
     },
+    thekedarCode: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    businessName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    logoUrl: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     resetPasswordToken: {
       type: String,
       select: false,

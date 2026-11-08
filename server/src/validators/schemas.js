@@ -243,3 +243,60 @@ export const createExpenseSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Quotation Schemas
+export const quotationItemSchema = z.object({
+  particular: z.string().trim().min(1, 'Item particular / description is required'),
+  quantity: z.number().positive('Quantity must be greater than zero'),
+  unit: z.enum(['SQ FEET', 'PCS'], {
+    errorMap: () => ({ message: "Unit must be either 'SQ FEET' or 'PCS'" }),
+  }),
+  rate: z.number().min(0, 'Rate must be zero or greater'),
+});
+
+export const createQuotationSchema = z.object({
+  thekedar: z
+    .object({
+      businessName: z.string().trim().optional(),
+      phone: z.string().trim().optional(),
+      logoUrl: z.string().trim().optional(),
+    })
+    .optional(),
+  customer: z.object({
+    name: z.string().trim().min(1, 'Customer name is required'),
+    phone: z.string().trim().optional().default(''),
+    address: z.string().trim().optional().default(''),
+  }),
+  project: z.object({
+    name: z.string().trim().min(1, 'Project name is required'),
+  }),
+  items: z.array(quotationItemSchema).min(1, 'At least one quotation item is required'),
+  termsAndConditions: z.array(z.string().trim()).optional(),
+  status: z.enum(['DRAFT', 'SENT', 'ACCEPTED', 'EXPIRED']).optional(),
+});
+
+export const updateQuotationSchema = z.object({
+  thekedar: z
+    .object({
+      businessName: z.string().trim().optional(),
+      phone: z.string().trim().optional(),
+      logoUrl: z.string().trim().optional(),
+    })
+    .optional(),
+  customer: z
+    .object({
+      name: z.string().trim().min(1, 'Customer name is required'),
+      phone: z.string().trim().optional().default(''),
+      address: z.string().trim().optional().default(''),
+    })
+    .optional(),
+  project: z
+    .object({
+      name: z.string().trim().min(1, 'Project name is required'),
+    })
+    .optional(),
+  items: z.array(quotationItemSchema).min(1, 'At least one quotation item is required').optional(),
+  termsAndConditions: z.array(z.string().trim()).optional(),
+  status: z.enum(['DRAFT', 'SENT', 'ACCEPTED', 'EXPIRED']).optional(),
+});
+
+

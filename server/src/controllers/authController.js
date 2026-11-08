@@ -72,6 +72,9 @@ export const getCurrentUser = async (req, res, next) => {
           status: req.user.status,
           assignedThekedar: req.user.assignedThekedar,
           preferredLanguage: req.user.preferredLanguage || 'en',
+          businessName: req.user.businessName || '',
+          thekedarCode: req.user.thekedarCode || '',
+          logoUrl: req.user.logoUrl || '',
         },
       },
     });
