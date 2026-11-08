@@ -190,26 +190,38 @@ export const listWorkers = async (req, res, next) => {
 
 export const getWorkerProfile = async (req, res, next) => {
   try {
-    const targetUserId = req.params.userId || req.user._id;
+    const rawTargetId = req.params.userId || req.user._id;
+
+    // Find profile by either userId or profile _id
+    const profile = await WorkerProfile.findOne({
+      $or: [
+        { userId: rawTargetId },
+        ...(mongoose.Types.ObjectId.isValid(rawTargetId) ? [{ _id: rawTargetId }] : []),
+      ],
+    })
+      .populate('userId', 'name email phone status')
+      .populate('thekedarId', 'name phone email businessName');
+
+    if (!profile) throw new NotFoundError('Worker profile not found or has been removed');
+
+    const resolvedUserId = profile.userId?._id || profile.userId || rawTargetId;
 
     // Authorization check
-    if (req.user.role === ROLES.WORKER && targetUserId.toString() !== req.user._id.toString()) {
+    if (req.user.role === ROLES.WORKER && resolvedUserId.toString() !== req.user._id.toString()) {
       throw new ForbiddenError('Workers can only view their own profile');
     }
-
-    const profile = await WorkerProfile.findOne({ userId: targetUserId })
-      .populate('userId', 'name email phone status')
-      .populate('thekedarId', 'name phone email');
-
-    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
 
     // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
     if (req.user.role === ROLES.THEKEDAR) {
       const thekedarIdStr = profile.thekedarId?._id?.toString() || profile.thekedarId?.toString();
-      if (thekedarIdStr !== req.user._id.toString()) {
+      if (thekedarIdStr && thekedarIdStr !== req.user._id.toString()) {
         throw new ForbiddenError('You can only view profiles for workers under your direct management');
       }
     }
+
+    const matchWorkerId = mongoose.Types.ObjectId.isValid(resolvedUserId)
+      ? new mongoose.Types.ObjectId(resolvedUserId.toString())
+      : resolvedUserId;
 
     const [
       wageAgreements,
@@ -220,38 +232,38 @@ export const getWorkerProfile = async (req, res, next) => {
       unpaidAttendanceAgg,
     ] = await Promise.all([
       // 2. Wage Agreements
-      WageAgreement.find({ workerId: targetUserId })
+      WageAgreement.find({ workerId: matchWorkerId })
         .populate('thekedarId', 'name')
         .sort({ effectiveFrom: -1 }),
 
       // 4. Attendance History (last 30 entries)
-      Attendance.find({ workerId: targetUserId })
+      Attendance.find({ workerId: matchWorkerId })
         .populate('projectId', 'name projectCode')
         .sort({ date: -1 })
         .limit(30),
 
       // 5. Financial Ledger / Payments (last 30 transactions)
-      FinancialTransaction.find({ workerId: targetUserId, isReversed: false })
+      FinancialTransaction.find({ workerId: matchWorkerId, isReversed: false })
         .populate('projectId', 'name projectCode')
         .populate('recordedBy', 'name')
         .sort({ transactionDate: -1 })
         .limit(30),
 
       // 6. Advance Requests
-      AdvanceRequest.find({ workerId: targetUserId })
+      AdvanceRequest.find({ workerId: matchWorkerId })
         .populate('projectId', 'name projectCode')
         .populate('reviewedBy', 'name')
         .sort({ createdAt: -1 }),
 
       // 7. Finalized Payrolls
-      Payroll.find({ workerId: targetUserId })
+      Payroll.find({ workerId: matchWorkerId })
         .sort({ periodYear: -1, periodMonth: -1 }),
 
       // 8. Unpaid approved attendance earnings
       Attendance.aggregate([
         {
           $match: {
-            workerId: profile.userId?._id || targetUserId,
+            workerId: matchWorkerId,
             approvalStatus: ATTENDANCE_STATUS.APPROVED,
             isPayrollProcessed: false,
           },
@@ -270,6 +282,14 @@ export const getWorkerProfile = async (req, res, next) => {
     const netBalance = totalEarned - advance;
 
     const profileObj = profile.toObject();
+    if (!profileObj.userId) {
+      profileObj.userId = {
+        _id: resolvedUserId,
+        name: profile.workerName || 'Archived Worker',
+        phone: profile.workerPhone || '—',
+        status: 'INACTIVE',
+      };
+    }
     profileObj.totalEarned = totalEarned;
     profileObj.unpaidWages = totalEarned;
     profileObj.netBalance = netBalance;
@@ -606,6 +626,25 @@ export const deleteWorker = async (req, res, next) => {
     await ProjectAssignment.updateMany(
       { workerId: userId, status: 'ACTIVE' },
       { status: 'REMOVED', endDate: new Date(), notes: 'Worker deleted from workforce' }
+    );
+
+    // Snapshot worker & thekedar identity permanently across all financial transaction vouchers so receipts retain worker name
+    const thekedarUser = profile?.thekedarId
+      ? await User.findById(profile.thekedarId).select('name phone businessName').lean()
+      : null;
+
+    await FinancialTransaction.updateMany(
+      { workerId: userId },
+      {
+        $set: {
+          workerName: workerUser.name,
+          workerCode: profile?.workerCode || null,
+          workerPhone: workerUser.phone || null,
+          thekedarName: thekedarUser?.name || profile?.thekedarName || null,
+          thekedarPhone: thekedarUser?.phone || null,
+          thekedarBusinessName: thekedarUser?.businessName || null,
+        },
+      }
     );
 
     // Delete WorkerProfile and User

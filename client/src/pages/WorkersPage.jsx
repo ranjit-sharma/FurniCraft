@@ -311,10 +311,14 @@ export const WorkersPage = () => {
   // Reload the open worker sheet and the cards after a change.
   const refreshWorkerData = async (worker) => {
     fetchWorkers();
-    const userId = worker?.userId?._id;
+    const userId = worker?.userId?._id || (typeof worker?.userId === 'string' ? worker.userId : null) || worker?._id;
     if (userId) {
-      const res = await api.get(`/users/workers/${userId}`);
-      setActivityData(res.data);
+      try {
+        const res = await api.get(`/users/workers/${userId}`);
+        setActivityData(res.data);
+      } catch (err) {
+        console.warn('[WorkersPage] refreshWorkerData non-blocking failure:', err.message);
+      }
     }
   };
 
@@ -890,6 +894,7 @@ export const WorkersPage = () => {
                   <span className="text-amber-900 dark:text-amber-300 font-semibold">{t('workers.thisMonthWorked', 'Worked This Month')}:</span>
                   <strong className="text-amber-950 dark:text-amber-200 font-bold">
                     {w.monthDehadi !== undefined ? `${w.monthDehadi} ${t('calendar.dehadiUnit', 'Shifts')} (${w.monthWorkedDays || 0}d)` : `${w.monthWorkedDays || 0} ${t('calendar.days', 'days')}`}
+                    {w.monthEarnings > 0 && <span className="text-amber-700 dark:text-amber-300 font-semibold ml-1">· ₹{Number(w.monthEarnings).toLocaleString('en-IN')}</span>}
                   </strong>
                 </div>
 
@@ -910,7 +915,7 @@ export const WorkersPage = () => {
                     </strong>
                   </div>
                   <div className="text-right text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5">
-                    <div>{t('workers.unpaidWages', 'Earnings')}: <strong className="text-slate-900 dark:text-white font-bold">₹{(w.totalEarned || 0).toLocaleString('en-IN')}</strong></div>
+                    <div>{t('workers.unpaidWages', 'Unpaid Wages')}: <strong className="text-slate-900 dark:text-white font-bold">₹{(w.totalEarned || 0).toLocaleString('en-IN')}</strong></div>
                     {(w.outstandingAdvanceBalance || 0) > 0 && (
                       <div className="text-rose-600 dark:text-rose-400">
                         {t('workers.advShort', 'Adv')}: <strong>-₹{(w.outstandingAdvanceBalance || 0).toLocaleString('en-IN')}</strong>

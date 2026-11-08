@@ -295,36 +295,41 @@ export const MembersOverviewPage = () => {
           </div>
 
           {/* Role Filter Pills & Status Filter */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 touch-pan-x">
-            {[
-              { id: 'ALL', label: `${t('common.all', 'All')} (${summary.totalMembers})` },
-              { id: 'THEKEDAR', label: `${t('members.thekedarsCount', 'Thekedars')} (${summary.totalThekedars})` },
-              { id: 'WORKER', label: `${t('members.workersCount', 'Workers')} (${summary.totalWorkers})` },
-              { id: 'OWNER', label: `${t('members.ownersCount', 'Owners')} (${summary.totalOwners})` },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedRole(tab.id)}
-                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  selectedRole === tab.id
-                    ? 'bg-purple-900 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-between gap-2 py-1">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
+              {[
+                { id: 'ALL', label: `${t('common.all', 'All')} (${summary.totalMembers})` },
+                { id: 'THEKEDAR', label: `${t('members.thekedarsCount', 'Contractors / Thekedars')} (${summary.totalThekedars})` },
+                { id: 'WORKER', label: `${t('members.workersCount', 'Workers & Craftsmen')} (${summary.totalWorkers})` },
+                { id: 'OWNER', label: `${t('members.ownersCount', 'Admin & Owners')} (${summary.totalOwners})` },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedRole(tab.id)}
+                  className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    selectedRole === tab.id
+                      ? 'bg-purple-900 text-white shadow-xs'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="shrink-0 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none"
-            >
-              <option value="ALL">{t('common.all', 'All Status')}</option>
-              <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
-              <option value="SUSPENDED">{t('members.suspendedAccount', 'Suspended Only')}</option>
-            </select>
+            <div className="flex items-center gap-1.5 shrink-0 text-xs">
+              <span className="text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">{t('members.status', 'Status:')}</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-600"
+              >
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
+                <option value="SUSPENDED">{t('members.suspendedAccount', 'Suspended Only')}</option>
+              </select>
+            </div>
           </div>
         </div>
 
