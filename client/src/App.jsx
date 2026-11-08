@@ -5,7 +5,6 @@ import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AppLayout, PageLoader } from './components/layout/AppLayout';
-import { AppStartupSplash } from './components/common/AppStartupSplash';
 
 // Pages load on demand so phones download only the screen they open.
 const page = (name) => lazy(() => import(`./pages/${name}.jsx`).then((m) => ({ default: m[name] })));
@@ -26,7 +25,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <AppStartupSplash />;
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 flex items-center justify-center">
+        <PageLoader />
+      </div>
+    );
   }
 
   if (!user) {
@@ -51,7 +54,7 @@ const RootRoute = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <AppStartupSplash />;
+    return <PageLoader />;
   }
 
   if (!user) {
@@ -68,7 +71,7 @@ export const App = () => {
         <LanguageProvider>
           <ThemeProvider>
             <BrowserRouter>
-              <Suspense fallback={<AppStartupSplash />}>
+              <Suspense fallback={<PageLoader />}>
               <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register-thekedar" element={<ThekedarRegisterPage />} />
