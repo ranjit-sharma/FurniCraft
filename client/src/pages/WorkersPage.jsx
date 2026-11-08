@@ -9,6 +9,7 @@ import { Card } from '../components/common/Card';
 import { Badge, formatAttendanceCode } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import { WorkersGridSkeleton, WorkerActivitySkeleton } from '../components/common/Skeleton';
 import {
   UserPlus,
   IndianRupee,
@@ -799,9 +800,7 @@ export const WorkersPage = () => {
 
       {/* Workers Grid */}
       {loading ? (
-        <div className="flex h-32 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-        </div>
+        <WorkersGridSkeleton />
       ) : workers.length === 0 ? (
         <Card className="text-center py-8">
           <p className="text-xs text-slate-700 dark:text-slate-400 italic">{t('workers.noWorkersRegistered', 'No workers currently registered.')}</p>
@@ -1340,11 +1339,9 @@ export const WorkersPage = () => {
               ))}
             </div>
 
-            {/* Loading Spinner */}
+            {/* Loading Skeleton */}
             {activityLoading ? (
-              <div className="flex h-48 items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-              </div>
+              <WorkerActivitySkeleton />
             ) : !activityData ? (
               <div className="p-8 text-center text-sm text-slate-500">No activity data available.</div>
             ) : (

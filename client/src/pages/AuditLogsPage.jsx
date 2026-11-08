@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { PageHeader } from '../components/common/PageHeader';
 import { Badge } from '../components/common/Badge';
+import { AuditLogsSkeleton } from '../components/common/Skeleton';
 import {  } from 'lucide-react';
 
 export const AuditLogsPage = () => {
@@ -47,9 +48,7 @@ export const AuditLogsPage = () => {
       {/* Audit Log Table */}
       <Card title={`${t('audit.auditEvents', 'Audit Events')} (${logs.length})`} subtitle={t('audit.eventsStream', 'Chronological immutable events stream')}>
         {loading ? (
-          <div className="flex h-32 items-center justify-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
-          </div>
+          <AuditLogsSkeleton />
         ) : logs.length === 0 ? (
           <p className="py-8 text-center text-xs text-slate-700 dark:text-slate-400 italic">{t('audit.noLogs', 'No audit records found.')}</p>
         ) : (

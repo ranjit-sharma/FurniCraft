@@ -7,6 +7,7 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { PageHeader } from '../components/common/PageHeader';
+import { MembersOverviewSkeleton } from '../components/common/Skeleton';
 import {
   Users,
   UserCheck2,
@@ -329,9 +330,7 @@ export const MembersOverviewPage = () => {
 
         {/* Members Table */}
         {loading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
-          </div>
+          <MembersOverviewSkeleton />
         ) : filteredMembers.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center">
             <Users className="mx-auto h-8 w-8 text-slate-400" />

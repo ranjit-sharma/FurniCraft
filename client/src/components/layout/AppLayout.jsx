@@ -6,10 +6,11 @@ import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { ErrorBoundary } from '../common/ErrorBoundary';
+import { PageSkeleton } from '../common/Skeleton';
 
 export const PageLoader = () => (
-  <div className="flex min-h-[50vh] items-center justify-center" role="status" aria-label="Loading">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+  <div className="w-full max-w-7xl mx-auto py-2">
+    <PageSkeleton />
   </div>
 );
 

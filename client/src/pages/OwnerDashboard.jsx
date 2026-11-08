@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
+import { OwnerDashboardSkeleton } from '../components/common/Skeleton';
 import {
   HardHat,
   Users,
@@ -100,11 +101,7 @@ export const OwnerDashboard = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent" />
-      </div>
-    );
+    return <OwnerDashboardSkeleton />;
   }
 
   const m = data?.metrics || {};

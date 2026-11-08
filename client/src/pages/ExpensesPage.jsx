@@ -7,6 +7,7 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { PageHeader } from '../components/common/PageHeader';
+import { ExpensesSkeleton } from '../components/common/Skeleton';
 import { IndianRupee, Plus, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const getCurrentMonthStr = () => {
@@ -282,9 +283,7 @@ export const ExpensesPage = () => {
         </div>
 
         {loading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-          </div>
+          <ExpensesSkeleton />
         ) : filteredPayments.length === 0 ? (
           <div className="p-12 text-center">
             <IndianRupee className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" />

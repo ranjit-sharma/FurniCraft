@@ -8,6 +8,7 @@ import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import { ProjectDetailSkeleton } from '../components/common/Skeleton';
 import {
   Receipt,
   Plus,
@@ -101,11 +102,7 @@ export const ProjectDetailPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-      </div>
-    );
+    return <ProjectDetailSkeleton />;
   }
 
   // Load failed: show the reason and a way back instead of an empty project shell.

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import { ThekedarDashboardSkeleton } from '../components/common/Skeleton';
 import { localToday } from '../utils/date';
 import {
   UserPlus,
@@ -170,11 +171,7 @@ export const ThekedarDashboard = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-      </div>
-    );
+    return <ThekedarDashboardSkeleton />;
   }
 
   const m = data?.metrics || {};

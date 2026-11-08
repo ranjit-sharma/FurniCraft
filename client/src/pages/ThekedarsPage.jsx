@@ -6,6 +6,7 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { PageHeader } from '../components/common/PageHeader';
 import { Modal } from '../components/common/Modal';
+import { ThekedarsSkeleton } from '../components/common/Skeleton';
 import {
   Users,
   UserPlus,
@@ -262,9 +263,7 @@ export const ThekedarsPage = () => {
         </div>
 
         {loading ? (
-          <div className="flex h-48 items-center justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-          </div>
+          <ThekedarsSkeleton />
         ) : thekedars.length === 0 ? (
           <div className="p-12 text-center">
             <Building2 className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600" />

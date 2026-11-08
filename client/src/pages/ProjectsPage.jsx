@@ -8,6 +8,7 @@ import { Badge } from '../components/common/Badge';
 import { Button } from '../components/common/Button';
 import { PageHeader } from '../components/common/PageHeader';
 import { Modal } from '../components/common/Modal';
+import { ProjectsPageSkeleton } from '../components/common/Skeleton';
 import { Link } from 'react-router-dom';
 import {
   FolderKanban,
@@ -349,9 +350,7 @@ export const ProjectsPage = () => {
       </div>
 
       {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-600 border-t-transparent" />
-        </div>
+        <ProjectsPageSkeleton />
       ) : (
         <div className="space-y-8">
           {/* ======================================================== */}

@@ -8,6 +8,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { downloadPdf } from '../utils/download';
 import { Card } from '../components/common/Card';
 import { Badge } from '../components/common/Badge';
+import { TransactionSearchSkeleton } from '../components/common/Skeleton';
 import {
   Search,
   Receipt,
@@ -383,10 +384,7 @@ export const TransactionSearchPage = () => {
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-slate-500 dark:text-slate-400">
-              <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-blue-600 border-t-transparent mb-3" />
-              <p className="text-xs font-semibold">{t('transactionSearch.loadingLedger', 'Loading transactions ledger...')}</p>
-            </div>
+            <TransactionSearchSkeleton />
           ) : filteredTransactions.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-8 text-center text-slate-500 dark:text-slate-400">
               <AlertCircle className="mx-auto h-8 w-8 text-slate-400 mb-2" />
