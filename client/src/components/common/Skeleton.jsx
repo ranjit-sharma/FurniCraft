@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Base Skeleton Block with shimmering gradient
+ * Base Shimmering Skeleton Block
  */
 export const Skeleton = ({ className = '', ...props }) => {
   return (
@@ -63,14 +63,15 @@ export const SkeletonCard = ({ className = '', children, ...props }) => {
  */
 export const SkeletonStatCard = ({ className = '' }) => {
   return (
-    <div className={`rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 sm:p-4 shadow-sm flex flex-col justify-between ${className}`}>
+    <div className={`rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5 sm:p-3.5 shadow-sm flex flex-col justify-between ${className}`}>
       <div className="flex items-center justify-between">
-        <Skeleton className="h-4 w-20" />
-        <SkeletonCircle size="h-6 w-6" />
+        <Skeleton className="h-4 w-4 sm:h-5 sm:w-5 rounded-md" />
+        <Skeleton className="h-3 w-3 rounded-full" />
       </div>
-      <div className="mt-2 space-y-1">
-        <Skeleton className="h-6 sm:h-7 w-24" />
-        <Skeleton className="h-3 w-16" />
+      <div className="mt-1.5 sm:mt-2 space-y-1">
+        <Skeleton className="h-5 sm:h-7 w-16 sm:w-24" />
+        <Skeleton className="h-3 sm:h-3.5 w-20" />
+        <Skeleton className="h-2.5 sm:h-3 w-14" />
       </div>
     </div>
   );
@@ -79,9 +80,9 @@ export const SkeletonStatCard = ({ className = '' }) => {
 /**
  * Grid of Stat Cards
  */
-export const SkeletonStatGrid = ({ count = 4, className = 'grid-cols-2 sm:grid-cols-4' }) => {
+export const SkeletonStatGrid = ({ count = 3, className = 'grid-cols-3 gap-2 sm:gap-4' }) => {
   return (
-    <div className={`grid gap-3 sm:gap-4 ${className}`}>
+    <div className={`grid ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonStatCard key={i} />
       ))}
@@ -90,42 +91,7 @@ export const SkeletonStatGrid = ({ count = 4, className = 'grid-cols-2 sm:grid-c
 };
 
 /**
- * Table Skeleton with header and pulsing rows
- */
-export const SkeletonTable = ({ rows = 5, cols = 4, className = '' }) => {
-  return (
-    <div className={`rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-sm ${className}`}>
-      {/* Table Header */}
-      <div className="border-b border-slate-100 dark:border-slate-800 px-4 py-3.5 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between gap-4">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-4 w-20" />
-      </div>
-      {/* Table Rows */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
-        {Array.from({ length: rows }).map((_, r) => (
-          <div key={r} className="p-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <SkeletonCircle size="h-8 w-8" />
-              <div className="space-y-1.5 flex-1 min-w-0">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-3 w-1/4" />
-              </div>
-            </div>
-            <div className="hidden sm:flex items-center gap-4">
-              {Array.from({ length: Math.max(1, cols - 2) }).map((_, c) => (
-                <Skeleton key={c} className="h-3.5 w-16 sm:w-20" />
-              ))}
-            </div>
-            <Skeleton className="h-6 w-16 rounded-full" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/**
- * Page Header Skeleton
+ * Generic Page Header Skeleton
  */
 export const SkeletonHeader = () => {
   return (
@@ -146,160 +112,326 @@ export const PageSkeleton = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <SkeletonHeader />
-      <SkeletonStatGrid count={4} />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <SkeletonCard className="h-72" />
-          <SkeletonTable rows={4} cols={4} />
-        </div>
-        <div className="space-y-4">
-          <SkeletonCard className="h-48" />
-          <SkeletonCard className="h-64" />
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonStatCard key={i} />
+        ))}
       </div>
-    </div>
-  );
-};
-
-/**
- * Thekedar Dashboard Skeleton
- */
-export const ThekedarDashboardSkeleton = () => {
-  return (
-    <div className="space-y-5 animate-fade-in">
-      {/* Top Welcome Banner */}
-      <div className="rounded-2xl border border-amber-900/30 bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-lg space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-44 bg-amber-800/30 dark:bg-amber-700/30" />
-            <Skeleton className="h-3.5 w-32 bg-amber-800/20 dark:bg-amber-700/20" />
-          </div>
-          <Skeleton className="h-8 w-28 rounded-xl bg-amber-800/30" />
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-5 w-20 rounded-full" />
         </div>
-        <div className="mt-3 pt-3 border-t border-amber-800/30 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-1">
-              <Skeleton className="h-3 w-16 bg-amber-800/20" />
-              <Skeleton className="h-5 w-20 bg-amber-800/30" />
+            <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800/60">
+              <div className="flex items-center gap-3 flex-1">
+                <SkeletonCircle size="h-9 w-9" />
+                <div className="space-y-1.5 flex-1">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+              </div>
+              <Skeleton className="h-6 w-20 rounded-md" />
             </div>
           ))}
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Date Navigation Bar Skeleton */}
-      <div className="flex items-center justify-between gap-2 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <SkeletonCircle size="h-8 w-8" />
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-10 w-20 rounded-xl" />
-          <Skeleton className="h-12 w-24 rounded-xl" />
-          <Skeleton className="h-10 w-20 rounded-xl" />
+/* ========================================================================== */
+/* 1. THEKEDAR DASHBOARD SKELETON (Exact 1:1 match with Application Boxes)     */
+/* ========================================================================== */
+
+export const ThekedarDashboardSkeleton = () => {
+  return (
+    <div className="space-y-5 animate-fade-in">
+      {/* 1. Greeting + Money Owed Banner */}
+      <div className="rounded-2xl bg-gradient-to-br from-amber-700 via-amber-800 to-slate-900 p-4 sm:p-5 text-white shadow-lg">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-6 sm:h-7 w-44 bg-white/20" />
+            <Skeleton className="h-3.5 w-36 bg-white/15" />
+          </div>
+          <Skeleton className="h-8 sm:h-9 w-28 rounded-xl bg-white/20" />
         </div>
-        <SkeletonCircle size="h-8 w-8" />
-      </div>
 
-      {/* Worker Attendance Cards List Skeleton */}
-      <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <SkeletonCircle size="h-10 w-10" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-              <Skeleton className="h-6 w-20 rounded-full" />
+        {/* Inner Net Payable Box */}
+        <div className="mt-4 rounded-2xl bg-white/10 p-4 border border-white/10 space-y-3">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-3 w-36 bg-white/20" />
+            <Skeleton className="h-4 w-4 rounded-full bg-white/20" />
+          </div>
+          <Skeleton className="h-8 sm:h-9 w-32 bg-white/25" />
+          <div className="mt-3 grid grid-cols-2 gap-3 pt-1">
+            <div className="space-y-1">
+              <Skeleton className="h-2.5 w-24 bg-white/20" />
+              <Skeleton className="h-5 w-20 bg-white/25" />
             </div>
-            {/* Shift code buttons skeleton */}
-            <div className="grid grid-cols-7 gap-1.5 pt-1">
-              {Array.from({ length: 7 }).map((_, b) => (
-                <Skeleton key={b} className="h-9 rounded-xl" />
-              ))}
+            <div className="space-y-1">
+              <Skeleton className="h-2.5 w-28 bg-white/20" />
+              <Skeleton className="h-5 w-20 bg-white/25" />
             </div>
           </div>
-        ))}
+          <div className="mt-3 border-t border-white/10 pt-3 flex items-center gap-2">
+            <Skeleton className="h-3 w-48 bg-white/15" />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Today's Attendance Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-sm">
+        {/* Card Header with 3-day switcher */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-slate-100 dark:border-slate-800 gap-3">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-44" />
+            <Skeleton className="h-3.5 w-56" />
+          </div>
+          {/* Exact 3-column day buttons skeleton */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 select-none">
+            <Skeleton className="h-7 w-7 rounded-lg" />
+            <div className="flex items-center gap-3 sm:gap-6 px-1">
+              <div className="flex flex-col items-center gap-1">
+                <Skeleton className="h-2.5 w-7" />
+                <Skeleton className="h-5 w-6" />
+                <Skeleton className="h-2.5 w-7" />
+              </div>
+              <div className="flex flex-col items-center gap-1 scale-105">
+                <Skeleton className="h-3 w-8" />
+                <Skeleton className="h-7 w-8" />
+                <Skeleton className="h-3 w-8" />
+              </div>
+              <div className="flex flex-col items-center gap-1 opacity-50">
+                <Skeleton className="h-2.5 w-7" />
+                <Skeleton className="h-5 w-6" />
+                <Skeleton className="h-2.5 w-7" />
+              </div>
+            </div>
+            <Skeleton className="h-7 w-7 rounded-lg" />
+            <SkeletonCircle size="h-7 w-7" />
+          </div>
+        </div>
+
+        {/* Worker Attendance Rows List */}
+        <ul className="-mx-1 divide-y divide-slate-100 dark:divide-slate-800 mt-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <li key={i} className="px-1 py-3.5 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-32" />
+                    <SkeletonCircle size="h-3.5 w-3.5" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-16 rounded-md" />
+              </div>
+
+              {/* Exact 7 Shift code buttons row: 0.5, 1, 1.5, 2, 2.5, 3, A */}
+              <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+                {['0.5', '1', '1.5', '2', '2.5', '3', 'A'].map((label, b) => (
+                  <div
+                    key={b}
+                    className="min-h-[42px] rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-center"
+                  >
+                    <span className="text-[10px] sm:text-xs font-black text-slate-300 dark:text-slate-600 select-none">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
 };
 
-/**
- * Owner Dashboard Skeleton
- */
+/* ========================================================================== */
+/* 2. OWNER DASHBOARD SKELETON (Exact 1:1 match with Application Boxes)        */
+/* ========================================================================== */
+
 export const OwnerDashboardSkeleton = () => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-56" />
-          <Skeleton className="h-4 w-72" />
+    <div className="space-y-5 animate-fade-in">
+      {/* 1. Header + Database status banner */}
+      <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 p-4 sm:p-5 text-white shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-36 rounded-md bg-purple-500/20" />
+            <Skeleton className="h-6 sm:h-7 w-48 bg-white/20" />
+            <Skeleton className="h-3 w-32 bg-white/15" />
+          </div>
+          <Skeleton className="h-8 w-28 rounded-full bg-white/20 self-start sm:self-auto" />
         </div>
-        <Skeleton className="h-8 w-36 rounded-full" />
+
+        {/* Inner Net Payable Box */}
+        <div className="mt-4 rounded-2xl bg-white/10 p-3.5 sm:p-4 border border-white/10 space-y-2">
+          <Skeleton className="h-3 w-36 bg-white/20" />
+          <Skeleton className="h-8 w-32 bg-white/25" />
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm pt-1">
+            <div className="space-y-1">
+              <Skeleton className="h-2.5 w-24 bg-white/20" />
+              <Skeleton className="h-5 w-20 bg-white/25" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-2.5 w-28 bg-white/20" />
+              <Skeleton className="h-5 w-20 bg-white/25" />
+            </div>
+          </div>
+          <div className="mt-3 border-t border-white/10 pt-2.5 flex items-center gap-2">
+            <Skeleton className="h-3 w-48 bg-white/15" />
+          </div>
+        </div>
       </div>
 
-      {/* 8 Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
-        {Array.from({ length: 8 }).map((_, i) => (
+      {/* 2. Exact 3 Stat Tiles Grid (Thekedars, Workers, Projects) */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
           <SkeletonStatCard key={i} />
         ))}
       </div>
 
-      {/* 2-Column Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <SkeletonCard className="h-80" />
+      {/* 3. By Thekedar Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="space-y-1">
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-3 w-56" />
+          </div>
+          <Skeleton className="h-4 w-20" />
         </div>
-        <div className="space-y-4">
-          <SkeletonCard className="h-44" />
-          <SkeletonCard className="h-60" />
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="py-3 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1">
+                <SkeletonCircle size="h-10 w-10" />
+                <div className="space-y-1.5 flex-1">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <div className="text-right space-y-1">
+                <Skeleton className="h-4 w-16 ml-auto" />
+                <Skeleton className="h-3 w-20 ml-auto" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-/**
- * Projects Page Skeleton
- */
-export const ProjectsPageSkeleton = () => {
+/* ========================================================================== */
+/* 3. WORKERS GRID SKELETON (Exact 1:1 match with Real Worker Card)            */
+/* ========================================================================== */
+
+export const WorkerCardSkeleton = () => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Search & Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Skeleton className="h-11 flex-1 rounded-xl" />
-        <Skeleton className="h-11 w-28 rounded-xl" />
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm flex flex-col gap-3">
+      {/* Top line: workerCode (left) + trade badge (right) */}
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-3.5 w-20 font-mono" />
+        <Skeleton className="h-5 w-16 rounded-md" />
       </div>
 
-      {/* Project Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm space-y-4"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="space-y-1.5 flex-1">
-                <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-              <Skeleton className="h-6 w-20 rounded-full" />
+      {/* Middle row: Avatar box + Name + Shift Rate + Phone + Chevron */}
+      <div className="mt-1 flex items-center gap-3">
+        {/* Square rounded avatar box (h-10 w-10 rounded-xl) */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-xl bg-amber-100/60 dark:bg-amber-950/40" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-16 rounded-md" />
+          </div>
+          <Skeleton className="h-3 w-20" />
+        </div>
+        <Skeleton className="h-4 w-4 rounded-full shrink-0" />
+      </div>
+
+      {/* Inner Box 1: "Worked This Month" (bg-amber-50/80 px-2.5 py-2 rounded-lg border border-amber-200) */}
+      <div className="mt-1 flex justify-between items-center text-[11px] bg-amber-50/80 dark:bg-amber-950/40 px-2.5 py-2 rounded-lg border border-amber-200/70 dark:border-amber-800/60">
+        <Skeleton className="h-3 w-24 bg-amber-200/50 dark:bg-amber-900/40" />
+        <Skeleton className="h-3.5 w-16 bg-amber-200/60 dark:bg-amber-900/50" />
+      </div>
+
+      {/* Inner Box 2: "REMAINING BALANCE" (bg-slate-50 p-2.5 rounded-xl border border-slate-200) */}
+      <div className="rounded-xl bg-slate-50 dark:bg-slate-800/80 p-2.5 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs">
+        <div className="space-y-1">
+          <Skeleton className="h-2.5 w-24" />
+          <Skeleton className="h-5 w-20" />
+        </div>
+        <div className="text-right space-y-1">
+          <Skeleton className="h-3 w-20 ml-auto" />
+          <Skeleton className="h-3 w-16 ml-auto" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const WorkersGridSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 animate-fade-in">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <WorkerCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Worker Details & Activity Sheet Skeleton
+ */
+export const WorkerActivitySkeleton = () => {
+  return (
+    <div className="space-y-4 py-2 animate-fade-in">
+      {/* Worker Header Card */}
+      <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-11 w-11 rounded-xl bg-amber-100/60 dark:bg-amber-950/40" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        </div>
+        <Skeleton className="h-8 w-24 rounded-xl" />
+      </div>
+
+      {/* 3 Metrics Cards */}
+      <div className="grid grid-cols-3 gap-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+            <Skeleton className="h-2.5 w-14" />
+            <Skeleton className="h-5 w-20" />
+          </div>
+        ))}
+      </div>
+
+      {/* Month picker / tabs row */}
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-28 rounded-xl" />
+        <Skeleton className="h-9 w-28 rounded-xl" />
+        <Skeleton className="h-9 w-28 rounded-xl ml-auto" />
+      </div>
+
+      {/* Attendance Calendar Grid / Transactions ledger rows */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-20" />
+              <Skeleton className="h-5 w-12 rounded-md" />
             </div>
-            <div className="space-y-2">
-              <Skeleton className="h-3.5 w-1/2" />
-              <Skeleton className="h-3.5 w-2/3" />
-            </div>
-            {/* Progress bar skeleton */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex justify-between">
-                <Skeleton className="h-3 w-16" />
-                <Skeleton className="h-3 w-10" />
-              </div>
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
+            <Skeleton className="h-4 w-16" />
           </div>
         ))}
       </div>
@@ -307,9 +439,44 @@ export const ProjectsPageSkeleton = () => {
   );
 };
 
-/**
- * Project Detail Skeleton
- */
+/* ========================================================================== */
+/* 4. PROJECTS SKELETON (Only the Project Cards Grid, matching real boxes)     */
+/* ========================================================================== */
+
+export const ProjectCardsSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-fade-in">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="block rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-2.5"
+        >
+          {/* Top row: projectCode + priority badge */}
+          <div className="flex items-center justify-between gap-2">
+            <Skeleton className="h-3.5 w-20 font-mono" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          {/* Project Name & Client */}
+          <Skeleton className="h-5 w-3/4 mt-1.5" />
+          <Skeleton className="h-3 w-1/2" />
+          {/* Status badge + money received amount */}
+          <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <Skeleton className="h-5 w-20 rounded-md" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Backwards-compatible alias for ProjectsPage
+export const ProjectsPageSkeleton = ProjectCardsSkeleton;
+
+/* ========================================================================== */
+/* 5. PROJECT DETAIL SKELETON (Exact 1:1 match with Project Detail Cards)      */
+/* ========================================================================== */
+
 export const ProjectDetailSkeleton = () => {
   return (
     <div className="space-y-6 animate-fade-in">
@@ -319,66 +486,90 @@ export const ProjectDetailSkeleton = () => {
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-6 w-20 rounded-full" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <Skeleton className="h-4 w-24 font-mono" />
+              <Skeleton className="h-6 w-24 rounded-lg" />
+              <Skeleton className="h-6 w-24 rounded-lg" />
+              <Skeleton className="h-6 w-28 rounded-md" />
             </div>
-            <Skeleton className="h-7 w-1/2" />
-            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-7 w-3/5 mt-2" />
+            <Skeleton className="h-3.5 w-1/3" />
           </div>
-          <Skeleton className="h-10 w-32 rounded-xl" />
+          <Skeleton className="h-10 w-36 rounded-xl" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+
+        {/* 2-box summary strip */}
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-2">
+          <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3.5 border border-slate-100 dark:border-slate-800 space-y-1">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-2.5 w-20" />
+          </div>
+          <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3.5 border border-slate-100 dark:border-slate-800 space-y-1">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-2.5 w-20" />
+          </div>
+        </div>
+      </div>
+
+      {/* Client Specs Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+        <Skeleton className="h-4 w-40" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-1">
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="h-5 w-24" />
+              <Skeleton className="h-2.5 w-16" />
+              <Skeleton className="h-4 w-24" />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Financial Metrics Grid */}
-      <SkeletonStatGrid count={4} />
-
-      {/* Money Received Ledger */}
-      <SkeletonTable rows={4} cols={4} />
+      {/* Receipts Ledger Card */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-6 w-20 rounded-md" />
+        </div>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="py-3 flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-24 font-mono" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+              <Skeleton className="h-5 w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
 
-/**
- * Workers Page Grid Skeleton
- */
-export const WorkersGridSkeleton = () => {
+/* ========================================================================== */
+/* 6. EXPENSES / INCOME LEDGER SKELETON (Only the Table Rows inside Card)      */
+/* ========================================================================== */
+
+export const ExpensesTableSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 animate-fade-in">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-3 w-20" />
-            <Skeleton className="h-5 w-16 rounded-full" />
+    <div className="overflow-x-auto divide-y divide-slate-100 dark:divide-slate-800 animate-fade-in">
+      {/* Shimmering Table Rows matching Expenses columns */}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Skeleton className="h-4 w-24 font-mono" />
+            <div className="space-y-1 flex-1 min-w-0 hidden sm:block">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-1/4" />
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <SkeletonCircle size="h-11 w-11" />
-            <div className="space-y-1.5 flex-1">
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-3 w-20" />
-            </div>
-            <Skeleton className="h-6 w-16 rounded-lg" />
-          </div>
-          <div className="rounded-xl p-2.5 bg-slate-50 dark:bg-slate-800/40 space-y-1.5">
-            <div className="flex justify-between">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-            <div className="flex justify-between">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
-            </div>
+          <div className="flex items-center gap-6">
+            <Skeleton className="h-4 w-16 hidden md:block" />
+            <Skeleton className="h-4 w-20 hidden md:block" />
+            <Skeleton className="h-5 w-20 font-bold" />
+            <Skeleton className="h-8 w-20 rounded-lg" />
           </div>
         </div>
       ))}
@@ -386,159 +577,131 @@ export const WorkersGridSkeleton = () => {
   );
 };
 
-/**
- * Worker Activity Modal / Sheet Skeleton
- */
-export const WorkerActivitySkeleton = () => {
-  return (
-    <div className="space-y-4 py-2 animate-fade-in">
-      <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-        <div className="flex items-center gap-3">
-          <SkeletonCircle size="h-12 w-12" />
-          <div className="space-y-1.5">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </div>
-        <Skeleton className="h-8 w-24 rounded-xl" />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-            <Skeleton className="h-3 w-14" />
-            <Skeleton className="h-5 w-20" />
-          </div>
-        ))}
-      </div>
-      <Skeleton className="h-10 w-full rounded-xl" />
-      <SkeletonTable rows={4} cols={3} />
-    </div>
-  );
-};
+// Backwards-compatible alias for ExpensesPage
+export const ExpensesSkeleton = ExpensesTableSkeleton;
 
-/**
- * Thekedars Page Skeleton
- */
-export const ThekedarsSkeleton = () => {
+/* ========================================================================== */
+/* 7. THEKEDARS TABLE SKELETON (Only the Contractor Rows inside Card)          */
+/* ========================================================================== */
+
+export const ThekedarsTableSkeleton = () => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <SkeletonStatGrid count={4} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm space-y-3"
-          >
-            <div className="flex items-center justify-between">
+    <div className="divide-y divide-slate-100 dark:divide-slate-800 animate-fade-in">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3.5 flex-1 min-w-0">
+            <SkeletonCircle size="h-11 w-11" />
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
               <div className="flex items-center gap-3">
-                <SkeletonCircle size="h-11 w-11" />
-                <div className="space-y-1">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-3 w-24 hidden sm:block" />
               </div>
-              <Skeleton className="h-6 w-16 rounded-full" />
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-              {Array.from({ length: 3 }).map((_, s) => (
-                <div key={s} className="space-y-1">
-                  <Skeleton className="h-3 w-10" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Skeleton className="h-8 flex-1 rounded-xl" />
-              <Skeleton className="h-8 w-8 rounded-xl" />
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/**
- * Expenses Page Skeleton
- */
-export const ExpensesSkeleton = () => {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Big Green Inflow Card */}
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-800 to-teal-900 p-5 text-white shadow-lg space-y-3">
-        <Skeleton className="h-3.5 w-32 bg-emerald-700/40" />
-        <Skeleton className="h-8 w-44 bg-emerald-700/50" />
-        <Skeleton className="h-3 w-40 bg-emerald-700/30" />
-      </div>
-
-      {/* Receipts Table */}
-      <SkeletonTable rows={5} cols={5} />
-    </div>
-  );
-};
-
-/**
- * Transaction Search Page Skeleton
- */
-export const TransactionSearchSkeleton = () => {
-  return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3">
-        <Skeleton className="h-10 w-full rounded-xl" />
-        <div className="flex gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-7 w-20 rounded-full" />
-          ))}
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <Skeleton className="h-8 w-24 rounded-lg" />
+            <Skeleton className="h-8 w-8 rounded-lg" />
+          </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-5 space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-16" />
+      ))}
+    </div>
+  );
+};
+
+// Backwards-compatible alias for ThekedarsPage
+export const ThekedarsSkeleton = ThekedarsTableSkeleton;
+
+/* ========================================================================== */
+/* 8. MEMBERS TABLE SKELETON (Only the Table Rows inside Directory Card)       */
+/* ========================================================================== */
+
+export const MembersTableSkeleton = () => {
+  return (
+    <div className="divide-y divide-slate-100 dark:divide-slate-800 animate-fade-in">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <SkeletonCircle size="h-9 w-9" />
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-16 rounded-md" />
               </div>
-              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-28" />
             </div>
-          ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-5 w-16 rounded-full hidden sm:block" />
+            <Skeleton className="h-7 w-20 rounded-md" />
+          </div>
         </div>
-        <div className="lg:col-span-7">
-          <SkeletonCard className="h-96" />
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
 
-/**
- * Audit Logs Page Skeleton
- */
-export const AuditLogsSkeleton = () => {
+// Backwards-compatible alias for MembersOverviewPage
+export const MembersOverviewSkeleton = MembersTableSkeleton;
+
+/* ========================================================================== */
+/* 9. TRANSACTION LIST SKELETON (Only the Matching Records list)               */
+/* ========================================================================== */
+
+export const TransactionListSkeleton = () => {
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="flex flex-wrap gap-3">
-        <Skeleton className="h-10 w-44 rounded-xl" />
-        <Skeleton className="h-10 w-44 rounded-xl" />
-      </div>
-      <SkeletonTable rows={6} cols={4} />
+    <div className="divide-y divide-slate-100 dark:divide-slate-800 animate-fade-in">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="py-3 px-1 flex items-start justify-between gap-3">
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3.5 w-28 font-mono" />
+              <Skeleton className="h-4 w-16 rounded-md" />
+            </div>
+            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-2.5 w-20" />
+          </div>
+          <div className="text-right space-y-1 shrink-0">
+            <Skeleton className="h-4 w-16 ml-auto font-bold" />
+            <Skeleton className="h-3 w-12 ml-auto" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
 
-/**
- * Members Overview Page Skeleton
- */
-export const MembersOverviewSkeleton = () => {
+// Backwards-compatible alias for TransactionSearchPage
+export const TransactionSearchSkeleton = TransactionListSkeleton;
+
+/* ========================================================================== */
+/* 10. AUDIT LOGS ROWS SKELETON (Only the Rows inside Audit Events Card)       */
+/* ========================================================================== */
+
+export const AuditLogsRowsSkeleton = () => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <SkeletonStatGrid count={3} />
-      <div className="flex gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-24 rounded-xl" />
-        ))}
-      </div>
-      <SkeletonTable rows={6} cols={5} />
+    <div className="divide-y divide-slate-100 dark:divide-slate-800 animate-fade-in">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="p-3 sm:p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <SkeletonCircle size="h-8 w-8" />
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-4 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-44" />
+            </div>
+          </div>
+          <Skeleton className="h-3 w-20 shrink-0" />
+        </div>
+      ))}
     </div>
   );
 };
+
+// Backwards-compatible alias for AuditLogsPage
+export const AuditLogsSkeleton = AuditLogsRowsSkeleton;
