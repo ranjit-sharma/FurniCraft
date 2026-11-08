@@ -1,6 +1,6 @@
 import * as quotationService from '../services/quotationService.js';
 import { generateQuotationPdfBuffer } from '../services/quotationPdfService.js';
-import { recordAuditLog } from '../utils/auditLog.js';
+import { recordAuditLog } from '../services/auditService.js';
 
 export const createQuotation = async (req, res, next) => {
   try {
