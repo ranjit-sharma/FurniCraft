@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { AdvanceRequest, FinancialTransaction, WorkerProfile, Payroll, User, Attendance } from '../models/index.js';
-import { ADVANCE_REQUEST_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHODS, PAYROLL_STATUS, ROLES, ATTENDANCE_STATUS, MAX_ADVANCE_LIMIT } from '../config/constants.js';
-import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
+import { ADVANCE_REQUEST_STATUS, FINANCIAL_CATEGORIES, PAYMENT_METHODS, PAYROLL_STATUS, ROLES, ATTENDANCE_STATUS } from '../config/constants.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { addMoney, subtractMoney } from '../utils/decimal.js';
 import { recordAuditLog } from './auditService.js';
 import { generateUniqueTransactionId, generateUniqueAdvanceRequestCode, withDuplicateRetry } from '../utils/codeGenerator.js';

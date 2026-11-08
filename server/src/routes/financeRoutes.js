@@ -6,7 +6,6 @@ import { validate } from '../middleware/validationMiddleware.js';
 import {
   createAdvanceRequestSchema,
   reviewAdvanceRequestSchema,
-  recordTransactionSchema,
   reverseTransactionSchema,
   payWorkerNetSchema,
   giveAdvanceSchema,

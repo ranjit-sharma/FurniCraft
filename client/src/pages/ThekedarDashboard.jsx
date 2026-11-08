@@ -16,7 +16,6 @@ import {
   Lock,
   CheckCircle2,
   CalendarOff,
-  AlertTriangle,
 } from 'lucide-react';
 
 const inr = (n) => `₹${Math.round(n || 0).toLocaleString('en-IN')}`;

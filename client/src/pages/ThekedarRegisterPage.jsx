@@ -18,7 +18,6 @@ import {
   HardHat,
   CheckCircle2,
   AlertCircle,
-  Globe,
 } from 'lucide-react';
 
 export const ThekedarRegisterPage = () => {

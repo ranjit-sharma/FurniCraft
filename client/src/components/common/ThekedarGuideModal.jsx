@@ -2,23 +2,16 @@ import React, { useState } from 'react';
 import { Modal } from './Modal';
 import { useLanguage } from '../../context/LanguageContext';
 import {
-  BookOpen,
   CalendarCheck,
   IndianRupee,
   Users,
   FileDown,
   Search,
   CheckCircle2,
-  Clock,
   Sparkles,
-  ChevronRight,
   ShieldCheck,
-  ArrowRight,
   FileText,
-  Lock,
-  CalendarOff,
   Info,
-  ExternalLink,
 } from 'lucide-react';
 
 export const ThekedarGuideModal = ({ isOpen, onClose }) => {

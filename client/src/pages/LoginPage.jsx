@@ -23,7 +23,6 @@ import {
   AlertCircle,
   AlertTriangle,
   Users,
-  Briefcase,
   CalendarCheck,
   Building2,
   FolderKanban,

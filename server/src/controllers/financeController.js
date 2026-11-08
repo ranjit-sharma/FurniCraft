@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import * as financeService from '../services/financeService.js';
 import * as exportService from '../services/exportService.js';
 import { AdvanceRequest, FinancialTransaction, WorkerProfile } from '../models/index.js';
-import { ROLES, ADVANCE_REQUEST_STATUS, MAX_ADVANCE_LIMIT } from '../config/constants.js';
-import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { ROLES } from '../config/constants.js';
+import { ForbiddenError, BadRequestError } from '../utils/errors.js';
 import { escapeRegex } from '../utils/sanitize.js';
 
 export const createAdvanceRequest = async (req, res, next) => {

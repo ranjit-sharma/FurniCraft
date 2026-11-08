@@ -1,7 +1,7 @@
 import * as projectService from '../services/projectService.js';
 import { Project, ProjectAssignment, ProjectMoneyReceived, WorkerProfile } from '../models/index.js';
 import { ROLES, PROJECT_STATUS } from '../config/constants.js';
-import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { escapeRegex } from '../utils/sanitize.js';
 

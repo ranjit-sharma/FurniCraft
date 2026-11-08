@@ -27,9 +27,7 @@ import {
   Search,
   Filter,
   RefreshCw,
-  MessageSquare,
   ShieldCheck,
-  ExternalLink,
 } from 'lucide-react';
 
 export const HelpCenterModal = ({ isOpen, onClose, initialTab }) => {

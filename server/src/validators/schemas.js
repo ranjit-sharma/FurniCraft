@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   ROLES,
-  USER_STATUS,
   ATTENDANCE_CODES,
   FURNITURE_TYPES,
   PROJECT_STATUS,

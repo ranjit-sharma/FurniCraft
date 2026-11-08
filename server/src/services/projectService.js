@@ -1,6 +1,6 @@
-import { Project, ProjectAssignment, ProjectExpense, ProjectMoneyReceived, Attendance, User, WorkerProfile } from '../models/index.js';
+import { Project, ProjectAssignment, ProjectMoneyReceived, Attendance, WorkerProfile } from '../models/index.js';
 import { ROLES, PROJECT_STATUS, ATTENDANCE_STATUS } from '../config/constants.js';
-import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { recordAuditLog } from './auditService.js';
 import { generateUniqueProjectCode, generateUniqueReceiptCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 

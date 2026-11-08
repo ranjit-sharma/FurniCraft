@@ -10,7 +10,7 @@ import {
   Payroll,
 } from '../models/index.js';
 import { ROLES, USER_STATUS, ATTENDANCE_STATUS, ADVANCE_REQUEST_STATUS } from '../config/constants.js';
-import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../utils/errors.js';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../utils/errors.js';
 import { recordAuditLog } from '../services/auditService.js';
 import { generateUniqueWorkerCode, withDuplicateRetry } from '../utils/codeGenerator.js';
 

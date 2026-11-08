@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api/client';
 import { LoadError } from '../components/common/LoadError';
 import { useLanguage } from '../context/LanguageContext';
