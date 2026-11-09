@@ -151,11 +151,10 @@ export const drawTotal = (doc, y, { label, value, note, fill = C.goodSoft, color
 };
 
 /**
- * Draws the standard FurniCraft Thekedar Digital Signature block.
- * Matches approved format across all application PDFs:
+ * Draws the standard FurniCraft Thekedar Digital Signature.
+ * Formatted cleanly on the right side without an enclosing box or pill tag:
  * - Thekedar Name (Bold, Navy)
  * - Date: DD MMM YYYY (Muted)
- * - [ DIGITALLY SIGNED ] (Light green badge with green border)
  * - Authorized Digital Signature (Green bold)
  * - No physical signature required. (Muted)
  */
@@ -164,11 +163,9 @@ export const drawThekedarDigitalSignature = (
   x,
   y,
   w = 180,
-  h = 80,
-  { name = 'Contractor', date = new Date() } = {}
+  h = 52,
+  { name = 'Contractor', date = new Date(), align = 'center' } = {}
 ) => {
-  doc.roundedRect(x, y, w, h, 6).fillAndStroke(C.soft, C.line);
-
   const thekedarName = name || 'Authorized Contractor';
   const dateStr =
     typeof date === 'string'
@@ -182,78 +179,57 @@ export const drawThekedarDigitalSignature = (
           year: 'numeric',
         }).format(new Date(date))}`;
 
-  // 1. Thekedar Name (No "For")
-  text(doc, thekedarName, x + 8, y + 8, {
-    size: 8.5,
+  // 1. Thekedar Name
+  text(doc, thekedarName, x, y, {
+    size: 9,
     font: 'Bold',
     color: C.ink,
-    width: w - 16,
-    align: 'center',
+    width: w,
+    align,
     ellipsis: true,
   });
 
   // 2. Date
-  text(doc, dateStr, x + 8, y + 22, {
-    size: 7,
+  text(doc, dateStr, x, y + 13, {
+    size: 7.5,
     font: 'Regular',
     color: C.muted,
-    width: w - 16,
-    align: 'center',
+    width: w,
+    align,
   });
 
-  // 3. Digital Signature Badge (No unicode checkmark to avoid □ glyph missing in PDF font)
-  const sealY = y + 34;
-  doc
-    .roundedRect(x + 10, sealY, w - 20, 22, 4)
-    .fillAndStroke('#F0FDF4', '#86EFAC');
-
-  text(doc, 'DIGITALLY SIGNED', x + 10, sealY + 6, {
+  // 3. Authorized Digital Signature
+  text(doc, 'Authorized Digital Signature', x, y + 26, {
     size: 7.5,
     font: 'Bold',
     color: '#15803D',
-    width: w - 20,
-    align: 'center',
-    characterSpacing: 0.5,
+    width: w,
+    align,
   });
 
-  // 4. Authorized Digital Signature
-  text(doc, 'Authorized Digital Signature', x + 6, y + 60, {
+  // 4. No physical signature required.
+  text(doc, 'No physical signature required.', x, y + 38, {
     size: 6.5,
-    font: 'Bold',
-    color: '#15803D',
-    width: w - 12,
-    align: 'center',
-  });
-
-  // 5. No physical signature required.
-  text(doc, 'No physical signature required.', x + 6, y + 70, {
-    size: 5.5,
     font: 'Regular',
     color: C.muted,
-    width: w - 12,
-    align: 'center',
+    width: w,
+    align,
   });
 
   return y + h;
 };
 
-/** Two signature boxes side by side: Thekedar Digital Signature on left, Receiver on right. */
-export const drawSignatures = (doc, y, left, right) => {
-  const w = (CONTENT_W - 12) / 2;
-  const h = 80;
+/** Thekedar signature on the right side without box, no worker signature. */
+export const drawSignatures = (doc, y, left) => {
+  const w = 180;
+  const h = 52;
+  const x = PAGE.margin + CONTENT_W - w;
 
-  // Left: Standard Thekedar Digital Signature
-  drawThekedarDigitalSignature(doc, PAGE.margin, y, w, h, {
-    name: left.name || 'Authorized Contractor',
-    date: left.date || new Date(),
+  drawThekedarDigitalSignature(doc, x, y, w, h, {
+    name: left?.name || 'Authorized Contractor',
+    date: left?.date || new Date(),
+    align: 'center',
   });
-
-  // Right: Receiver signature box
-  const rx = PAGE.margin + w + 12;
-  doc.roundedRect(rx, y, w, h, 6).lineWidth(0.8).strokeColor(C.line).stroke();
-  text(doc, right.label || 'RECEIVED BY', rx + 10, y + 9, { size: 7, font: 'Bold', color: C.muted, width: w - 20 });
-  doc.moveTo(rx + 10, y + 54).lineTo(rx + w - 10, y + 54).lineWidth(0.6).strokeColor(C.faint).stroke();
-  text(doc, right.name, rx + 10, y + 60, { size: 8.5, font: 'Bold', color: C.ink, width: w - 20, ellipsis: true });
 
   return y + h + 14;
 };

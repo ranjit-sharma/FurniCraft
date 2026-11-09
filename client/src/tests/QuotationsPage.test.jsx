@@ -216,8 +216,10 @@ describe('QuotationsPage Frontend Component Tests', () => {
 
     expect(await screen.findByText('Quotation Preview')).toBeInTheDocument();
     expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('DIGITALLY SIGNED')).toBeInTheDocument();
+    // DIGITALLY SIGNED tag is removed from all PDFs and preview
+    expect(screen.queryByText('DIGITALLY SIGNED')).toBeNull();
     expect(screen.getByText('Authorized Digital Signature')).toBeInTheDocument();
+    expect(screen.getByText('No physical signature required.')).toBeInTheDocument();
     // Delete button is present in the preview modal at bottom left
     expect(screen.getByTitle('Delete Quotation')).toBeInTheDocument();
     // No "For" prefix in signature block

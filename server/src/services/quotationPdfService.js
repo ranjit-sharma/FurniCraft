@@ -391,9 +391,9 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     termY += 13.5;
   });
 
-  // Right: Digitally Signed Box (No external signature required)
+  // Right: Thekedar Digital Signature (Right side, no box, no pill tag)
   const sigX = PAGE.margin + termsW + 16;
-  const sigH = 80;
+  const sigH = 52;
   const thekedarName =
     quotation.thekedar?.businessName || quotation.thekedar?.name || 'Contractor';
 

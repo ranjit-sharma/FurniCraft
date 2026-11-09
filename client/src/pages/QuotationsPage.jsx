@@ -1213,26 +1213,20 @@ export const QuotationsPage = () => {
                 </ol>
               </div>
 
-              {/* Digital Signature Block */}
-              <div className="sm:col-span-5 flex flex-col justify-end">
-                <div className="p-3 rounded-xl border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/60 dark:bg-emerald-950/30 text-center space-y-1.5 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block truncate">
-                    {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
-                  </span>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                    <span>Date: {previewData.formattedDate}</span>
-                  </div>
-                  <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-bold text-[10px] sm:text-[11px]">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>DIGITALLY SIGNED</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block">
-                    Authorized Digital Signature
-                  </span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 block pt-1 border-t border-emerald-200/60 dark:border-emerald-900/40">
-                    No physical signature required.
-                  </span>
-                </div>
+              {/* Thekedar Signature (Right side, no box, no pill tag) */}
+              <div className="sm:col-span-5 flex flex-col justify-end text-center sm:text-right space-y-0.5">
+                <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block truncate">
+                  {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">
+                  Date: {previewData.formattedDate}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block">
+                  Authorized Digital Signature
+                </span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 block">
+                  No physical signature required.
+                </span>
               </div>
             </div>
 
