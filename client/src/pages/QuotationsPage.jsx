@@ -1059,7 +1059,7 @@ export const QuotationsPage = () => {
           title="Quotation Preview"
           maxWidth="max-w-2xl"
         >
-          <div className="p-4 sm:p-6 bg-white dark:bg-slate-900 space-y-5 max-w-2xl mx-auto text-slate-900 dark:text-slate-100">
+          <div className="p-1 sm:p-4 bg-white dark:bg-slate-900 space-y-4 max-w-2xl mx-auto text-slate-900 dark:text-slate-100">
             {/* Header matching exact PDF design */}
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-4">
@@ -1143,17 +1143,17 @@ export const QuotationsPage = () => {
               </div>
             </div>
 
-            {/* Items Table matching PDF with single-view fixed columns (no horizontal scrolling) */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-xs">
+            {/* Items Table matching PDF design (open layout, no clipping box) */}
+            <div className="w-full">
               <table className="w-full table-fixed border-collapse text-left">
                 <thead>
                   <tr className="bg-slate-900 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
-                    <th className="py-2 px-1 text-center w-[7%]">#</th>
-                    <th className="py-2 px-1.5 text-left w-[41%]">PARTICULAR</th>
-                    <th className="py-2 px-1 text-right w-[11%]">QTY</th>
-                    <th className="py-2 px-1 text-center w-[11%]">UNIT</th>
-                    <th className="py-2 px-1 text-right w-[14%]">RATE</th>
-                    <th className="py-2 px-1.5 text-right w-[16%]">TOTAL</th>
+                    <th className="py-2 px-1 text-center w-[6%]">#</th>
+                    <th className="py-2 px-1.5 text-left w-[30%]">PARTICULAR</th>
+                    <th className="py-2 px-1 text-right w-[14%]">QTY</th>
+                    <th className="py-2 px-1 text-center w-[14%]">UNIT</th>
+                    <th className="py-2 px-1 text-right w-[16%]">RATE</th>
+                    <th className="py-2 px-1.5 text-right w-[20%]">TOTAL</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1162,24 +1162,24 @@ export const QuotationsPage = () => {
                       key={idx}
                       className={idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}
                     >
-                      <td className="py-2 px-1 text-center text-slate-400 font-mono text-[9px] sm:text-[10px]">
+                      <td className="py-2 px-1 text-center text-slate-400 font-mono text-[9px] sm:text-[10px] align-top">
                         {idx + 1}
                       </td>
-                      <td className="py-2 px-1.5 font-medium text-slate-900 dark:text-slate-100 text-[10px] sm:text-[11px] break-words">
+                      <td className="py-2 px-1.5 font-medium text-slate-900 dark:text-slate-100 text-[10px] sm:text-[11px] break-words whitespace-normal leading-snug align-top">
                         {it.particular}
                       </td>
-                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap">
+                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap align-top">
                         {Number(it.quantity).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-2 px-1 text-center whitespace-nowrap">
+                      <td className="py-2 px-1 text-center whitespace-nowrap align-top">
                         <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                           {it.unit === 'SQ FEET' || it.unit === 'SQF' ? 'SQF' : it.unit}
                         </span>
                       </td>
-                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap">
+                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap align-top">
                         {inr(it.rate)}
                       </td>
-                      <td className="py-2 px-1.5 text-right font-bold text-slate-900 dark:text-slate-100 font-mono text-[10px] sm:text-[11px] whitespace-nowrap">
+                      <td className="py-2 px-1.5 text-right font-bold text-slate-900 dark:text-slate-100 font-mono text-[10px] sm:text-[11px] whitespace-nowrap align-top">
                         {inr(it.total)}
                       </td>
                     </tr>
