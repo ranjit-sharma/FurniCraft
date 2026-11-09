@@ -247,7 +247,7 @@ export const createExpenseSchema = z.object({
 export const quotationItemSchema = z.object({
   particular: z.string().trim().min(1, 'Item particular / description is required'),
   quantity: z.number().positive('Quantity must be greater than zero'),
-  unit: z.enum(['SQ FEET', 'PCS'], {
+  unit: z.enum(['SQ FEET', 'PCS', 'SQF'], {
     errorMap: () => ({ message: "Unit must be either 'SQ FEET' or 'PCS'" }),
   }),
   rate: z.number().min(0, 'Rate must be zero or greater'),

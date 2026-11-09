@@ -924,7 +924,7 @@ export const QuotationsPage = () => {
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                             className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
                           >
-                            <option value="SQ FEET">SQ FEET</option>
+                            <option value="SQ FEET">SQF</option>
                             <option value="PCS">PCS</option>
                           </select>
                         </div>
@@ -1143,51 +1143,49 @@ export const QuotationsPage = () => {
               </div>
             </div>
 
-            {/* Items Table matching PDF with clean column separation */}
+            {/* Items Table matching PDF with single-view fixed columns (no horizontal scrolling) */}
             <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left">
-                  <thead>
-                    <tr className="bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
-                      <th className="py-2.5 px-3 text-center w-10">#</th>
-                      <th className="py-2.5 px-3 text-left">PARTICULAR</th>
-                      <th className="py-2.5 px-3 text-right w-16">QTY</th>
-                      <th className="py-2.5 px-3 text-center w-24">UNIT</th>
-                      <th className="py-2.5 px-3 text-right w-24">RATE</th>
-                      <th className="py-2.5 px-3 text-right w-28">TOTAL</th>
+              <table className="w-full table-fixed border-collapse text-left">
+                <thead>
+                  <tr className="bg-slate-900 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
+                    <th className="py-2 px-1 text-center w-[7%]">#</th>
+                    <th className="py-2 px-1.5 text-left w-[41%]">PARTICULAR</th>
+                    <th className="py-2 px-1 text-right w-[11%]">QTY</th>
+                    <th className="py-2 px-1 text-center w-[11%]">UNIT</th>
+                    <th className="py-2 px-1 text-right w-[14%]">RATE</th>
+                    <th className="py-2 px-1.5 text-right w-[16%]">TOTAL</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {previewData.items.map((it, idx) => (
+                    <tr
+                      key={idx}
+                      className={idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}
+                    >
+                      <td className="py-2 px-1 text-center text-slate-400 font-mono text-[9px] sm:text-[10px]">
+                        {idx + 1}
+                      </td>
+                      <td className="py-2 px-1.5 font-medium text-slate-900 dark:text-slate-100 text-[10px] sm:text-[11px] break-words">
+                        {it.particular}
+                      </td>
+                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap">
+                        {Number(it.quantity).toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-2 px-1 text-center whitespace-nowrap">
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
+                          {it.unit === 'SQ FEET' || it.unit === 'SQF' ? 'SQF' : it.unit}
+                        </span>
+                      </td>
+                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap">
+                        {inr(it.rate)}
+                      </td>
+                      <td className="py-2 px-1.5 text-right font-bold text-slate-900 dark:text-slate-100 font-mono text-[10px] sm:text-[11px] whitespace-nowrap">
+                        {inr(it.total)}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                    {previewData.items.map((it, idx) => (
-                      <tr
-                        key={idx}
-                        className={idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}
-                      >
-                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
-                          {idx + 1}
-                        </td>
-                        <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-slate-100 break-words">
-                          {it.particular}
-                        </td>
-                        <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300 font-mono whitespace-nowrap">
-                          {Number(it.quantity).toLocaleString('en-IN')}
-                        </td>
-                        <td className="py-2.5 px-3 text-center">
-                          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
-                            {it.unit}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300 font-mono whitespace-nowrap">
-                          {inr(it.rate)}
-                        </td>
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100 font-mono whitespace-nowrap">
-                          {inr(it.total)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Grand Total */}

@@ -127,7 +127,8 @@ export const calculateQuotationTotals = (items) => {
       throw new BadRequestError(`Item #${idx + 1}: Quantity must be greater than zero`);
     }
 
-    const unit = (item.unit || '').trim().toUpperCase();
+    let unit = (item.unit || '').trim().toUpperCase();
+    if (unit === 'SQF') unit = 'SQ FEET';
     if (!['SQ FEET', 'PCS'].includes(unit)) {
       throw new BadRequestError(`Item #${idx + 1}: Unit must be either 'SQ FEET' or 'PCS'`);
     }

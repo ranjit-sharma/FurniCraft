@@ -220,6 +220,8 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(screen.queryByText('DIGITALLY SIGNED')).toBeNull();
     expect(screen.getByText('Authorized Digital Signature')).toBeInTheDocument();
     expect(screen.getByText('No physical signature required.')).toBeInTheDocument();
+    // Short unit name SQF is used for SQ FEET
+    expect(screen.getByText('SQF')).toBeInTheDocument();
     // Delete button is present in the preview modal at bottom left
     expect(screen.getByTitle('Delete Quotation')).toBeInTheDocument();
     // No "For" prefix in signature block
