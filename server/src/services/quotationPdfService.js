@@ -284,13 +284,13 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     });
     colX += columns[2].width;
 
-    // Unit (SQ FEET displayed as SQF for clean spacing)
+    // Unit (SQ FEET displayed as SQF; regular font to align with row, total is bold)
     const displayUnit =
       item.unit === 'SQ FEET' || item.unit === 'SQF' ? 'SQF' : (item.unit || 'PCS');
     text(doc, displayUnit, colX + 4, currentY + 6, {
-      size: 7.5,
-      font: 'Bold',
-      color: COLOR.muted,
+      size: 8,
+      font: 'Regular',
+      color: COLOR.text,
       width: columns[3].width - 8,
       align: columns[3].align,
     });

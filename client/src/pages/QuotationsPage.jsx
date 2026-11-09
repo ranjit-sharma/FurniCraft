@@ -1171,10 +1171,8 @@ export const QuotationsPage = () => {
                       <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap align-top">
                         {Number(it.quantity).toLocaleString('en-IN')}
                       </td>
-                      <td className="py-2 px-1 text-center whitespace-nowrap align-top">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
-                          {it.unit === 'SQ FEET' || it.unit === 'SQF' ? 'SQF' : it.unit}
-                        </span>
+                      <td className="py-2 px-1 text-center text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] uppercase whitespace-nowrap align-top">
+                        {it.unit === 'SQ FEET' || it.unit === 'SQF' ? 'SQF' : it.unit}
                       </td>
                       <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap align-top">
                         {inr(it.rate)}
