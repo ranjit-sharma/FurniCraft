@@ -64,7 +64,6 @@ describe('QuotationsPage Frontend Component Tests', () => {
                   quotationNumber: 'FC-TK001-QTN-0001',
                   formattedDate: '09 Nov 2026',
                   customer: { name: 'Rajesh Gupta', phone: '9812345678' },
-                  project: { name: '3BHK Modular Kitchen' },
                   grandTotal: 257500,
                   items: [
                     { particular: 'Kitchen Tandem', quantity: 150, unit: 'SQ FEET', rate: 1000, total: 150000 },

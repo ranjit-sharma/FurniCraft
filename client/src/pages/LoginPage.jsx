@@ -42,6 +42,15 @@ export const LoginPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
+  // Auto-dismiss notification after 7 seconds
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => {
+      setSuccessMessage(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   // Forgot & Reset Password Modal State (Email OTP)
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
   const [otpStep, setOtpStep] = useState('EMAIL_INPUT'); // 'EMAIL_INPUT' | 'OTP_VERIFY' | 'NEW_PASSWORD'

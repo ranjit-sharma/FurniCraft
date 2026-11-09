@@ -33,6 +33,15 @@ export const ExpensesPage = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
 
+  // Auto-dismiss notification message after 7 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => {
+      setMessage(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   // New Money Received Modal
   const [modalOpen, setModalOpen] = useState(false);
   const [projectId, setProjectId] = useState('');

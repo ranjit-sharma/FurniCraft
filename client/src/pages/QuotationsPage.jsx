@@ -44,6 +44,15 @@ export const QuotationsPage = () => {
   // Notification Banner
   const [banner, setBanner] = useState(null);
 
+  // Auto-dismiss notification banner after 7 seconds
+  useEffect(() => {
+    if (!banner) return;
+    const timer = setTimeout(() => {
+      setBanner(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [banner]);
+
   // Initial Thekedar Details & Date
   const [initialData, setInitialData] = useState({
     thekedar: {
@@ -82,9 +91,6 @@ export const QuotationsPage = () => {
       name: '',
       phone: '',
       address: '',
-    },
-    project: {
-      name: '',
     },
     items: [defaultItem()],
     termsAndConditions: [],
@@ -192,9 +198,6 @@ export const QuotationsPage = () => {
         phone: '',
         address: '',
       },
-      project: {
-        name: '',
-      },
       items: [defaultItem()],
       termsAndConditions: initialData.defaultTerms || [],
       status: 'DRAFT',
@@ -218,9 +221,6 @@ export const QuotationsPage = () => {
         name: qtn.customer?.name || '',
         phone: qtn.customer?.phone || '',
         address: qtn.customer?.address || '',
-      },
-      project: {
-        name: qtn.project?.name || '',
       },
       items:
         qtn.items && qtn.items.length > 0
@@ -248,7 +248,6 @@ export const QuotationsPage = () => {
       thekedar: qtn.thekedar || initialData.thekedar,
       thekedarCode: qtn.thekedarCode || initialData.thekedar?.thekedarCode || 'TK001',
       customer: qtn.customer,
-      project: qtn.project,
       items: qtn.items || [],
       grandTotal: qtn.grandTotal || 0,
       termsAndConditions: qtn.termsAndConditions || initialData.defaultTerms,
@@ -395,9 +394,6 @@ export const QuotationsPage = () => {
     const payload = {
       thekedar: formData.thekedar,
       customer: formData.customer,
-      project: {
-        name: (formData.project?.name || '').trim(),
-      },
       items: formData.items.map((it) => ({
         particular: it.particular.trim(),
         quantity: parseFloat(it.quantity) || 1,
@@ -452,7 +448,6 @@ export const QuotationsPage = () => {
       thekedar: formData.thekedar,
       thekedarCode: initialData.thekedar.thekedarCode || 'TK001',
       customer: formData.customer,
-      project: formData.project,
       items: liveTotals.items,
       grandTotal: liveTotals.grandTotal,
       termsAndConditions: formData.termsAndConditions,

@@ -89,9 +89,6 @@ describe('Quotation Zod Validation Schemas', () => {
         phone: '9876500000',
         address: 'Flat 402, Green Heights, Andheri West, Mumbai',
       },
-      project: {
-        name: '3BHK Modular Kitchen & Wardrobes',
-      },
       items: [
         {
           particular: 'Kitchen Tandem',
@@ -109,7 +106,6 @@ describe('Quotation Zod Validation Schemas', () => {
   it('fails if customer name is missing', () => {
     const invalidData = {
       customer: { name: '   ' },
-      project: { name: 'Office Setup' },
       items: [{ particular: 'Desk', quantity: 2, unit: 'PCS', rate: 3000 }],
     };
 
@@ -120,7 +116,6 @@ describe('Quotation Zod Validation Schemas', () => {
   it('fails if items array is empty', () => {
     const invalidData = {
       customer: { name: 'Rajesh' },
-      project: { name: 'Office Setup' },
       items: [],
     };
 
@@ -143,9 +138,6 @@ describe('Quotation PDF Generation', () => {
         name: 'Amit Verma',
         phone: '9812345678',
         address: 'Sector 62, Noida, UP',
-      },
-      project: {
-        name: 'Master Bedroom Wardrobe & TV Unit',
       },
       items: [
         {
@@ -206,9 +198,6 @@ describe('Quotation PDF Generation', () => {
         name: 'Vikas Malhotra',
         phone: '9123456780',
         address: 'B-104, Palm Springs, Gurgaon',
-      },
-      project: {
-        name: 'Luxury Villa Full Interior Woodwork',
       },
       items,
       grandTotal: items.reduce((s, it) => s + it.total, 0),

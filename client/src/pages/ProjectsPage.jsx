@@ -56,6 +56,15 @@ export const ProjectsPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
 
+  // Auto-dismiss notification message after 7 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => {
+      setMessage(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   const [loadError, setLoadError] = useState(null);
 
   const fetchProjects = async () => {

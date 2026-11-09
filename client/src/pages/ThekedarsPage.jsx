@@ -29,6 +29,15 @@ export const ThekedarsPage = () => {
   const [thekedars, setThekedars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
+
+  // Auto-dismiss notification message after 7 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => {
+      setMessage(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [message]);
   const [statusActionLoadingId, setStatusActionLoadingId] = useState(null);
 
   // Register Thekedar Modal

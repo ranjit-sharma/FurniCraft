@@ -39,6 +39,15 @@ export const ThekedarRegisterPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  // Auto-dismiss notification after 7 seconds
+  useEffect(() => {
+    if (!success) return;
+    const timer = setTimeout(() => {
+      setSuccess(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [success]);
+
   const referrer = useMemo(() => {
     if (typeof window === 'undefined') return null;
     return new URLSearchParams(window.location.search).get('ref');

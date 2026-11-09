@@ -182,9 +182,6 @@ export const createQuotation = async ({ thekedarUser, data }) => {
       phone: data.customer.phone ? data.customer.phone.trim() : '',
       address: data.customer.address ? data.customer.address.trim() : '',
     },
-    project: {
-      name: data.project.name.trim(),
-    },
     items: calculatedItems,
     grandTotal,
     quotationDate: now,
@@ -222,7 +219,6 @@ export const listQuotations = async ({
     filter.$or = [
       { quotationNumber: { $regex: s, $options: 'i' } },
       { 'customer.name': { $regex: s, $options: 'i' } },
-      { 'project.name': { $regex: s, $options: 'i' } },
     ];
   }
 
@@ -300,10 +296,6 @@ export const updateQuotation = async ({ quotationId, thekedarId, data, thekedarU
     if (data.customer.address !== undefined) quotation.customer.address = data.customer.address.trim();
   }
 
-  if (data.project && data.project.name !== undefined) {
-    quotation.project.name = data.project.name.trim();
-  }
-
   if (data.thekedar) {
     if (data.thekedar.businessName !== undefined) {
       quotation.thekedar.businessName = data.thekedar.businessName.trim();
@@ -332,59 +324,6 @@ export const updateQuotation = async ({ quotationId, thekedarId, data, thekedarU
 
   await quotation.save();
   return quotation;
-};
-
-/**
- * Duplicate an existing quotation.
- * Copies customer, project, items, and terms.
- * Generates a brand new unique quotationNumber and uses current server date.
- * Strict privacy: returns 404 if source quotation not owned.
- */
-export const duplicateQuotation = async ({ quotationId, thekedarUser, userRole }) => {
-  const query = userRole === 'OWNER' ? { _id: quotationId } : { _id: quotationId, thekedarId: thekedarUser._id };
-  const source = await Quotation.findOne(query);
-  if (!source) {
-    throw new NotFoundError('Quotation not found');
-  }
-
-  const thekedarCode = await ensureThekedarCode(thekedarUser);
-  const quotationNumber = await allocateNextQuotationNumber(thekedarUser._id, thekedarCode);
-
-  const now = new Date();
-  const formattedDate = formatIndianDate(now);
-
-  const duplicated = await Quotation.create({
-    thekedarId: thekedarUser._id,
-    thekedarCode,
-    quotationNumber,
-    thekedar: {
-      businessName: source.thekedar.businessName || thekedarUser.businessName || thekedarUser.name,
-      phone: source.thekedar.phone || thekedarUser.phone,
-      logoUrl: source.thekedar.logoUrl || thekedarUser.logoUrl || '',
-    },
-    customer: {
-      name: source.customer.name,
-      phone: source.customer.phone || '',
-      address: source.customer.address || '',
-    },
-    project: {
-      name: source.project.name,
-    },
-    items: source.items.map((i) => ({
-      particular: i.particular,
-      quantity: i.quantity,
-      unit: i.unit,
-      rate: i.rate,
-      total: i.total,
-    })),
-    grandTotal: source.grandTotal,
-    quotationDate: now,
-    formattedDate,
-    termsAndConditions: source.termsAndConditions || DEFAULT_TERMS_AND_CONDITIONS,
-    status: 'DRAFT',
-  });
-
-  return duplicated;
 };
 
 /**

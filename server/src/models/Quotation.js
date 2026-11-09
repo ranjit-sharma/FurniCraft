@@ -97,13 +97,6 @@ const quotationSchema = new mongoose.Schema(
         default: '',
       },
     },
-    project: {
-      name: {
-        type: String,
-        trim: true,
-        default: '',
-      },
-    },
     items: {
       type: [quotationItemSchema],
       validate: {

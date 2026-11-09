@@ -21,7 +21,6 @@ export const createQuotation = async (req, res, next) => {
         quotationNumber: quotation.quotationNumber,
         thekedarCode: quotation.thekedarCode,
         customerName: quotation.customer.name,
-        projectName: quotation.project.name,
         grandTotal: quotation.grandTotal,
       },
     });
@@ -105,39 +104,6 @@ export const updateQuotation = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       message: 'Quotation updated successfully',
-      data: { quotation },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const duplicateQuotation = async (req, res, next) => {
-  try {
-    const quotation = await quotationService.duplicateQuotation({
-      quotationId: req.params.id,
-      thekedarUser: req.user,
-      userRole: req.user.role,
-    });
-
-    await recordAuditLog({
-      req,
-      actorId: req.user._id,
-      actorName: req.user.name,
-      actorRole: req.user.role,
-      action: 'QUOTATION_DUPLICATED',
-      targetType: 'Quotation',
-      targetId: quotation._id,
-      newValues: {
-        quotationNumber: quotation.quotationNumber,
-        sourceQuotationId: req.params.id,
-        grandTotal: quotation.grandTotal,
-      },
-    });
-
-    res.status(201).json({
-      status: 'success',
-      message: 'Quotation duplicated successfully',
       data: { quotation },
     });
   } catch (error) {

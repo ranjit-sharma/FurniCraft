@@ -117,6 +117,15 @@ export const WorkersPage = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState(null);
 
+  // Auto-dismiss notification message after 7 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => {
+      setMessage(null);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [message]);
+
   // Register Worker Modal
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [registerSubmitting, setRegisterSubmitting] = useState(false);
