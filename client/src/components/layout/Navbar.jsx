@@ -205,8 +205,8 @@ export const Navbar = () => {
 
               {/* Menu Actions */}
               <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-                {/* Quotations Generator (Visible to Thekedars and Owners) */}
-                {(user.role === 'THEKEDAR' || user.role === 'OWNER') && (
+                {/* Quotations Generator (Only visible to Thekedars) */}
+                {user.role === 'THEKEDAR' && (
                   <a
                     href="/quotations"
                     onClick={() => setProfileOpen(false)}

@@ -194,4 +194,26 @@ describe('QuotationsPage Frontend Component Tests', () => {
     // Ensure NO notes or specifications header
     expect(screen.queryByText(/Notes \/ Specifications/i)).toBeNull();
   });
+
+  it('provides a Preview button on the quotation card and omits status badge and duplicate button', async () => {
+    renderComponent();
+
+    // Verify card rendered
+    expect(await screen.findByText('FC-TK001-QTN-0001')).toBeInTheDocument();
+
+    // Status tag should not be rendered on the card
+    expect(screen.queryByText('DRAFT')).toBeNull();
+
+    // Duplicate button should not be present
+    expect(screen.queryByTitle(/Duplicate/i)).toBeNull();
+
+    // Preview button should be present on the card
+    const previewBtn = screen.getByTitle('Preview Quotation');
+    expect(previewBtn).toBeInTheDocument();
+
+    // Clicking Preview opens the Preview Modal
+    fireEvent.click(previewBtn);
+    expect(await screen.findByText('Quotation Preview')).toBeInTheDocument();
+    expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
+  });
 });

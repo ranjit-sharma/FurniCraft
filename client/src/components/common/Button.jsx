@@ -31,6 +31,11 @@ export const Button = ({
         return 'border-2 border-amber-400/80 bg-amber-950/60 hover:bg-amber-800/80 text-amber-100 hover:text-white shadow-xs focus:ring-amber-400 font-bold';
       case 'outline-purple':
         return 'border-2 border-purple-400/80 bg-purple-950/60 hover:bg-purple-800/80 text-purple-100 hover:text-white shadow-xs focus:ring-purple-400 font-bold';
+      case 'ghost': {
+        const bg = className.includes('bg-') ? '' : 'hover:bg-slate-100 dark:hover:bg-slate-800';
+        const text = className.includes('text-') ? '' : 'text-slate-700 dark:text-slate-200';
+        return `bg-transparent ${bg} ${text} focus:ring-slate-400`.trim();
+      }
       case 'danger':
         return 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm focus:ring-rose-500';
       case 'success':

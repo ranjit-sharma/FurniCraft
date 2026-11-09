@@ -5,14 +5,12 @@ import { useLanguage } from '../context/LanguageContext';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
-import { Badge } from '../components/common/Badge';
 import { LoadError } from '../components/common/LoadError';
 import {
   FileText,
   Plus,
   Trash2,
   Download,
-  Copy,
   Edit,
   Eye,
   Search,
@@ -43,7 +41,6 @@ export const QuotationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, totalPages: 1 });
 
@@ -143,7 +140,6 @@ export const QuotationsPage = () => {
           page,
           limit: pagination.limit,
           search: search.trim() || undefined,
-          status: statusFilter || undefined,
           sortBy: 'createdAt',
           sortOrder,
         },
@@ -164,7 +160,7 @@ export const QuotationsPage = () => {
 
   useEffect(() => {
     fetchQuotations(pagination.page);
-  }, [pagination.page, statusFilter, sortOrder]);
+  }, [pagination.page, sortOrder]);
 
   // Handle Search submit
   const handleSearchSubmit = (e) => {
@@ -252,25 +248,22 @@ export const QuotationsPage = () => {
     setView('form');
   };
 
-  // Duplicate Quotation
-  const handleDuplicate = async (qtn) => {
-    try {
-      setBanner(null);
-      const res = await api.post(`/quotations/${qtn._id}/duplicate`);
-      const dup = res?.data?.data?.quotation || res?.data?.quotation || res?.quotation;
-      if (dup) {
-        setBanner({
-          type: 'success',
-          text: `Quotation duplicated as ${dup.quotationNumber} with today's date!`,
-        });
-        fetchQuotations(1);
-      }
-    } catch (err) {
-      setBanner({
-        type: 'error',
-        text: err.message || 'Failed to duplicate quotation',
-      });
-    }
+  // Preview Quotation from History Card
+  const handlePreviewQuotation = (qtn) => {
+    if (!qtn) return;
+    setPreviewData({
+      _id: qtn._id,
+      quotationNumber: qtn.quotationNumber,
+      formattedDate: qtn.formattedDate,
+      thekedar: qtn.thekedar || initialData.thekedar,
+      thekedarCode: qtn.thekedarCode || initialData.thekedar?.thekedarCode || 'TK001',
+      customer: qtn.customer,
+      project: qtn.project,
+      items: qtn.items || [],
+      grandTotal: qtn.grandTotal || 0,
+      termsAndConditions: qtn.termsAndConditions || initialData.defaultTerms,
+    });
+    setPreviewModalOpen(true);
   };
 
   // Download PDF
@@ -573,17 +566,6 @@ export const QuotationsPage = () => {
 
               <div className="flex items-center gap-2">
                 <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="DRAFT">Draft</option>
-                  <option value="SENT">Sent</option>
-                  <option value="ACCEPTED">Accepted</option>
-                </select>
-
-                <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value)}
                   className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none"
@@ -647,17 +629,6 @@ export const QuotationsPage = () => {
                         <span className="font-mono text-xs sm:text-sm font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-md border border-amber-200 dark:border-amber-900/50">
                           {qtn.quotationNumber}
                         </span>
-                        <Badge
-                          variant={
-                            qtn.status === 'ACCEPTED'
-                              ? 'success'
-                              : qtn.status === 'SENT'
-                              ? 'info'
-                              : 'default'
-                          }
-                        >
-                          {qtn.status || 'DRAFT'}
-                        </Badge>
                         <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                           <Calendar className="h-3 w-3" />
                           <span>{qtn.formattedDate}</span>
@@ -697,50 +668,57 @@ export const QuotationsPage = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        {/* Preview */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePreviewQuotation(qtn)}
+                          className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
+                          title="Preview Quotation"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
+                          <span className="hidden sm:inline">Preview</span>
+                        </Button>
+
                         {/* Download PDF */}
                         <Button
                           variant="outline"
+                          size="sm"
                           onClick={() => handleDownloadPdf(qtn)}
                           disabled={pdfDownloadingId === qtn._id}
-                          className="p-2 sm:px-3 text-xs flex items-center gap-1.5 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                          className="border-amber-400/80 dark:border-amber-600/70 bg-amber-50/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-semibold"
                           title="Download PDF Document"
                         >
-                          <Download className="h-3.5 w-3.5" />
+                          <Download className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                           <span className="hidden sm:inline">PDF</span>
                         </Button>
 
                         {/* Edit */}
                         <Button
-                          variant="ghost"
+                          variant="outline"
+                          size="sm"
                           onClick={() => handleOpenEdit(qtn)}
-                          className="p-2 text-xs"
+                          className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
                           title="Edit Quotation"
                         >
                           <Edit className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
-                        </Button>
-
-                        {/* Duplicate */}
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleDuplicate(qtn)}
-                          className="p-2 text-xs"
-                          title="Duplicate with New Number and Today's Date"
-                        >
-                          <Copy className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
+                          <span className="hidden sm:inline">Edit</span>
                         </Button>
 
                         {/* Delete */}
                         <Button
-                          variant="ghost"
+                          variant="outline"
+                          size="sm"
                           onClick={() => {
                             setDeletingQuotation(qtn);
                             setDeleteModalOpen(true);
                           }}
-                          className="p-2 text-xs text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          className="border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
                           title="Delete Quotation"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                          <span className="hidden sm:inline">Delete</span>
                         </Button>
                       </div>
                     </div>
@@ -1076,36 +1054,37 @@ export const QuotationsPage = () => {
                         )}
                       </div>
 
-                      {/* Quantity */}
-                      <div className="md:col-span-2">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                          Qty <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          min="0.01"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleItemChange(index, 'quantity', e.target.value)
-                          }
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
-                        />
-                      </div>
+                      {/* Quantity & Unit in a SINGLE ROW */}
+                      <div className="md:col-span-4 grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                            Qty <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0.01"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              handleItemChange(index, 'quantity', e.target.value)
+                            }
+                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
+                          />
+                        </div>
 
-                      {/* Unit (ONLY SQ FEET or PCS) */}
-                      <div className="md:col-span-2">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                          Unit
-                        </label>
-                        <select
-                          value={item.unit}
-                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
-                        >
-                          <option value="SQ FEET">SQ FEET</option>
-                          <option value="PCS">PCS</option>
-                        </select>
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                            Unit
+                          </label>
+                          <select
+                            value={item.unit}
+                            onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
+                          >
+                            <option value="SQ FEET">SQ FEET</option>
+                            <option value="PCS">PCS</option>
+                          </select>
+                        </div>
                       </div>
 
                       {/* Rate */}
