@@ -215,5 +215,6 @@ describe('QuotationsPage Frontend Component Tests', () => {
     fireEvent.click(previewBtn);
     expect(await screen.findByText('Quotation Preview')).toBeInTheDocument();
     expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('DIGITALLY SIGNED')).toBeInTheDocument();
   });
 });

@@ -398,7 +398,7 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     termY += 13.5;
   });
 
-  // Right: Authorized Signature Box
+  // Right: Digitally Signed Box (No external signature required)
   const sigX = PAGE.margin + termsW + 16;
   const sigH = 80;
 
@@ -408,27 +408,51 @@ export const generateQuotationPdfBuffer = async (quotation) => {
 
   const businessName =
     quotation.thekedar?.businessName || quotation.thekedar?.name || 'Contractor';
-  text(doc, `For ${businessName}`, sigX + 10, bottomSectionY + 10, {
+  text(doc, `For ${businessName}`, sigX + 8, bottomSectionY + 8, {
     size: 8,
     font: 'Bold',
     color: COLOR.navy,
-    width: sigW - 20,
+    width: sigW - 16,
+    align: 'center',
     ellipsis: true,
   });
 
-  // Blank signature line
+  // Digital Signature Seal / Badge
+  const sealY = bottomSectionY + 22;
   doc
-    .moveTo(sigX + 12, bottomSectionY + 54)
-    .lineTo(sigX + sigW - 12, bottomSectionY + 54)
-    .lineWidth(0.8)
-    .strokeColor(COLOR.faint)
-    .stroke();
+    .roundedRect(sigX + 10, sealY, sigW - 20, 26, 4)
+    .fillAndStroke('#F0FDF4', '#86EFAC');
 
-  text(doc, 'Authorized Signature', sigX + 10, bottomSectionY + 60, {
+  text(doc, '✓ DIGITALLY SIGNED', sigX + 10, sealY + 4, {
     size: 7.5,
     font: 'Bold',
-    color: COLOR.muted,
+    color: '#15803D',
     width: sigW - 20,
+    align: 'center',
+    characterSpacing: 0.3,
+  });
+
+  text(doc, `Date: ${quotation.formattedDate}`, sigX + 10, sealY + 15, {
+    size: 6.5,
+    font: 'Regular',
+    color: '#166534',
+    width: sigW - 20,
+    align: 'center',
+  });
+
+  text(doc, 'Authorized Digital Signature', sigX + 6, bottomSectionY + 55, {
+    size: 6.5,
+    font: 'Bold',
+    color: '#15803D',
+    width: sigW - 12,
+    align: 'center',
+  });
+
+  text(doc, 'No physical signature required.', sigX + 6, bottomSectionY + 66, {
+    size: 5.5,
+    font: 'Regular',
+    color: COLOR.muted,
+    width: sigW - 12,
     align: 'center',
   });
 

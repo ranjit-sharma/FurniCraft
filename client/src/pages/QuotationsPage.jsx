@@ -981,25 +981,13 @@ export const QuotationsPage = () => {
 
           {/* SECTION D: DYNAMIC QUOTATION ITEMS */}
           <Card className="p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  D. Quotation Items
-                </h2>
-                <p className="text-[11px] text-slate-400">
-                  Add items with quantity, unit (SQ FEET or PCS), and rate.
-                </p>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddItem}
-                className="text-xs flex items-center gap-1.5 py-1.5 px-3"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add Item</span>
-              </Button>
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                D. Quotation Items
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                Add items with quantity, unit (SQ FEET or PCS), and rate.
+              </p>
             </div>
 
             <div className="space-y-3">
@@ -1117,6 +1105,19 @@ export const QuotationsPage = () => {
               })}
             </div>
 
+            {/* Add Item Button placed below items and above Grand Total on the right */}
+            <div className="flex justify-end pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddItem}
+                className="text-xs flex items-center gap-1.5 py-2 px-3.5 border-amber-400 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-bold shadow-xs"
+              >
+                <Plus className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <span>Add Item</span>
+              </Button>
+            </div>
+
             {/* SECTION E: GRAND TOTAL DISPLAY (ONLY ONE FINANCIAL ROW) */}
             <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-between">
               <div>
@@ -1203,27 +1204,42 @@ export const QuotationsPage = () => {
           title="Quotation Preview"
         >
           <div className="p-4 sm:p-6 bg-white dark:bg-slate-900 space-y-5 max-w-2xl mx-auto text-slate-900 dark:text-slate-100">
-            {/* Header */}
-            <div className="flex items-start justify-between border-b-2 border-amber-500 pb-3">
-              <div>
-                <span className="text-lg font-extrabold text-slate-900 dark:text-slate-100 block">
-                  FurniCraft
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Furniture workforce & site management
-                </span>
+            {/* Header matching exact PDF design */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                {/* Left: Logo + Company Name */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/furnicraft-logo.png"
+                    alt="FurniCraft Logo"
+                    className="h-10 w-10 sm:h-11 sm:w-11 object-contain rounded-lg shrink-0 shadow-xs"
+                  />
+                  <div>
+                    <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight block">
+                      FurniCraft
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium block">
+                      Furniture workforce & site management
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right: Quotation Title & Meta */}
+                <div className="text-right">
+                  <span className="text-base sm:text-lg font-black tracking-wider text-slate-900 dark:text-slate-100 uppercase block">
+                    QUOTATION
+                  </span>
+                  <span className="text-xs sm:text-sm font-mono font-bold text-amber-600 dark:text-amber-400 block">
+                    {previewData.quotationNumber}
+                  </span>
+                  <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block">
+                    Date: {previewData.formattedDate}
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-base font-extrabold text-slate-900 dark:text-slate-100 block">
-                  QUOTATION
-                </span>
-                <span className="text-xs font-bold text-amber-600 block">
-                  {previewData.quotationNumber}
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Date: {previewData.formattedDate}
-                </span>
-              </div>
+
+              {/* Orange Rule Bar matching PDF */}
+              <div className="h-1 bg-amber-600 rounded-full w-full" />
             </div>
 
             {/* 3 Info Cards in exact order */}
@@ -1234,7 +1250,7 @@ export const QuotationsPage = () => {
                   THEKEDAR
                 </span>
                 <span className="font-bold block truncate">
-                  {previewData.thekedar?.businessName || user?.name}
+                  {previewData.thekedar?.businessName || user?.businessName || user?.name}
                 </span>
                 <span className="text-[11px] text-slate-500 block">
                   {previewData.thekedar?.phone}
@@ -1271,25 +1287,34 @@ export const QuotationsPage = () => {
               </div>
             </div>
 
-            {/* Items Table */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
-              <div className="bg-slate-900 text-white text-[10px] font-bold grid grid-cols-12 px-3 py-2">
+            {/* Items Table matching PDF */}
+            <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-xs">
+              <div className="bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold grid grid-cols-12 px-3 py-2.5 items-center">
                 <span className="col-span-1 text-center">#</span>
-                <span className="col-span-5">PARTICULAR</span>
-                <span className="col-span-2 text-right">QTY</span>
+                <span className="col-span-4">PARTICULAR</span>
+                <span className="col-span-1 text-right">QTY</span>
                 <span className="col-span-2 text-center">UNIT</span>
+                <span className="col-span-2 text-right">RATE</span>
                 <span className="col-span-2 text-right">TOTAL</span>
               </div>
               <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
                 {previewData.items.map((it, idx) => (
-                  <div key={idx} className="grid grid-cols-12 px-3 py-2 items-center">
-                    <span className="col-span-1 text-center text-slate-400">{idx + 1}</span>
-                    <span className="col-span-5 font-medium">{it.particular}</span>
-                    <span className="col-span-2 text-right">{it.quantity}</span>
-                    <span className="col-span-2 text-center text-[10px] font-semibold text-slate-400">
+                  <div
+                    key={idx}
+                    className={`grid grid-cols-12 px-3 py-2.5 items-center ${
+                      idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'
+                    }`}
+                  >
+                    <span className="col-span-1 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</span>
+                    <span className="col-span-4 font-medium text-slate-900 dark:text-slate-100 break-words">{it.particular}</span>
+                    <span className="col-span-1 text-right text-slate-700 dark:text-slate-300 font-mono">{it.quantity}</span>
+                    <span className="col-span-2 text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                       {it.unit}
                     </span>
-                    <span className="col-span-2 text-right font-bold font-mono">
+                    <span className="col-span-2 text-right text-slate-700 dark:text-slate-300 font-mono">
+                      {inr(it.rate)}
+                    </span>
+                    <span className="col-span-2 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
                       {inr(it.total)}
                     </span>
                   </div>
@@ -1298,36 +1323,45 @@ export const QuotationsPage = () => {
             </div>
 
             {/* Grand Total */}
-            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-900 flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase text-amber-800 dark:text-amber-300">
+            <div className="p-3.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-900 flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase text-amber-800 dark:text-amber-300 tracking-wider">
                 GRAND TOTAL
               </span>
-              <span className="text-xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
+              <span className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
                 {inr(previewData.grandTotal)}
               </span>
             </div>
 
-            {/* Terms & Conditions & Signature */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-              <div>
+            {/* Terms & Conditions & Digital Signature */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs items-start">
+              <div className="sm:col-span-7">
                 <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 block mb-1">
                   Terms & Conditions
                 </span>
-                <ol className="space-y-1 list-decimal list-inside text-[10px] text-slate-500">
+                <ol className="space-y-1 list-decimal list-inside text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   {previewData.termsAndConditions.map((t, idx) => (
                     <li key={idx}>{t}</li>
                   ))}
                 </ol>
               </div>
 
-              <div className="flex flex-col justify-end text-right">
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                  For {previewData.thekedar?.businessName || user?.name}
-                </span>
-                <div className="my-3 border-b border-slate-300 dark:border-slate-700 w-32 ml-auto" />
-                <span className="text-[10px] font-semibold text-slate-400">
-                  Authorized Signature
-                </span>
+              {/* Digital Signature Block */}
+              <div className="sm:col-span-5 flex flex-col justify-end">
+                <div className="p-3 rounded-xl border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/60 dark:bg-emerald-950/30 text-center space-y-1.5 shadow-xs">
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block truncate">
+                    For {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
+                  </span>
+                  <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-bold text-[10px] sm:text-[11px]">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>DIGITALLY SIGNED</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span>Date: {previewData.formattedDate}</span>
+                  </div>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 block pt-1 border-t border-emerald-200/60 dark:border-emerald-900/40">
+                    Digitally generated. No signature required.
+                  </span>
+                </div>
               </div>
             </div>
 
