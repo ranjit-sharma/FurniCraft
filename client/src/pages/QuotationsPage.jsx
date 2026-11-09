@@ -1199,7 +1199,7 @@ export const QuotationsPage = () => {
             </div>
 
             {/* Terms & Conditions & Digital Signature */}
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs items-stretch">
               <div className="sm:col-span-7">
                 <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 block mb-1">
                   Terms & Conditions
@@ -1211,8 +1211,8 @@ export const QuotationsPage = () => {
                 </ol>
               </div>
 
-              {/* Thekedar Signature (Right side, no box, no pill tag) */}
-              <div className="sm:col-span-5 flex flex-col justify-end text-center sm:text-right space-y-0.5">
+              {/* Thekedar Signature (Right side, aligned with lower line of Terms & Conditions) */}
+              <div className="sm:col-span-5 flex flex-col justify-end text-center sm:text-right space-y-0.5 h-full self-end">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block truncate">
                   {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
                 </span>

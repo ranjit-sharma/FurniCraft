@@ -393,13 +393,19 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     termY += 13.5;
   });
 
-  // Right: Thekedar Digital Signature (Right side, no box, no pill tag)
+  // Right: Thekedar Digital Signature (Right side, aligned with lower line of Terms & Conditions)
   const sigX = PAGE.margin + termsW + 16;
   const sigH = 52;
   const thekedarName =
     quotation.thekedar?.businessName || quotation.thekedar?.name || 'Contractor';
 
-  drawThekedarDigitalSignature(doc, sigX, bottomSectionY, sigW, sigH, {
+  // Bottom line of Terms: lastTermY is at bottomSectionY + 14 + (terms.length - 1) * 13.5
+  // Line 4 ("No physical signature required.") is drawn at sigY + 38.
+  // Aligning Line 4 with the lower line of Terms & Conditions:
+  const lastTermY = bottomSectionY + 14 + (terms.length - 1) * 13.5;
+  const sigY = lastTermY - 38;
+
+  drawThekedarDigitalSignature(doc, sigX, sigY, sigW, sigH, {
     name: thekedarName,
     date: quotation.formattedDate,
   });
