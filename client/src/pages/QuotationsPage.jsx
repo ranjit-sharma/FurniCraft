@@ -113,15 +113,16 @@ export const QuotationsPage = () => {
     const fetchInitial = async () => {
       try {
         const res = await api.get('/quotations/initial-data');
-        if (res.data?.data) {
-          setInitialData(res.data.data);
+        const payload = res?.data?.thekedar ? res.data : (res?.data?.data || res?.data || res);
+        if (payload?.thekedar || payload?.currentDate) {
+          setInitialData(payload);
           setFormData((prev) => ({
             ...prev,
-            formattedDate: res.data.data.currentDate || '',
-            termsAndConditions: res.data.data.defaultTerms || [],
+            formattedDate: payload.currentDate || prev.formattedDate,
+            termsAndConditions: payload.defaultTerms || prev.termsAndConditions,
             thekedar: {
-              businessName: res.data.data.thekedar.businessName || prev.thekedar.businessName,
-              phone: res.data.data.thekedar.phone || prev.thekedar.phone,
+              businessName: payload.thekedar?.businessName || prev.thekedar.businessName,
+              phone: payload.thekedar?.phone || prev.thekedar.phone,
             },
           }));
         }
@@ -147,10 +148,11 @@ export const QuotationsPage = () => {
           sortOrder,
         },
       });
-      if (res.data?.data) {
-        setQuotations(res.data.data.quotations || []);
-        if (res.data.data.pagination) {
-          setPagination(res.data.data.pagination);
+      const payload = res?.data?.quotations ? res.data : (res?.data?.data || res?.data || res);
+      if (payload) {
+        setQuotations(payload.quotations || []);
+        if (payload.pagination) {
+          setPagination(payload.pagination);
         }
       }
     } catch (err) {
@@ -255,10 +257,11 @@ export const QuotationsPage = () => {
     try {
       setBanner(null);
       const res = await api.post(`/quotations/${qtn._id}/duplicate`);
-      if (res.data?.data?.quotation) {
+      const dup = res?.data?.data?.quotation || res?.data?.quotation || res?.quotation;
+      if (dup) {
         setBanner({
           type: 'success',
-          text: `Quotation duplicated as ${res.data.data.quotation.quotationNumber} with today's date!`,
+          text: `Quotation duplicated as ${dup.quotationNumber} with today's date!`,
         });
         fetchQuotations(1);
       }
@@ -272,19 +275,51 @@ export const QuotationsPage = () => {
 
   // Download PDF
   const handleDownloadPdf = async (qtn) => {
-    setPdfDownloadingId(qtn._id);
+    if (!qtn) return;
+    const qtnId = qtn._id || qtn.id;
+    if (!qtnId) return;
+
+    setPdfDownloadingId(qtnId);
     try {
-      const res = await api.get(`/quotations/${qtn._id}/pdf`, { responseType: 'blob' });
-      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const res = await api.get(`/quotations/${qtnId}/pdf`, { responseType: 'blob' });
+      const blob =
+        res instanceof Blob
+          ? res
+          : res?.data instanceof Blob
+          ? res.data
+          : new Blob([res?.data || res], { type: 'application/pdf' });
+
+      // If server returned a JSON error wrapped in a blob
+      if (blob.type === 'application/json' || (blob.size < 400 && blob.type !== 'application/pdf')) {
+        const text = await blob.text();
+        try {
+          const jsonErr = JSON.parse(text);
+          throw new Error(jsonErr.message || 'Failed to download PDF document');
+        } catch (e) {
+          if (e.message !== 'Failed to download PDF document') throw e;
+        }
+      }
+
+      const fileName = `${qtn.quotationNumber || 'FurniCraft-Quotation'}.pdf`;
       const downloadUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = downloadUrl;
-      a.download = `${qtn.quotationNumber}.pdf`;
+      a.download = fileName;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       document.body.appendChild(a);
       a.click();
-      a.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      setTimeout(() => {
+        a.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+      }, 500);
+
+      setBanner({
+        type: 'success',
+        text: `Quotation PDF downloaded successfully (${fileName}).`,
+      });
     } catch (err) {
+      console.error('PDF download error:', err);
       setBanner({
         type: 'error',
         text: err.message || 'Failed to download PDF document',
@@ -397,17 +432,17 @@ export const QuotationsPage = () => {
       let savedQuotation = null;
       if (editingId) {
         const res = await api.put(`/quotations/${editingId}`, payload);
-        savedQuotation = res.data?.data?.quotation;
+        savedQuotation = res?.data?.data?.quotation || res?.data?.quotation || res?.quotation;
         setBanner({
           type: 'success',
-          text: `Quotation ${savedQuotation.quotationNumber} updated successfully.`,
+          text: `Quotation ${savedQuotation?.quotationNumber || ''} updated successfully.`,
         });
       } else {
         const res = await api.post('/quotations', payload);
-        savedQuotation = res.data?.data?.quotation;
+        savedQuotation = res?.data?.data?.quotation || res?.data?.quotation || res?.quotation;
         setBanner({
           type: 'success',
-          text: `Quotation ${savedQuotation.quotationNumber} created successfully!`,
+          text: `Quotation ${savedQuotation?.quotationNumber || ''} created successfully!`,
         });
       }
 
@@ -418,6 +453,7 @@ export const QuotationsPage = () => {
       setView('list');
       fetchQuotations(1);
     } catch (err) {
+      console.error('Save quotation error:', err);
       setBanner({
         type: 'error',
         text: err.message || 'Failed to save quotation',

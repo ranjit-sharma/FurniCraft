@@ -42,6 +42,7 @@ export const listQuotations = async (req, res, next) => {
 
     const result = await quotationService.listQuotations({
       thekedarId: req.user._id,
+      userRole: req.user.role,
       page,
       limit,
       search,
@@ -66,6 +67,7 @@ export const getQuotationById = async (req, res, next) => {
     const quotation = await quotationService.getQuotationById({
       quotationId: req.params.id,
       thekedarId: req.user._id,
+      userRole: req.user.role,
     });
 
     res.status(200).json({
@@ -82,6 +84,7 @@ export const updateQuotation = async (req, res, next) => {
     const quotation = await quotationService.updateQuotation({
       quotationId: req.params.id,
       thekedarId: req.user._id,
+      userRole: req.user.role,
       data: req.body,
       thekedarUser: req.user,
     });
@@ -116,6 +119,7 @@ export const duplicateQuotation = async (req, res, next) => {
     const quotation = await quotationService.duplicateQuotation({
       quotationId: req.params.id,
       thekedarUser: req.user,
+      userRole: req.user.role,
     });
 
     await recordAuditLog({
@@ -148,6 +152,7 @@ export const deleteQuotation = async (req, res, next) => {
     const result = await quotationService.deleteQuotation({
       quotationId: req.params.id,
       thekedarId: req.user._id,
+      userRole: req.user.role,
     });
 
     await recordAuditLog({
@@ -174,6 +179,7 @@ export const downloadQuotationPdf = async (req, res, next) => {
     const quotation = await quotationService.getQuotationById({
       quotationId: req.params.id,
       thekedarId: req.user._id,
+      userRole: req.user.role,
     });
 
     const pdfBuffer = await generateQuotationPdfBuffer(quotation);

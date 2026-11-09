@@ -32,15 +32,15 @@ export const ensureThekedarCode = async (thekedarUser) => {
   }
 
   return withDuplicateRetry(async () => {
-    // Find all thekedars that have a code to determine highest numeric value
-    const thekedars = await User.find(
-      { role: 'THEKEDAR', thekedarCode: { $exists: true, $ne: null } },
+    // Find all users that have a code to determine highest numeric value
+    const usersWithCode = await User.find(
+      { thekedarCode: { $exists: true, $ne: null } },
       'thekedarCode'
     ).lean();
 
     let maxNum = 0;
     const regex = /^TK(\d+)$/i;
-    for (const t of thekedars) {
+    for (const t of usersWithCode) {
       if (t.thekedarCode) {
         const match = t.thekedarCode.match(regex);
         if (match) {
@@ -52,7 +52,7 @@ export const ensureThekedarCode = async (thekedarUser) => {
       }
     }
 
-    let nextNum = Math.max(maxNum + 1, thekedars.length + 1);
+    let nextNum = Math.max(maxNum + 1, usersWithCode.length + 1);
     let candidate = `TK${String(nextNum).padStart(3, '0')}`;
 
     while (await User.exists({ thekedarCode: candidate })) {
@@ -157,7 +157,7 @@ export const calculateQuotationTotals = (items) => {
 };
 
 /**
- * Create a new quotation for an authenticated Thekedar.
+ * Create a new quotation for an authenticated Thekedar or Owner.
  */
 export const createQuotation = async ({ thekedarUser, data }) => {
   const thekedarCode = await ensureThekedarCode(thekedarUser);
@@ -200,11 +200,12 @@ export const createQuotation = async ({ thekedarUser, data }) => {
 };
 
 /**
- * List quotations for the authenticated Thekedar with search, filtering, and pagination.
- * Complete tenant isolation: queries are strictly scoped by thekedarId.
+ * List quotations with search, filtering, and pagination.
+ * If userRole is OWNER, shows all quotations; otherwise strictly scoped to thekedarId.
  */
 export const listQuotations = async ({
   thekedarId,
+  userRole,
   page = 1,
   limit = 20,
   search = '',
@@ -214,7 +215,7 @@ export const listQuotations = async ({
   endDate,
   status,
 }) => {
-  const filter = { thekedarId };
+  const filter = userRole === 'OWNER' ? {} : { thekedarId };
 
   if (search && search.trim()) {
     const s = search.trim();
@@ -273,8 +274,9 @@ export const listQuotations = async ({
  * Get a single quotation by ID.
  * Strict privacy: returns generic 404 if not found or owned by another Thekedar.
  */
-export const getQuotationById = async ({ quotationId, thekedarId }) => {
-  const quotation = await Quotation.findOne({ _id: quotationId, thekedarId });
+export const getQuotationById = async ({ quotationId, thekedarId, userRole }) => {
+  const query = userRole === 'OWNER' ? { _id: quotationId } : { _id: quotationId, thekedarId };
+  const quotation = await Quotation.findOne(query);
   if (!quotation) {
     throw new NotFoundError('Quotation not found');
   }
@@ -287,8 +289,9 @@ export const getQuotationById = async ({ quotationId, thekedarId }) => {
  * Recalculates items and grandTotal.
  * Strict privacy: returns 404 if not owned.
  */
-export const updateQuotation = async ({ quotationId, thekedarId, data, thekedarUser }) => {
-  const quotation = await Quotation.findOne({ _id: quotationId, thekedarId });
+export const updateQuotation = async ({ quotationId, thekedarId, userRole, data, thekedarUser }) => {
+  const query = userRole === 'OWNER' ? { _id: quotationId } : { _id: quotationId, thekedarId };
+  const quotation = await Quotation.findOne(query);
   if (!quotation) {
     throw new NotFoundError('Quotation not found');
   }
@@ -339,8 +342,9 @@ export const updateQuotation = async ({ quotationId, thekedarId, data, thekedarU
  * Generates a brand new unique quotationNumber and uses current server date.
  * Strict privacy: returns 404 if source quotation not owned.
  */
-export const duplicateQuotation = async ({ quotationId, thekedarUser }) => {
-  const source = await Quotation.findOne({ _id: quotationId, thekedarId: thekedarUser._id });
+export const duplicateQuotation = async ({ quotationId, thekedarUser, userRole }) => {
+  const query = userRole === 'OWNER' ? { _id: quotationId } : { _id: quotationId, thekedarId: thekedarUser._id };
+  const source = await Quotation.findOne(query);
   if (!source) {
     throw new NotFoundError('Quotation not found');
   }
@@ -390,8 +394,9 @@ export const duplicateQuotation = async ({ quotationId, thekedarUser }) => {
  * Does NOT reset or decrement sequence counter. Number is retired permanently.
  * Strict privacy: returns 404 if not owned.
  */
-export const deleteQuotation = async ({ quotationId, thekedarId }) => {
-  const deleted = await Quotation.findOneAndDelete({ _id: quotationId, thekedarId });
+export const deleteQuotation = async ({ quotationId, thekedarId, userRole }) => {
+  const query = userRole === 'OWNER' ? { _id: quotationId } : { _id: quotationId, thekedarId };
+  const deleted = await Quotation.findOneAndDelete(query);
   if (!deleted) {
     throw new NotFoundError('Quotation not found');
   }

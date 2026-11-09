@@ -131,7 +131,7 @@ export const App = () => {
                 <Route
                   path="quotations"
                   element={
-                    <ProtectedRoute allowedRoles={['THEKEDAR']}>
+                    <ProtectedRoute allowedRoles={['OWNER', 'THEKEDAR']}>
                       <QuotationsPage />
                     </ProtectedRoute>
                   }

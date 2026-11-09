@@ -7,9 +7,9 @@ import { ROLES } from '../config/constants.js';
 
 const router = Router();
 
-// Strictly authenticate and authorize: ONLY authenticated Thekedars can access quotation management
+// Strictly authenticate: Both Thekedars and Owners can manage quotations; Workers are strictly 403 Forbidden
 router.use(requireAuthentication);
-router.use(requireRole(ROLES.THEKEDAR));
+router.use(requireRole(ROLES.OWNER, ROLES.THEKEDAR));
 
 router.get('/initial-data', quotationController.getQuotationInitialData);
 router.post('/', validate(createQuotationSchema), quotationController.createQuotation);
