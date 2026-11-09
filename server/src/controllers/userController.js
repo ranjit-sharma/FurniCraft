@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import {
   User,
   WorkerProfile,
@@ -192,11 +193,17 @@ export const getWorkerProfile = async (req, res, next) => {
   try {
     const rawTargetId = req.params.userId || req.user._id;
 
+    if (!rawTargetId || !mongoose.Types.ObjectId.isValid(rawTargetId)) {
+      throw new NotFoundError('Worker profile not found or invalid worker ID');
+    }
+
+    const targetObjectId = new mongoose.Types.ObjectId(rawTargetId);
+
     // Find profile by either userId or profile _id
     const profile = await WorkerProfile.findOne({
       $or: [
-        { userId: rawTargetId },
-        ...(mongoose.Types.ObjectId.isValid(rawTargetId) ? [{ _id: rawTargetId }] : []),
+        { userId: targetObjectId },
+        { _id: targetObjectId },
       ],
     })
       .populate('userId', 'name email phone status')
@@ -325,8 +332,16 @@ export const updateWorkerWage = async (req, res, next) => {
       throw new BadRequestError('Valid daily wage is required');
     }
 
-    const profile = await WorkerProfile.findOne({ userId: targetUserId });
+    if (!targetUserId || !mongoose.Types.ObjectId.isValid(targetUserId)) {
+      throw new NotFoundError('Worker profile not found');
+    }
+
+    const targetObjectId = new mongoose.Types.ObjectId(targetUserId);
+    const profile = await WorkerProfile.findOne({
+      $or: [{ userId: targetObjectId }, { _id: targetObjectId }],
+    });
     if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
+    const actualWorkerUserId = profile.userId?._id || profile.userId;
 
     // Strict Scope: Thekedar can ONLY view worker profiles under their direct management
     if (req.user.role === ROLES.THEKEDAR) {
@@ -346,7 +361,7 @@ export const updateWorkerWage = async (req, res, next) => {
 
     // Create a new WageAgreement version
     const wageAgreement = await WageAgreement.create({
-      workerId: targetUserId,
+      workerId: actualWorkerUserId,
       thekedarId: req.user._id,
       dailyWage,
       effectiveFrom: new Date(),
@@ -356,7 +371,7 @@ export const updateWorkerWage = async (req, res, next) => {
 
     // Synchronize active project assignments to clear any stale overrides
     await ProjectAssignment.updateMany(
-      { workerId: targetUserId, status: 'ACTIVE' },
+      { workerId: actualWorkerUserId, status: 'ACTIVE' },
       { $set: { wageOverride: null } }
     );
 
@@ -433,7 +448,13 @@ export const updateUserStatus = async (req, res, next) => {
       throw new BadRequestError('Invalid user status');
     }
 
-    const user = await User.findById(userId);
+    let user = await User.findById(userId);
+    if (!user && mongoose.Types.ObjectId.isValid(userId)) {
+      const profile = await WorkerProfile.findById(userId);
+      if (profile?.userId) {
+        user = await User.findById(profile.userId);
+      }
+    }
     if (!user) throw new NotFoundError('User not found');
 
     // STRICT ROLE ACCESS CONTROL:
@@ -447,7 +468,7 @@ export const updateUserStatus = async (req, res, next) => {
       if (user.role !== ROLES.WORKER) {
         throw new ForbiddenError('Thekedars can only manage Worker accounts');
       }
-      const profile = await WorkerProfile.findOne({ userId });
+      const profile = await WorkerProfile.findOne({ userId: user._id });
       if (!profile || profile.thekedarId.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('You can only manage status for workers under your direct supervision');
       }
@@ -487,7 +508,13 @@ export const updateUserStatus = async (req, res, next) => {
 export const toggleWorkerLeave = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const profile = await WorkerProfile.findOne({ userId });
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new NotFoundError('Worker profile not found');
+    }
+    const targetObjectId = new mongoose.Types.ObjectId(userId);
+    const profile = await WorkerProfile.findOne({
+      $or: [{ userId: targetObjectId }, { _id: targetObjectId }],
+    });
     if (!profile) {
       throw new NotFoundError('Worker profile not found');
     }
@@ -576,12 +603,20 @@ export const deleteWorker = async (req, res, next) => {
   try {
     const { userId } = req.params;
 
-    const workerUser = await User.findById(userId);
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new NotFoundError('Worker not found');
+    }
+    const targetObjectId = new mongoose.Types.ObjectId(userId);
+
+    const profile = await WorkerProfile.findOne({
+      $or: [{ userId: targetObjectId }, { _id: targetObjectId }],
+    });
+
+    const actualWorkerUserId = profile?.userId?._id || profile?.userId || targetObjectId;
+    const workerUser = await User.findById(actualWorkerUserId);
     if (!workerUser || workerUser.role !== ROLES.WORKER) {
       throw new NotFoundError('Worker not found');
     }
-
-    const profile = await WorkerProfile.findOne({ userId });
 
     if (req.user.role === ROLES.THEKEDAR) {
       if (profile && profile.thekedarId.toString() !== req.user._id.toString()) {
@@ -624,7 +659,7 @@ export const deleteWorker = async (req, res, next) => {
 
     // Unassign from active projects
     await ProjectAssignment.updateMany(
-      { workerId: userId, status: 'ACTIVE' },
+      { workerId: workerUser._id, status: 'ACTIVE' },
       { status: 'REMOVED', endDate: new Date(), notes: 'Worker deleted from workforce' }
     );
 
@@ -634,7 +669,7 @@ export const deleteWorker = async (req, res, next) => {
       : null;
 
     await FinancialTransaction.updateMany(
-      { workerId: userId },
+      { workerId: workerUser._id },
       {
         $set: {
           workerName: workerUser.name,
@@ -649,15 +684,15 @@ export const deleteWorker = async (req, res, next) => {
 
     // Delete WorkerProfile and User
     if (profile) {
-      await WorkerProfile.deleteOne({ userId });
+      await WorkerProfile.deleteOne({ _id: profile._id });
     }
-    await User.findByIdAndDelete(userId);
+    await User.findByIdAndDelete(workerUser._id);
 
     await recordAuditLog({
       req,
       action: 'WORKER_DELETED',
       targetType: 'User',
-      targetId: userId,
+      targetId: workerUser._id,
       oldValues: {
         name: workerUser.name,
         email: workerUser.email,
@@ -836,13 +871,21 @@ export const updateWorker = async (req, res, next) => {
       bankDetails,
     } = req.body;
 
-    const workerUser = await User.findById(userId);
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new NotFoundError('Worker not found');
+    }
+    const targetObjectId = new mongoose.Types.ObjectId(userId);
+
+    const profile = await WorkerProfile.findOne({
+      $or: [{ userId: targetObjectId }, { _id: targetObjectId }],
+    });
+    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
+
+    const actualWorkerUserId = profile.userId?._id || profile.userId;
+    const workerUser = await User.findById(actualWorkerUserId);
     if (!workerUser || workerUser.role !== ROLES.WORKER) {
       throw new NotFoundError('Worker not found');
     }
-
-    const profile = await WorkerProfile.findOne({ userId });
-    if (!profile || !profile.userId) throw new NotFoundError('Worker profile not found');
 
     // Strict Scope: Thekedar can ONLY edit their own workers
     if (req.user.role === ROLES.THEKEDAR) {
