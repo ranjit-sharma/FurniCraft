@@ -70,11 +70,8 @@ export const BottomNav = () => {
             </NavLink>
           ))}
           {/* Quick Language Preference in Mobile Bottom Sheet */}
-          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 px-1">
-              {t('common.language', 'Language')}
-            </span>
-            <LanguageSelector variant="buttons" />
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-center">
+            <LanguageSelector variant="pill" />
           </div>
         </div>
       </Modal>

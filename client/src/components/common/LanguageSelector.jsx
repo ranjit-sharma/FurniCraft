@@ -8,12 +8,12 @@ export const LanguageSelector = ({ variant = 'pill', className = '' }) => {
   if (variant === 'pill') {
     return (
       <div
-        className={`inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs ${className}`}
+        className={`inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 p-1 border border-slate-200 dark:border-slate-700/80 shadow-2xs ${className}`}
         role="group"
         aria-label="Language Selector"
       >
-        <div className="flex items-center gap-1 px-1.5 py-1 text-slate-400 dark:text-slate-500">
-          <Globe className="h-3.5 w-3.5" />
+        <div className="flex items-center pl-2 pr-1 text-slate-400 dark:text-slate-500 shrink-0">
+          <Globe className="h-4 w-4" />
         </div>
         {availableLanguages.map((lang) => {
           const isActive = language === lang.code;
@@ -22,16 +22,15 @@ export const LanguageSelector = ({ variant = 'pill', className = '' }) => {
               key={lang.code}
               type="button"
               onClick={() => changeLanguage(lang.code)}
-              className={`px-2 sm:px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer whitespace-nowrap ${
                 isActive
                   ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
               }`}
               title={lang.label}
               aria-pressed={isActive}
             >
-              <span className="hidden sm:inline">{lang.nativeLabel}</span>
-              <span className="sm:hidden">{lang.icon || lang.nativeLabel}</span>
+              <span>{lang.nativeLabel}</span>
             </button>
           );
         })}

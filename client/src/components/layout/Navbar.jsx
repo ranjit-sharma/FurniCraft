@@ -114,12 +114,9 @@ export const Navbar = () => {
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
         </LogoLink>
 
-        {/* Right: Language Switcher & Profile Icon Toggler */}
+        {/* Right: Profile Icon Toggler */}
         {user && (
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick 1-click Language Switcher visible across all pages */}
-            <LanguageSelector variant="pill" />
-
             <div className="relative" ref={profileRef}>
               {/* Round Profile Toggler Button */}
               <button
@@ -191,18 +188,10 @@ export const Navbar = () => {
                   </span>
                 </div>
 
-                {/* Language Preference Section */}
-                <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                      <Globe className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                      {t('profile.preferredLanguage', 'Language Preference')}
-                    </span>
-                    <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 px-1.5 py-0.5 rounded uppercase">
-                      {language}
-                    </span>
-                  </div>
-                  <LanguageSelector variant="buttons" />
+                {/* Language Switcher Pill in Profile Section */}
+                <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-700/70 flex justify-center">
+                  <span className="sr-only">Language Preference</span>
+                  <LanguageSelector variant="pill" />
                 </div>
               </div>
 
