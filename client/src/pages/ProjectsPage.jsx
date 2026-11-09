@@ -566,13 +566,13 @@ export const ProjectsPage = () => {
                 onChange={(e) => setProjectType(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 p-2 text-sm"
               >
-                <option value="MODULAR_KITCHEN">Modular Kitchen</option>
-                <option value="WARDROBE_SLIDING">Wardrobe & Sliding Door</option>
-                <option value="TV_UNIT_PANEL">TV Unit & Panel</option>
-                <option value="BED_HEADBOARD">Bed & Headboard</option>
-                <option value="OFFICE_WORKSTATION">Office Workstations</option>
-                <option value="CABINET_STORAGE">Cabinets & Storage</option>
-                <option value="CUSTOM_FURNITURE">Custom Furniture</option>
+                <option value="MODULAR_KITCHEN">{t('projects.typeKitchen', 'Modular Kitchen')}</option>
+                <option value="WARDROBE_SLIDING">{t('projects.typeWardrobe', 'Wardrobe & Sliding Door')}</option>
+                <option value="TV_UNIT_PANEL">{t('projects.typeTvUnit', 'TV Unit & Panel')}</option>
+                <option value="BED_HEADBOARD">{t('projects.typeBed', 'Bed & Headboard')}</option>
+                <option value="OFFICE_WORKSTATION">{t('projects.typeOffice', 'Office Workstations')}</option>
+                <option value="CABINET_STORAGE">{t('projects.typeCabinet', 'Cabinets & Storage')}</option>
+                <option value="CUSTOM_FURNITURE">{t('projects.typeCustom', 'Custom Furniture')}</option>
               </select>
             </div>
 
@@ -583,10 +583,10 @@ export const ProjectsPage = () => {
                 onChange={(e) => setPriority(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2 text-sm font-bold text-slate-900 dark:text-white focus:border-amber-500 focus:outline-none"
               >
-                <option value="CRITICAL">🔥 CRITICAL</option>
-                <option value="HIGH">⚡ HIGH</option>
-                <option value="MEDIUM">🔷 MEDIUM</option>
-                <option value="LOW">🟢 LOW</option>
+                <option value="CRITICAL">{t('projects.priorityCritical', '🔥 CRITICAL')}</option>
+                <option value="HIGH">{t('projects.priorityHigh', '⚡ HIGH')}</option>
+                <option value="MEDIUM">{t('projects.priorityMedium', '🔷 MEDIUM')}</option>
+                <option value="LOW">{t('projects.priorityLow', '🟢 LOW')}</option>
               </select>
             </div>
           </div>

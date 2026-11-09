@@ -463,23 +463,23 @@ export const QuotationsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-amber-800 dark:text-amber-400">
-            <span>Thekedar Dashboard</span>
+            <span>{t('quotations.breadcrumbDashboard', 'Thekedar Dashboard')}</span>
             <span>/</span>
-            <span>Profile</span>
+            <span>{t('quotations.breadcrumbProfile', 'Profile')}</span>
             <span>/</span>
-            <span className="text-slate-900 dark:text-slate-100">Quotations</span>
+            <span className="text-slate-900 dark:text-slate-100">{t('quotations.breadcrumbQuotations', 'Quotations')}</span>
           </div>
           <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
             {view === 'form'
               ? editingId
-                ? 'Edit Furniture Quotation'
-                : 'Create New Quotation'
-              : 'Quotations Management'}
+                ? t('quotations.editExistingQuotation', 'Edit Furniture Quotation')
+                : t('quotations.createNewQuotation', 'Create New Quotation')
+              : t('quotations.title', 'Quotations Management')}
           </h1>
           <p className="mt-0.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             {view === 'form'
-              ? 'Fill in customer details and items. Prices calculate automatically.'
-              : 'Create, review, print, and manage professional client quotations.'}
+              ? t('quotations.formSubtitle', 'Fill in customer details and items. Prices calculate automatically.')
+              : t('quotations.subtitle', 'Create, track, and download official PDF quotations for your customers.')}
           </p>
         </div>
 
@@ -490,7 +490,7 @@ export const QuotationsPage = () => {
             className="flex items-center gap-2 w-full sm:w-auto justify-center shadow-lg shadow-amber-500/20"
           >
             <Plus className="h-4 w-4" />
-            <span>Create Quotation</span>
+            <span>{t('quotations.createQuotation', 'Create Quotation')}</span>
           </Button>
         ) : (
           <Button
@@ -499,7 +499,7 @@ export const QuotationsPage = () => {
             className="flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to History</span>
+            <span>{t('quotations.backToHistory', 'Back to History')}</span>
           </Button>
         )}
       </div>
@@ -525,7 +525,7 @@ export const QuotationsPage = () => {
             onClick={() => setBanner(null)}
             className="text-xs font-bold underline opacity-80 hover:opacity-100"
           >
-            Dismiss
+            {t('common.dismiss', 'Dismiss')}
           </button>
         </div>
       )}
@@ -551,10 +551,10 @@ export const QuotationsPage = () => {
                 <FileText className="h-7 w-7" />
               </div>
               <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-slate-100">
-                No quotations found
+                {t('quotations.noQuotationsYet', 'No quotations found')}
               </h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                You have not created any quotations yet. Create your first quotation to send to customers.
+                {t('quotations.noQuotationsDesc', 'Create your first quotation for client work and download branded PDF.')}
               </p>
               <Button
                 variant="primary"
@@ -562,7 +562,7 @@ export const QuotationsPage = () => {
                 className="mt-5 inline-flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
-                <span>Create Your First Quotation</span>
+                <span>{t('quotations.createFirstQuotation', 'Create Your First Quotation')}</span>
               </Button>
             </Card>
           ) : (
@@ -599,7 +599,7 @@ export const QuotationsPage = () => {
                       </div>
 
                       <div className="text-xs text-slate-400">
-                        <span>Items: {qtn.items?.length || 0}</span>
+                        <span>{t('quotations.itemsCount', `Items: ${qtn.items?.length || 0}`, { count: qtn.items?.length || 0 })}</span>
                       </div>
                     </div>
 
@@ -607,7 +607,7 @@ export const QuotationsPage = () => {
                     <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 dark:border-slate-800">
                       <div className="text-left lg:text-right">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                          Grand Total
+                          {t('quotations.grandTotal', 'Grand Total')}
                         </span>
                         <span className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
                           {inr(qtn.grandTotal)}
@@ -625,10 +625,10 @@ export const QuotationsPage = () => {
                           }}
                           disabled={pdfDownloadingId === qtn._id}
                           className="border-amber-400/80 dark:border-amber-600/70 bg-amber-50/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-semibold"
-                          title="Download PDF Document"
+                          title={t('quotations.downloadPdf', 'Download PDF Document')}
                         >
                           <Download className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                          <span className="hidden sm:inline">PDF</span>
+                          <span className="hidden sm:inline">{t('common.exportPdf', 'PDF')}</span>
                         </Button>
 
                         {/* Edit */}
@@ -640,10 +640,10 @@ export const QuotationsPage = () => {
                             handleOpenEdit(qtn);
                           }}
                           className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
-                          title="Edit Quotation"
+                          title={t('quotations.editQuotation', 'Edit Quotation')}
                         >
                           <Edit className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
-                          <span className="hidden sm:inline">Edit</span>
+                          <span className="hidden sm:inline">{t('common.edit', 'Edit')}</span>
                         </Button>
                       </div>
                     </div>
@@ -667,7 +667,7 @@ export const QuotationsPage = () => {
                       }
                       className="text-xs px-3 py-1.5"
                     >
-                      Previous
+                      {t('common.prev', 'Previous')}
                     </Button>
                     <Button
                       variant="outline"
@@ -677,7 +677,7 @@ export const QuotationsPage = () => {
                       }
                       className="text-xs px-3 py-1.5"
                     >
-                      Next
+                      {t('common.next', 'Next')}
                     </Button>
                   </div>
                 </div>
@@ -698,10 +698,10 @@ export const QuotationsPage = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  Customer Information
+                  {t('quotations.customerInfo', 'Customer Information')}
                 </h2>
                 <p className="text-[11px] text-slate-400">
-                  Enter client details. Customer name is required.
+                  {t('quotations.customerInfoDesc', 'Enter client details. Customer name is required.')}
                 </p>
               </div>
             </div>
@@ -709,7 +709,7 @@ export const QuotationsPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="customerName" className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Customer Name <span className="text-rose-500">*</span>
+                  {t('quotations.customerName', 'Customer Name')} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="customerName"
@@ -721,7 +721,7 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, name: e.target.value },
                     }))
                   }
-                  placeholder="Enter customer name"
+                  placeholder={t('quotations.customerNamePlaceholder', 'Enter customer name')}
                   className={`w-full rounded-xl border px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none ${
                     formErrors.customerName
                       ? 'border-rose-400 bg-rose-50/20'
@@ -737,7 +737,7 @@ export const QuotationsPage = () => {
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Customer Phone Number (Optional)
+                  {t('quotations.customerPhone', 'Customer Phone Number (Optional)')}
                 </label>
                 <input
                   type="text"
@@ -748,14 +748,14 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, phone: e.target.value },
                     }))
                   }
-                  placeholder="Enter phone number"
+                  placeholder={t('quotations.customerPhonePlaceholder', 'Enter phone number')}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                 />
               </div>
 
               <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Customer Site Address (Optional)
+                  {t('quotations.customerAddress', 'Customer Site Address (Optional)')}
                 </label>
                 <input
                   type="text"
@@ -766,7 +766,7 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, address: e.target.value },
                     }))
                   }
-                  placeholder="Enter site address or location"
+                  placeholder={t('quotations.customerAddressPlaceholder', 'Enter site address or location')}
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                 />
               </div>
@@ -777,10 +777,10 @@ export const QuotationsPage = () => {
           <Card className="p-5 space-y-4">
             <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                Quotation Items
+                {t('quotations.items', 'Quotation Items')}
               </h2>
               <p className="text-[11px] text-slate-400">
-                Add items with quantity, unit (SQF or PCS), and rate.
+                {t('quotations.itemsDesc', 'Add items with quantity, unit (SQF or PCS), and rate.')}
               </p>
             </div>
 
@@ -800,7 +800,7 @@ export const QuotationsPage = () => {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                        Item #{index + 1}
+                        {t('quotations.itemNumber', `Item #${index + 1}`, { number: index + 1 })}
                       </span>
                       {formData.items.length > 1 && (
                         <button
@@ -809,7 +809,7 @@ export const QuotationsPage = () => {
                           className="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1"
                         >
                           <Trash2 className="h-3 w-3" />
-                          <span>Remove</span>
+                          <span>{t('quotations.remove', 'Remove')}</span>
                         </button>
                       )}
                     </div>
@@ -818,7 +818,7 @@ export const QuotationsPage = () => {
                       {/* Particular / Description */}
                       <div className="md:col-span-5">
                         <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                          Particular / Description <span className="text-rose-500">*</span>
+                          {t('quotations.particular', 'Particular / Description')} <span className="text-rose-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -826,7 +826,7 @@ export const QuotationsPage = () => {
                           onChange={(e) =>
                             handleItemChange(index, 'particular', e.target.value)
                           }
-                          placeholder="Enter description / particular"
+                          placeholder={t('quotations.particularPlaceholder', 'Enter description / particular')}
                           className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                         />
                         {formErrors[`item_${index}_particular`] && (
@@ -840,7 +840,7 @@ export const QuotationsPage = () => {
                       <div className="md:col-span-5 grid grid-cols-3 gap-2">
                         <div>
                           <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                            Qty <span className="text-rose-500">*</span>
+                            {t('quotations.qty', 'Qty')} <span className="text-rose-500">*</span>
                           </label>
                           <input
                             type="number"
@@ -856,21 +856,21 @@ export const QuotationsPage = () => {
 
                         <div>
                           <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                            Unit
+                            {t('quotations.unit', 'Unit')}
                           </label>
                           <select
                             value={item.unit}
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                             className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
                           >
-                            <option value="SQ FEET">SQF</option>
-                            <option value="PCS">PCS</option>
+                            <option value="SQ FEET">{t('quotations.sqFeet', 'SQF')}</option>
+                            <option value="PCS">{t('quotations.pcs', 'PCS')}</option>
                           </select>
                         </div>
 
                         <div>
                           <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                            Rate (₹) <span className="text-rose-500">*</span>
+                            {t('quotations.rate', 'Rate (₹)')} <span className="text-rose-500">*</span>
                           </label>
                           <input
                             type="number"
@@ -886,7 +886,7 @@ export const QuotationsPage = () => {
                       {/* Item Total */}
                       <div className="md:col-span-2 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end text-right pt-2 md:pt-0 border-t border-slate-200/60 dark:border-slate-800/60 md:border-0 pb-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">
-                          Total
+                          {t('quotations.total', 'Total')}
                         </span>
                         <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono">
                           {inr(itemTotal)}
@@ -907,7 +907,7 @@ export const QuotationsPage = () => {
                 className="text-xs flex items-center gap-1.5 py-2 px-3.5 border-amber-400 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-bold shadow-xs"
               >
                 <Plus className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span>Add Item</span>
+                <span>{t('quotations.addItem', 'Add Item')}</span>
               </Button>
             </div>
 
@@ -915,10 +915,10 @@ export const QuotationsPage = () => {
             <div className="mt-4 p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-between">
               <div>
                 <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300 block">
-                  GRAND TOTAL
+                  {t('quotations.grandTotal', 'GRAND TOTAL')}
                 </span>
                 <span className="text-[11px] text-amber-700/80 dark:text-amber-400">
-                  {formData.items.length} item{formData.items.length > 1 ? 's' : ''} calculated
+                  {formData.items.length} {t('quotations.itemsCount', 'items calculated', { count: formData.items.length })}
                 </span>
               </div>
               <span className="text-2xl sm:text-3xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
@@ -930,7 +930,7 @@ export const QuotationsPage = () => {
           {/* SECTION F: TERMS & CONDITIONS */}
           <Card className="p-5 space-y-3">
             <h2 className="text-sm font-bold text-amber-800 dark:text-amber-400">
-              Terms & Conditions
+              {t('quotations.termsAndConditions', 'Terms & Conditions')}
             </h2>
             <ol className="space-y-1.5 list-decimal list-inside text-xs text-slate-600 dark:text-slate-300">
               {formData.termsAndConditions.map((term, i) => (
@@ -950,7 +950,7 @@ export const QuotationsPage = () => {
               disabled={submitting}
               className="w-full sm:w-auto"
             >
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
 
             <Button
@@ -961,7 +961,7 @@ export const QuotationsPage = () => {
               className="w-full sm:w-auto flex items-center gap-1.5 justify-center"
             >
               <Eye className="h-4 w-4" />
-              <span>Preview Quotation</span>
+              <span>{t('quotations.previewQuotation', 'Preview Quotation')}</span>
             </Button>
 
             <Button
@@ -972,7 +972,7 @@ export const QuotationsPage = () => {
               className="w-full sm:w-auto flex items-center gap-1.5 justify-center text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800"
             >
               <FileDown className="h-4 w-4" />
-              <span>Save & Download PDF</span>
+              <span>{t('quotations.saveAndDownloadPdf', 'Save & Download PDF')}</span>
             </Button>
 
             <Button
@@ -983,7 +983,7 @@ export const QuotationsPage = () => {
               className="w-full sm:w-auto flex items-center gap-1.5 justify-center"
             >
               <CheckCircle2 className="h-4 w-4" />
-              <span>{editingId ? 'Update Quotation' : 'Save Quotation'}</span>
+              <span>{editingId ? t('quotations.editQuotation', 'Update Quotation') : t('quotations.saveQuotation', 'Save Quotation')}</span>
             </Button>
           </div>
         </div>
@@ -994,7 +994,7 @@ export const QuotationsPage = () => {
         <Modal
           isOpen={previewModalOpen}
           onClose={() => setPreviewModalOpen(false)}
-          title="Quotation Preview"
+          title={t('quotations.previewTitle', 'Quotation Preview')}
           maxWidth="max-w-2xl"
         >
           <div className="p-1 sm:p-4 bg-white dark:bg-slate-900 space-y-4 max-w-2xl mx-auto text-slate-900 dark:text-slate-100">
@@ -1021,13 +1021,13 @@ export const QuotationsPage = () => {
                 {/* Right: Quotation Title & Meta */}
                 <div className="text-right">
                   <span className="text-base sm:text-lg font-black tracking-wider text-slate-900 dark:text-slate-100 uppercase block">
-                    QUOTATION
+                    {t('quotations.tableQuotation', 'QUOTATION')}
                   </span>
                   <span className="text-xs sm:text-sm font-mono font-bold text-amber-600 dark:text-amber-400 block">
                     {previewData.quotationNumber}
                   </span>
                   <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block">
-                    Date: {previewData.formattedDate}
+                    {t('common.date', 'Date')}: {previewData.formattedDate}
                   </span>
                 </div>
               </div>
@@ -1042,13 +1042,13 @@ export const QuotationsPage = () => {
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between min-w-0">
                 <div className="min-w-0">
                   <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
-                    THEKEDAR
+                    {t('quotations.thekedar', 'THEKEDAR')}
                   </span>
                   <span className="font-bold block truncate text-slate-900 dark:text-slate-100">
                     {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
                   </span>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
-                    {previewData.thekedar?.phone ? `Phone: ${previewData.thekedar.phone}` : 'Site Contractor'}
+                    {previewData.thekedar?.phone ? `${t('common.phone', 'Phone:')} ${previewData.thekedar.phone}` : 'Site Contractor'}
                   </span>
                 </div>
                 {previewData.thekedarCode && (
@@ -1062,14 +1062,14 @@ export const QuotationsPage = () => {
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between min-w-0">
                 <div className="min-w-0">
                   <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
-                    CUSTOMER
+                    {t('quotations.customer', 'CUSTOMER')}
                   </span>
                   <span className="font-bold block truncate text-slate-900 dark:text-slate-100">
                     {previewData.customer?.name}
                   </span>
                   {previewData.customer?.phone && (
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
-                      Phone: {previewData.customer.phone}
+                      {t('common.phone', 'Phone:')} {previewData.customer.phone}
                     </span>
                   )}
                 </div>
@@ -1087,11 +1087,11 @@ export const QuotationsPage = () => {
                 <thead>
                   <tr className="bg-slate-900 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-wider">
                     <th className="py-2 px-1 text-center w-[6%]">#</th>
-                    <th className="py-2 px-1.5 text-left w-[30%]">PARTICULAR</th>
-                    <th className="py-2 px-1 text-right w-[14%]">QTY</th>
-                    <th className="py-2 px-1 text-center w-[14%]">UNIT</th>
-                    <th className="py-2 px-1 text-right w-[16%]">RATE</th>
-                    <th className="py-2 px-1.5 text-right w-[20%]">TOTAL</th>
+                    <th className="py-2 px-1.5 text-left w-[30%]">{t('quotations.tableParticular', 'PARTICULAR')}</th>
+                    <th className="py-2 px-1 text-right w-[14%]">{t('quotations.tableQty', 'QTY')}</th>
+                    <th className="py-2 px-1 text-center w-[14%]">{t('quotations.tableUnit', 'UNIT')}</th>
+                    <th className="py-2 px-1 text-right w-[16%]">{t('quotations.tableRate', 'RATE')}</th>
+                    <th className="py-2 px-1.5 text-right w-[20%]">{t('quotations.tableTotal', 'TOTAL')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1110,7 +1110,7 @@ export const QuotationsPage = () => {
                         {Number(it.quantity).toLocaleString('en-IN')}
                       </td>
                       <td className="py-2 px-1 text-center text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] uppercase whitespace-nowrap align-top">
-                        {it.unit === 'SQ FEET' || it.unit === 'SQF' ? 'SQF' : it.unit}
+                        {it.unit === 'SQ FEET' || it.unit === 'SQF' ? t('quotations.sqFeet', 'SQF') : it.unit}
                       </td>
                       <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300 font-mono text-[9px] sm:text-[10px] whitespace-nowrap align-top">
                         {inr(it.rate)}
@@ -1127,7 +1127,7 @@ export const QuotationsPage = () => {
             {/* Grand Total */}
             <div className="p-3.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-900 flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase text-amber-800 dark:text-amber-300 tracking-wider">
-                GRAND TOTAL
+                {t('quotations.grandTotal', 'GRAND TOTAL')}
               </span>
               <span className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
                 {inr(previewData.grandTotal)}
@@ -1138,7 +1138,7 @@ export const QuotationsPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs items-stretch">
               <div className="sm:col-span-7">
                 <span className="text-[11px] font-bold text-amber-700 dark:text-amber-400 block mb-1">
-                  Terms & Conditions
+                  {t('quotations.termsAndConditions', 'Terms & Conditions')}
                 </span>
                 <ol className="space-y-1 list-decimal list-inside text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
                   {previewData.termsAndConditions.map((t, idx) => (
@@ -1153,13 +1153,13 @@ export const QuotationsPage = () => {
                   {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block">
-                  Date: {previewData.formattedDate}
+                  {t('common.date', 'Date')}: {previewData.formattedDate}
                 </span>
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block">
-                  Authorized Digital Signature
+                  {t('quotations.authorizedSignature', 'Authorized Digital Signature')}
                 </span>
                 <span className="text-[9px] text-slate-400 dark:text-slate-500 block">
-                  No physical signature required.
+                  {t('quotations.noPhysicalSignature', 'No physical signature required.')}
                 </span>
               </div>
             </div>
@@ -1176,10 +1176,10 @@ export const QuotationsPage = () => {
                       setDeleteModalOpen(true);
                     }}
                     className="border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
-                    title="Delete Quotation"
+                    title={t('quotations.deleteModalTitle', 'Delete Quotation')}
                   >
                     <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                    <span>Delete</span>
+                    <span>{t('common.delete', 'Delete')}</span>
                   </Button>
                 ) : (
                   <div />
@@ -1195,10 +1195,10 @@ export const QuotationsPage = () => {
                     onClick={() => handleDownloadPdf(previewData)}
                     disabled={pdfDownloadingId === previewData._id}
                     className="border-amber-400/80 dark:border-amber-600/70 bg-amber-50/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-semibold"
-                    title="Download PDF"
+                    title={t('quotations.downloadPdf', 'Download PDF')}
                   >
                     <Download className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                    <span className="hidden sm:inline">Download PDF</span>
+                    <span className="hidden sm:inline">{t('quotations.downloadPdf', 'Download PDF')}</span>
                   </Button>
                 )}
                 <Button
@@ -1207,7 +1207,7 @@ export const QuotationsPage = () => {
                   onClick={() => setPreviewModalOpen(false)}
                   className="text-xs px-3 py-1.5"
                 >
-                  Close Preview
+                  {t('common.close', 'Close')}
                 </Button>
               </div>
             </div>
@@ -1220,23 +1220,14 @@ export const QuotationsPage = () => {
         <Modal
           isOpen={deleteModalOpen}
           onClose={() => setDeleteModalOpen(false)}
-          title="Delete Quotation"
+          title={t('quotations.deleteModalTitle', 'Delete Quotation')}
         >
           <div className="p-4 sm:p-6 space-y-4">
             <p className="text-sm text-slate-600 dark:text-slate-300">
-              Are you sure you want to delete quotation{' '}
-              <strong className="text-slate-900 dark:text-slate-100">
-                {deletingQuotation.quotationNumber}
-              </strong>{' '}
-              for customer{' '}
-              <strong className="text-slate-900 dark:text-slate-100">
-                {deletingQuotation.customer?.name}
-              </strong>
-              ?
+              {t('quotations.deleteModalConfirm', `Are you sure you want to delete quotation ${deletingQuotation.quotationNumber} for customer ${deletingQuotation.customer?.name}?`, { number: deletingQuotation.quotationNumber })}
             </p>
             <p className="text-xs text-slate-400">
-              This action cannot be undone. Its quotation number will be retired and will not be
-              reused.
+              {t('quotations.deletePermanentWarning', 'This action cannot be undone. Its quotation number will be retired and will not be reused.')}
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-3">
@@ -1245,7 +1236,7 @@ export const QuotationsPage = () => {
                 disabled={deleting}
                 onClick={() => setDeleteModalOpen(false)}
               >
-                Cancel
+                {t('common.cancel', 'Cancel')}
               </Button>
               <Button
                 variant="danger"
@@ -1253,7 +1244,7 @@ export const QuotationsPage = () => {
                 onClick={handleDeleteConfirm}
                 className="bg-rose-600 hover:bg-rose-700 text-white"
               >
-                {deleting ? 'Deleting...' : 'Delete Quotation'}
+                {deleting ? t('quotations.deleting', 'Deleting...') : t('quotations.deleteBtn', 'Delete Quotation')}
               </Button>
             </div>
           </div>

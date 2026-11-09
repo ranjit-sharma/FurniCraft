@@ -12,7 +12,7 @@ export const LanguageProvider = ({ children }) => {
 
   const [language, setLanguageState] = useState(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('fc_language');
       if (saved && (saved === 'en' || saved === 'hi' || saved === 'hinglish')) {
         return saved;
       }
@@ -22,10 +22,23 @@ export const LanguageProvider = ({ children }) => {
     return 'en';
   });
 
+  // Sync language across open tabs/windows
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if ((e.key === STORAGE_KEY || e.key === 'fc_language') && e.newValue) {
+        if (['en', 'hi', 'hinglish'].includes(e.newValue)) {
+          setLanguageState(e.newValue);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   // Whenever the authenticated user ID / profile loads, sync their preferred language if no explicit local setting exists
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('fc_language');
       if (!saved && user?.preferredLanguage && ['en', 'hi', 'hinglish'].includes(user.preferredLanguage)) {
         setLanguageState(user.preferredLanguage);
         localStorage.setItem(STORAGE_KEY, user.preferredLanguage);
@@ -71,10 +84,21 @@ export const LanguageProvider = ({ children }) => {
 
   /**
    * Helper function to retrieve translated string using dot-notation.
-   * e.g. t('login.title') or t('worker.remainingLimit', 'Remaining Limit', { max: 10000 })
+   * Supports:
+   *  t('key.path')
+   *  t('key.path', 'Fallback text')
+   *  t('key.path', { param: 'value' })
+   *  t('key.path', 'Fallback text', { param: 'value' })
    */
   const t = useCallback((keyPath, fallback = '', params = {}) => {
-    if (!keyPath) return fallback || '';
+    if (!keyPath) return '';
+
+    let actualFallback = fallback;
+    let actualParams = params;
+    if (fallback && typeof fallback === 'object' && !Array.isArray(fallback)) {
+      actualParams = fallback;
+      actualFallback = '';
+    }
 
     const keys = keyPath.split('.');
     
@@ -103,16 +127,16 @@ export const LanguageProvider = ({ children }) => {
     }
 
     const isInvalidObject = current !== null && typeof current === 'object' && !Array.isArray(current);
-    let result = (current !== undefined && current !== null && !isInvalidObject) ? current : (fallback || keyPath);
+    let result = (current !== undefined && current !== null && !isInvalidObject) ? current : (actualFallback || keyPath);
 
     // 3. Replace param interpolation {paramName}
-    if (typeof result === 'string' && params && typeof params === 'object') {
-      Object.entries(params).forEach(([paramKey, paramValue]) => {
+    if (typeof result === 'string' && actualParams && typeof actualParams === 'object') {
+      Object.entries(actualParams).forEach(([paramKey, paramValue]) => {
         result = result.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramValue));
       });
     }
 
-    return typeof result === 'string' || typeof result === 'number' || Array.isArray(result) ? result : (fallback || keyPath);
+    return typeof result === 'string' || typeof result === 'number' || Array.isArray(result) ? result : (actualFallback || keyPath);
   }, [language]);
 
   return (
@@ -140,7 +164,13 @@ export const useLanguage = () => {
       changeLanguage: () => {},
       availableLanguages: AVAILABLE_LANGUAGES,
       t: (keyPath, fallback = '', params = {}) => {
-        if (!keyPath) return fallback || '';
+        if (!keyPath) return '';
+        let actualFallback = fallback;
+        let actualParams = params;
+        if (fallback && typeof fallback === 'object' && !Array.isArray(fallback)) {
+          actualParams = fallback;
+          actualFallback = '';
+        }
         const keys = keyPath.split('.');
         let current = translations['en'];
         for (const key of keys) {
@@ -152,13 +182,13 @@ export const useLanguage = () => {
           }
         }
         const isInvalidObject = current !== null && typeof current === 'object' && !Array.isArray(current);
-        let result = (current !== undefined && current !== null && !isInvalidObject) ? current : (fallback || keyPath);
-        if (typeof result === 'string' && params && typeof params === 'object') {
-          Object.entries(params).forEach(([paramKey, paramValue]) => {
+        let result = (current !== undefined && current !== null && !isInvalidObject) ? current : (actualFallback || keyPath);
+        if (typeof result === 'string' && actualParams && typeof actualParams === 'object') {
+          Object.entries(actualParams).forEach(([paramKey, paramValue]) => {
             result = result.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), String(paramValue));
           });
         }
-        return typeof result === 'string' || typeof result === 'number' || Array.isArray(result) ? result : (fallback || keyPath);
+        return typeof result === 'string' || typeof result === 'number' || Array.isArray(result) ? result : (actualFallback || keyPath);
       },
     };
   }

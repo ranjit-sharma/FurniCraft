@@ -114,9 +114,12 @@ export const Navbar = () => {
           <BrandLogo size="md" variant={isDark ? 'dark' : 'light'} className="hidden sm:flex" />
         </LogoLink>
 
-        {/* Right: Profile Icon Toggler */}
+        {/* Right: Language Switcher & Profile Icon Toggler */}
         {user && (
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Quick 1-click Language Switcher visible across all pages */}
+            <LanguageSelector variant="pill" />
+
             <div className="relative" ref={profileRef}>
               {/* Round Profile Toggler Button */}
               <button

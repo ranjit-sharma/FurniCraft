@@ -396,13 +396,13 @@ export const ProjectDetailPage = () => {
                 onChange={(e) => setReceivedStage(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
-                <option value="Advance Booking">Advance Booking</option>
-                <option value="Material Delivery">Material Delivery</option>
-                <option value="Carcass Assembly">Carcass Assembly</option>
-                <option value="Shutter & Fitting">Shutter & Fitting</option>
-                <option value="Polishing & Finishing">Polishing & Finishing</option>
-                <option value="Final Handover">Final Handover</option>
-                <option value="Part Payment">Part Payment</option>
+                <option value="Advance Booking">{t('projects.milestoneAdvance', 'Advance Booking')}</option>
+                <option value="Material Delivery">{t('projects.milestoneMaterial', 'Material Delivery')}</option>
+                <option value="Carcass Assembly">{t('projects.milestoneCarcass', 'Carcass Assembly')}</option>
+                <option value="Shutter & Fitting">{t('projects.milestoneShutter', 'Shutter & Fitting')}</option>
+                <option value="Polishing & Finishing">{t('projects.milestonePolishing', 'Polishing & Finishing')}</option>
+                <option value="Final Handover">{t('projects.milestoneFinal', 'Final Handover')}</option>
+                <option value="Part Payment">{t('projects.milestonePart', 'Part Payment')}</option>
               </select>
             </div>
             <div>

@@ -67,33 +67,36 @@ const ATTENDANCE_CODE_OPTIONS = [
 
 const MAX_ADVANCE = Infinity; // Worker can take advance of any amount as their choice (no limitation)
 
-const PaymentMethodPicker = ({ value, onChange }) => (
-  <div>
-    <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Paid by</span>
-    <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Payment method">
-      {[
-        { id: 'CASH', label: 'Cash' },
-        { id: 'UPI', label: 'UPI' },
-        { id: 'BANK_TRANSFER', label: 'Bank' },
-      ].map((m) => (
-        <button
-          key={m.id}
-          type="button"
-          role="radio"
-          aria-checked={value === m.id}
-          onClick={() => onChange(m.id)}
-          className={`min-h-[44px] rounded-xl border text-sm font-bold transition active:scale-95 cursor-pointer ${
-            value === m.id
-              ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500/30'
-              : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
-        >
-          {m.label}
-        </button>
-      ))}
+const PaymentMethodPicker = ({ value, onChange }) => {
+  const { t } = useLanguage();
+  return (
+    <div>
+      <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t('workers.paidBy', 'Paid by')}</span>
+      <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Payment method">
+        {[
+          { id: 'CASH', label: t('expenses.cash', 'Cash') },
+          { id: 'UPI', label: 'UPI' },
+          { id: 'BANK_TRANSFER', label: t('expenses.bank', 'Bank') },
+        ].map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={value === m.id}
+            onClick={() => onChange(m.id)}
+            className={`min-h-[44px] rounded-xl border text-sm font-bold transition active:scale-95 cursor-pointer ${
+              value === m.id
+                ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500/30'
+                : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /** One line of the pay receipt: label (+/− sign, hint) on the left, amount input on the right. */
 const PayRow = ({ sign, label, hint, children }) => (
@@ -940,7 +943,7 @@ export const WorkersPage = () => {
       )}
 
       {/* Modal: Add Worker */}
-      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title="Add New Craftsman to Workforce">
+      <Modal isOpen={registerModalOpen} onClose={() => setRegisterModalOpen(false)} title={t('workers.registerModalTitle', 'Add New Craftsman to Workforce')}>
         <form onSubmit={handleRegisterWorker} className="space-y-4">
           <div className="rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
             Workers are managed business entities under your supervisory contract. A unique Worker ID will be automatically generated.
@@ -948,7 +951,7 @@ export const WorkersPage = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Full Name *
+              {t('workers.fullName', 'Full Name')} *
             </label>
             <input
               type="text"
@@ -963,7 +966,7 @@ export const WorkersPage = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Mobile Number *
+                {t('workers.mobileNumber', 'Mobile Number')} *
               </label>
               <input
                 type="tel"
@@ -977,22 +980,22 @@ export const WorkersPage = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                Primary Trade / Skill
+                {t('common.trade', 'Primary Trade / Skill')}
               </label>
               <select
                 value={workerTrade}
                 onChange={(e) => setWorkerTrade(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2.5 text-xs focus:border-amber-500 focus:outline-none"
               >
-                <option value="Mistry">Mistry</option>
-                <option value="Helper">Helper</option>
+                <option value="Mistry">{t('common.mistry', 'Mistry')}</option>
+                <option value="Helper">{t('common.helper', 'Helper')}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Daily Earning Rate (₹/shift) *
+              {t('workers.dailyWageRate', 'Daily Earning Rate')} (₹/shift) *
             </label>
             <input
               type="number"
@@ -1009,7 +1012,7 @@ export const WorkersPage = () => {
           {/* Permanent Thekedar Selection */}
           {isOwner && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">Permanent Assigned Thekedar *</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">{t('workers.thekedarAssignment', 'Permanent Assigned Thekedar')} *</label>
               <select
                 required
                 value={selectedThekedarId}
@@ -1030,10 +1033,10 @@ export const WorkersPage = () => {
 
           <div className="pt-2 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button variant="secondary" onClick={() => setRegisterModalOpen(false)} className="w-full sm:w-auto justify-center">
-              Cancel
+              {t('common.cancel', 'Cancel')}
             </Button>
             <Button type="submit" variant="primary" disabled={registerSubmitting} className="w-full sm:w-auto justify-center min-h-[42px]">
-              {registerSubmitting ? 'Registering...' : 'Add Worker to Roster'}
+              {registerSubmitting ? t('common.loading', 'Registering...') : t('workers.registerWorker', 'Add Worker to Roster')}
             </Button>
           </div>
         </form>

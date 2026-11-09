@@ -191,9 +191,9 @@ export const ExpensesPage = () => {
             onClick={handlePrevMonth}
             disabled={selectedMonth === 'ALL'}
             icon={ChevronLeft}
-            title="Previous Month"
+            title={t('common.prev', 'Previous Month')}
           >
-            <span className="hidden sm:inline">Prev</span>
+            <span className="hidden sm:inline">{t('common.prev', 'Prev')}</span>
           </Button>
 
           {/* Month Input Picker */}
@@ -213,9 +213,9 @@ export const ExpensesPage = () => {
             size="sm"
             onClick={handleNextMonth}
             disabled={selectedMonth === 'ALL'}
-            title="Next Month"
+            title={t('common.next', 'Next Month')}
           >
-            <span className="hidden sm:inline">Next</span>
+            <span className="hidden sm:inline">{t('common.next', 'Next')}</span>
             <ChevronRight className="h-4 w-4 sm:ml-1" />
           </Button>
 
@@ -227,7 +227,7 @@ export const ExpensesPage = () => {
             onClick={() => setSelectedMonth(getCurrentMonthStr())}
             className="text-xs"
           >
-            Current Month
+            {t('common.currentMonth', 'Current Month')}
           </Button>
 
           {/* All Months Toggle */}
@@ -326,7 +326,7 @@ export const ExpensesPage = () => {
                   </div>
                   <div className="flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap gap-2">
                     <div>
-                      <span className="font-semibold text-slate-500">Payer: </span>
+                      <span className="font-semibold text-slate-500">{t('expenses.payer', 'Payer:')} </span>
                       {p.payerName || p.projectId?.clientName || 'Client'}
                     </div>
                     <Badge variant="success" size="sm">{p.stage || 'Stage Payment'}</Badge>
@@ -445,13 +445,13 @@ export const ExpensesPage = () => {
                 onChange={(e) => setStage(e.target.value)}
                 className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-2 text-sm focus:border-amber-500 focus:outline-none"
               >
-                <option value="Advance Booking">Advance Booking</option>
-                <option value="Material Delivery">Material Delivery</option>
-                <option value="Carcass Assembly">Carcass Assembly</option>
-                <option value="Shutter & Fitting">Shutter & Fitting</option>
-                <option value="Polishing & Finishing">Polishing & Finishing</option>
-                <option value="Final Handover">Final Handover</option>
-                <option value="Part Payment">Part Payment</option>
+                <option value="Advance Booking">{t('projects.milestoneAdvance', 'Advance Booking')}</option>
+                <option value="Material Delivery">{t('projects.milestoneMaterial', 'Material Delivery')}</option>
+                <option value="Carcass Assembly">{t('projects.milestoneCarcass', 'Carcass Assembly')}</option>
+                <option value="Shutter & Fitting">{t('projects.milestoneShutter', 'Shutter & Fitting')}</option>
+                <option value="Polishing & Finishing">{t('projects.milestonePolishing', 'Polishing & Finishing')}</option>
+                <option value="Final Handover">{t('projects.milestoneFinal', 'Final Handover')}</option>
+                <option value="Part Payment">{t('projects.milestonePart', 'Part Payment')}</option>
               </select>
             </div>
             <div>
@@ -463,7 +463,7 @@ export const ExpensesPage = () => {
               >
                 <option value="BANK_TRANSFER">Bank Transfer (NEFT / RTGS)</option>
                 <option value="UPI">UPI (GPay / PhonePe / Paytm)</option>
-                <option value="CASH">Cash</option>
+                <option value="CASH">{t('expenses.cash', 'Cash')}</option>
               </select>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -19,6 +19,13 @@ export const ThekedarGuideModal = ({ isOpen, onClose }) => {
   const [guideLang, setGuideLang] = useState(currentAppLang === 'hi' ? 'hi' : currentAppLang === 'hinglish' ? 'hinglish' : 'en');
   const [activeTab, setActiveTab] = useState('attendance'); // 'attendance' | 'workers' | 'finance' | 'pdf' | 'search' | 'rules'
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync with application language whenever app language changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setGuideLang(currentAppLang === 'hi' ? 'hi' : currentAppLang === 'hinglish' ? 'hinglish' : 'en');
+    }
+  }, [isOpen, currentAppLang]);
 
   const content = {
     en: {

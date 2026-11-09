@@ -324,7 +324,7 @@ export const MembersOverviewPage = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-purple-600"
               >
-                <option value="ALL">All Status</option>
+                <option value="ALL">{t('common.allStatus', 'All Status')}</option>
                 <option value="ACTIVE">{t('common.active', 'Active Only')}</option>
                 <option value="SUSPENDED">{t('members.suspendedAccount', 'Suspended Only')}</option>
               </select>
@@ -338,7 +338,7 @@ export const MembersOverviewPage = () => {
         ) : filteredMembers.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center">
             <Users className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">No members match your search or filter.</p>
+            <p className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">{t('members.noMatch', 'No members match your search or filter.')}</p>
             <Button size="xs" variant="secondary" onClick={() => { setSearchQuery(''); setSelectedRole('ALL'); setStatusFilter('ALL'); }} className="mt-3">
               Clear Filters
             </Button>
@@ -385,7 +385,7 @@ export const MembersOverviewPage = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg gap-2">
-                    <div>Phone: <strong className="text-slate-800 dark:text-slate-200">{m.phone || 'N/A'}</strong></div>
+                    <div>{t('common.phone', 'Phone:')} <strong className="text-slate-800 dark:text-slate-200">{m.phone || 'N/A'}</strong></div>
                     {m.role === 'WORKER' ? (
                       <span className="text-slate-400 text-[11px] font-medium">—</span>
                     ) : (
@@ -495,7 +495,7 @@ export const MembersOverviewPage = () => {
                             <span className="text-[11px] text-slate-500 dark:text-slate-400 block">{m.assignedThekedar.phone}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">Unassigned</span>
+                          <span className="text-slate-400 italic">{t('members.unassigned', 'Unassigned')}</span>
                         )
                       ) : (
                         <span className="text-slate-400 text-[11px]">— (Self Managed)</span>
@@ -547,12 +547,12 @@ export const MembersOverviewPage = () => {
                             }`}
                             title={m.status === 'ACTIVE' ? 'Deactivate Thekedar' : 'Activate Thekedar'}
                           >
-                            {actionLoadingId === m._id ? '...' : m.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                            {actionLoadingId === m._id ? '...' : m.status === 'ACTIVE' ? t('thekedars.deactivate', 'Deactivate') : t('thekedars.activate', 'Activate')}
                           </button>
                         ) : m.role === 'WORKER' ? (
-                          <span className="text-[10px] text-slate-400 italic">Managed by Thekedar</span>
+                          <span className="text-[10px] text-slate-400 italic">{t('members.managedByThekedar', 'Managed by Thekedar')}</span>
                         ) : (
-                          <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">Protected</span>
+                          <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">{t('members.protected', 'Protected')}</span>
                         )}
                       </div>
                     </td>
@@ -571,7 +571,7 @@ export const MembersOverviewPage = () => {
         subtitle="Chronological audit stream of members visiting and authenticating into the application"
       >
         {recentVisits.length === 0 ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-4">No recent visits recorded.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic py-4">{t('members.noRecentVisits', 'No recent visits recorded.')}</p>
         ) : (
           <div className="space-y-2.5">
             {recentVisits.map((v) => (

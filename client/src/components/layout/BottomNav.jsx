@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { MoreHorizontal, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { Modal } from '../common/Modal';
+import { LanguageSelector } from '../common/LanguageSelector';
 import { useNavLinks } from './Sidebar';
 
 const tabClass = (active) =>
@@ -68,6 +69,13 @@ export const BottomNav = () => {
               <ChevronRight className="h-4 w-4 text-slate-400" />
             </NavLink>
           ))}
+          {/* Quick Language Preference in Mobile Bottom Sheet */}
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2 px-1">
+              {t('common.language', 'Language')}
+            </span>
+            <LanguageSelector variant="buttons" />
+          </div>
         </div>
       </Modal>
     </>
