@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BrandLogo } from '../components/common/BrandLogo';
 import { LanguageSelector } from '../components/common/LanguageSelector';
