@@ -120,15 +120,15 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     return y + 28;
   };
 
-  // 3 Information Cards in exact order: 1. Thekedar, 2. Customer, 3. Project
+  // 2 Information Cards: 1. Thekedar, 2. Customer (Project Information removed per specification)
   const drawInfoCards = (startY) => {
     const cards = [
       {
         tag: 'FIRST — THEKEDAR',
         label: 'THEKEDAR',
-        title: quotation.thekedar?.businessName || 'Authorized Contractor',
+        title: quotation.thekedar?.businessName || quotation.thekedar?.name || 'Authorized Contractor',
         detail1: quotation.thekedar?.phone ? `Phone: ${quotation.thekedar.phone}` : 'Site Contractor',
-        detail2: `Code: ${quotation.thekedarCode}`,
+        detail2: quotation.thekedarCode ? `Code: ${quotation.thekedarCode}` : '',
       },
       {
         tag: 'SECOND — CUSTOMER',
@@ -137,17 +137,10 @@ export const generateQuotationPdfBuffer = async (quotation) => {
         detail1: quotation.customer?.phone ? `Phone: ${quotation.customer.phone}` : '',
         detail2: quotation.customer?.address || '',
       },
-      {
-        tag: 'THIRD — PROJECT',
-        label: 'PROJECT',
-        title: quotation.project?.name || 'Furniture Work',
-        detail1: `Items: ${quotation.items?.length || 0} Listed`,
-        detail2: `Status: ${quotation.status || 'DRAFT'}`,
-      },
     ];
 
-    const gap = 10;
-    const cardW = (CONTENT_W - gap * 2) / 3;
+    const gap = 14;
+    const cardW = (CONTENT_W - gap) / 2;
     const cardH = 68;
 
     cards.forEach((c, idx) => {
@@ -158,7 +151,7 @@ export const generateQuotationPdfBuffer = async (quotation) => {
         .fillAndStroke(COLOR.cardBg, COLOR.line);
 
       // Section Tag / Header
-      text(doc, c.label, cx + 10, startY + 8, {
+      text(doc, c.label, cx + 12, startY + 8, {
         size: 7,
         font: 'Bold',
         color: COLOR.orange,
@@ -166,21 +159,21 @@ export const generateQuotationPdfBuffer = async (quotation) => {
       });
 
       // Primary Title
-      text(doc, c.title, cx + 10, startY + 20, {
+      text(doc, c.title, cx + 12, startY + 20, {
         size: 9.5,
         font: 'Bold',
         color: COLOR.navy,
-        width: cardW - 20,
+        width: cardW - 24,
         height: 14,
         ellipsis: true,
       });
 
       // Detail 1
       if (c.detail1) {
-        text(doc, c.detail1, cx + 10, startY + 36, {
+        text(doc, c.detail1, cx + 12, startY + 36, {
           size: 7.5,
           color: COLOR.muted,
-          width: cardW - 20,
+          width: cardW - 24,
           height: 12,
           ellipsis: true,
         });
@@ -188,10 +181,10 @@ export const generateQuotationPdfBuffer = async (quotation) => {
 
       // Detail 2
       if (c.detail2) {
-        text(doc, c.detail2, cx + 10, startY + 49, {
+        text(doc, c.detail2, cx + 12, startY + 49, {
           size: 7.5,
           color: COLOR.text,
-          width: cardW - 20,
+          width: cardW - 24,
           height: 14,
           ellipsis: true,
         });
@@ -406,10 +399,12 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     .roundedRect(sigX, bottomSectionY, sigW, sigH, 6)
     .fillAndStroke(COLOR.cardBg, COLOR.line);
 
-  const businessName =
+  const thekedarName =
     quotation.thekedar?.businessName || quotation.thekedar?.name || 'Contractor';
-  text(doc, `For ${businessName}`, sigX + 8, bottomSectionY + 8, {
-    size: 8,
+
+  // 1. Only Thekedar Name (NO "For")
+  text(doc, thekedarName, sigX + 8, bottomSectionY + 8, {
+    size: 8.5,
     font: 'Bold',
     color: COLOR.navy,
     width: sigW - 16,
@@ -417,30 +412,32 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     ellipsis: true,
   });
 
-  // Digital Signature Seal / Badge
-  const sealY = bottomSectionY + 22;
+  // 2. Date
+  text(doc, `Date: ${quotation.formattedDate}`, sigX + 8, bottomSectionY + 22, {
+    size: 7,
+    font: 'Regular',
+    color: COLOR.muted,
+    width: sigW - 16,
+    align: 'center',
+  });
+
+  // 3. Digital Signature Seal / Badge (No unicode checkmark to avoid □ glyph missing in PDF font)
+  const sealY = bottomSectionY + 34;
   doc
-    .roundedRect(sigX + 10, sealY, sigW - 20, 26, 4)
+    .roundedRect(sigX + 10, sealY, sigW - 20, 22, 4)
     .fillAndStroke('#F0FDF4', '#86EFAC');
 
-  text(doc, '✓ DIGITALLY SIGNED', sigX + 10, sealY + 4, {
+  text(doc, 'DIGITALLY SIGNED', sigX + 10, sealY + 6, {
     size: 7.5,
     font: 'Bold',
     color: '#15803D',
     width: sigW - 20,
     align: 'center',
-    characterSpacing: 0.3,
+    characterSpacing: 0.5,
   });
 
-  text(doc, `Date: ${quotation.formattedDate}`, sigX + 10, sealY + 15, {
-    size: 6.5,
-    font: 'Regular',
-    color: '#166534',
-    width: sigW - 20,
-    align: 'center',
-  });
-
-  text(doc, 'Authorized Digital Signature', sigX + 6, bottomSectionY + 55, {
+  // 4. Authorized Digital Signature
+  text(doc, 'Authorized Digital Signature', sigX + 6, bottomSectionY + 60, {
     size: 6.5,
     font: 'Bold',
     color: '#15803D',
@@ -448,7 +445,7 @@ export const generateQuotationPdfBuffer = async (quotation) => {
     align: 'center',
   });
 
-  text(doc, 'No physical signature required.', sigX + 6, bottomSectionY + 66, {
+  text(doc, 'No physical signature required.', sigX + 6, bottomSectionY + 70, {
     size: 5.5,
     font: 'Regular',
     color: COLOR.muted,

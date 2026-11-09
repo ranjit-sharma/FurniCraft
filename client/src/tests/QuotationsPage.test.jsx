@@ -99,8 +99,9 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(await screen.findByText('Quotations Management')).toBeInTheDocument();
     expect(await screen.findByText('FC-TK001-QTN-0001')).toBeInTheDocument();
     expect(screen.getByText('Rajesh Gupta')).toBeInTheDocument();
-    expect(screen.getByText('3BHK Modular Kitchen')).toBeInTheDocument();
     expect(screen.getByText('₹2,57,500')).toBeInTheDocument();
+    // Project info is completely removed from quotation cards
+    expect(screen.queryByText('3BHK Modular Kitchen')).toBeNull();
   });
 
   it('switches to create form on clicking Create Quotation button', async () => {
@@ -112,23 +113,20 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(await screen.findByText('Create New Quotation')).toBeInTheDocument();
     expect(screen.getByText('A. Thekedar Information')).toBeInTheDocument();
     expect(screen.getByText('B. Customer Information')).toBeInTheDocument();
-    expect(screen.getByText('C. Project Information')).toBeInTheDocument();
-    expect(screen.getByText('D. Quotation Items')).toBeInTheDocument();
+    expect(screen.getByText('C. Quotation Items')).toBeInTheDocument();
+    expect(screen.queryByText(/Project Information/i)).toBeNull();
   });
 
-  it('strictly contains only Project Name and no Project Description field', async () => {
+  it('strictly omits Project Information section and Project Name fields from form', async () => {
     renderComponent();
 
     const createBtn = await screen.findByRole('button', { name: /Create Quotation/i });
     fireEvent.click(createBtn);
 
-    // Project Name must be present
-    expect(await screen.findByLabelText(/Project Name/i)).toBeInTheDocument();
-
-    // Project Description must NOT be anywhere in the document
-    expect(screen.queryByLabelText(/Project Description/i)).toBeNull();
-    expect(screen.queryByPlaceholderText(/Project Description/i)).toBeNull();
-    expect(screen.queryByText(/Project Description/i)).toBeNull();
+    // Project Name must NOT be in the form
+    expect(screen.queryByLabelText(/Project Name/i)).toBeNull();
+    expect(screen.queryByPlaceholderText(/3BHK Modular/i)).toBeNull();
+    expect(screen.queryByText(/Project Information/i)).toBeNull();
   });
 
   it('supports strictly only SQ FEET and PCS units in the unit selector', async () => {
@@ -216,5 +214,10 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(await screen.findByText('Quotation Preview')).toBeInTheDocument();
     expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('DIGITALLY SIGNED')).toBeInTheDocument();
+    expect(screen.getByText('Authorized Digital Signature')).toBeInTheDocument();
+    // No "For" prefix in signature block
+    expect(screen.queryByText(/For Sharma Modular Kitchens/i)).toBeNull();
+    // No Project card in preview modal
+    expect(screen.queryByText('PROJECT')).toBeNull();
   });
 });

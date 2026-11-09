@@ -100,10 +100,9 @@ const quotationSchema = new mongoose.Schema(
     project: {
       name: {
         type: String,
-        required: [true, 'Project name is required'],
         trim: true,
+        default: '',
       },
-      // Note: project.description is strictly omitted per specification
     },
     items: {
       type: [quotationItemSchema],

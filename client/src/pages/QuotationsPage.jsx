@@ -13,7 +13,6 @@ import {
   Download,
   Edit,
   Eye,
-  Search,
   Calendar,
   User,
   Phone,
@@ -22,7 +21,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  FolderKanban,
   FileDown,
 } from 'lucide-react';
 
@@ -40,7 +38,6 @@ export const QuotationsPage = () => {
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [pagination, setPagination] = useState({ page: 1, limit: 15, total: 0, totalPages: 1 });
 
@@ -139,7 +136,6 @@ export const QuotationsPage = () => {
         params: {
           page,
           limit: pagination.limit,
-          search: search.trim() || undefined,
           sortBy: 'createdAt',
           sortOrder,
         },
@@ -161,12 +157,6 @@ export const QuotationsPage = () => {
   useEffect(() => {
     fetchQuotations(pagination.page);
   }, [pagination.page, sortOrder]);
-
-  // Handle Search submit
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    fetchQuotations(1);
-  };
 
   // Recalculate Live Totals
   const liveTotals = useMemo(() => {
@@ -375,9 +365,6 @@ export const QuotationsPage = () => {
     if (!formData.customer.name.trim()) {
       errs.customerName = 'Customer name is required';
     }
-    if (!formData.project.name.trim()) {
-      errs.projectName = 'Project name is required';
-    }
     if (!formData.items || formData.items.length === 0) {
       errs.items = 'At least one item is required';
     } else {
@@ -409,7 +396,7 @@ export const QuotationsPage = () => {
       thekedar: formData.thekedar,
       customer: formData.customer,
       project: {
-        name: formData.project.name.trim(),
+        name: (formData.project?.name || '').trim(),
       },
       items: formData.items.map((it) => ({
         particular: it.particular.trim(),
@@ -550,37 +537,6 @@ export const QuotationsPage = () => {
       {/* VIEW: QUOTATIONS LIST / HISTORY */}
       {view === 'list' && (
         <div className="space-y-4">
-          {/* Search & Filter Toolbar */}
-          <Card className="p-4">
-            <form onSubmit={handleSearchSubmit} className="flex flex-col md:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by quotation number or customer name..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none"
-                >
-                  <option value="desc">Newest First</option>
-                  <option value="asc">Oldest First</option>
-                </select>
-
-                <Button type="submit" variant="secondary" className="px-4 py-2.5 text-xs">
-                  Filter
-                </Button>
-              </div>
-            </form>
-          </Card>
-
           {/* List Content */}
           {loading ? (
             <div className="space-y-3">
@@ -602,9 +558,7 @@ export const QuotationsPage = () => {
                 No quotations found
               </h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                {search
-                  ? 'No quotations matched your search keywords. Try searching for something else.'
-                  : 'You have not created any quotations yet. Create your first quotation to send to customers.'}
+                You have not created any quotations yet. Create your first quotation to send to customers.
               </p>
               <Button
                 variant="primary"
@@ -644,11 +598,6 @@ export const QuotationsPage = () => {
                               ({qtn.customer.phone})
                             </span>
                           )}
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                          <FolderKanban className="h-3.5 w-3.5 text-amber-500" />
-                          <span>{qtn.project?.name}</span>
                         </div>
                       </div>
 
@@ -934,56 +883,11 @@ export const QuotationsPage = () => {
             </div>
           </Card>
 
-          {/* SECTION C: PROJECT INFORMATION (Strictly ONLY Project Name) */}
-          <Card className="p-5 space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="h-8 w-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-700 dark:text-emerald-400">
-                <FolderKanban className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  C. Project Information
-                </h2>
-                <p className="text-[11px] text-slate-400">
-                  Enter the project or site name.
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="projectName" className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Project Name <span className="text-rose-500">*</span>
-              </label>
-              <input
-                id="projectName"
-                type="text"
-                value={formData.project.name}
-                onChange={(e) =>
-                  setFormData((p) => ({
-                    ...p,
-                    project: { ...p.project, name: e.target.value },
-                  }))
-                }
-                placeholder="e.g. 3BHK Modular Kitchen & Master Bedroom Wardrobe"
-                className={`w-full rounded-xl border px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none ${
-                  formErrors.projectName
-                    ? 'border-rose-400 bg-rose-50/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:border-amber-500'
-                }`}
-              />
-              {formErrors.projectName && (
-                <span className="text-[11px] font-semibold text-rose-500 mt-1 block">
-                  {formErrors.projectName}
-                </span>
-              )}
-            </div>
-          </Card>
-
-          {/* SECTION D: DYNAMIC QUOTATION ITEMS */}
+          {/* SECTION C: DYNAMIC QUOTATION ITEMS */}
           <Card className="p-5 space-y-4">
             <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                D. Quotation Items
+                C. Quotation Items
               </h2>
               <p className="text-[11px] text-slate-400">
                 Add items with quantity, unit (SQ FEET or PCS), and rate.
@@ -1242,10 +1146,10 @@ export const QuotationsPage = () => {
               <div className="h-1 bg-amber-600 rounded-full w-full" />
             </div>
 
-            {/* 3 Info Cards in exact order */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            {/* 2 Info Cards: Thekedar and Customer */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {/* 1. Thekedar */}
-              <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
                 <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
                   THEKEDAR
                 </span>
@@ -1253,19 +1157,24 @@ export const QuotationsPage = () => {
                   {previewData.thekedar?.businessName || user?.businessName || user?.name}
                 </span>
                 <span className="text-[11px] text-slate-500 block">
-                  {previewData.thekedar?.phone}
+                  {previewData.thekedar?.phone ? `Phone: ${previewData.thekedar.phone}` : 'Site Contractor'}
                 </span>
+                {previewData.thekedarCode && (
+                  <span className="text-[10px] text-slate-400 block font-mono">
+                    Code: {previewData.thekedarCode}
+                  </span>
+                )}
               </div>
 
               {/* 2. Customer */}
-              <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
                 <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
                   CUSTOMER
                 </span>
                 <span className="font-bold block truncate">{previewData.customer?.name}</span>
                 {previewData.customer?.phone && (
                   <span className="text-[11px] text-slate-500 block truncate">
-                    {previewData.customer.phone}
+                    Phone: {previewData.customer.phone}
                   </span>
                 )}
                 {previewData.customer?.address && (
@@ -1273,17 +1182,6 @@ export const QuotationsPage = () => {
                     {previewData.customer.address}
                   </span>
                 )}
-              </div>
-
-              {/* 3. Project */}
-              <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
-                <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
-                  PROJECT
-                </span>
-                <span className="font-bold block truncate">{previewData.project?.name}</span>
-                <span className="text-[10px] text-slate-400 block">
-                  {previewData.items?.length || 0} Items
-                </span>
               </div>
             </div>
 
@@ -1349,17 +1247,20 @@ export const QuotationsPage = () => {
               <div className="sm:col-span-5 flex flex-col justify-end">
                 <div className="p-3 rounded-xl border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/60 dark:bg-emerald-950/30 text-center space-y-1.5 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block truncate">
-                    For {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
+                    {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
                   </span>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                    <span>Date: {previewData.formattedDate}</span>
+                  </div>
                   <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 font-bold text-[10px] sm:text-[11px]">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <span>DIGITALLY SIGNED</span>
                   </div>
-                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                    <span>Date: {previewData.formattedDate}</span>
-                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block">
+                    Authorized Digital Signature
+                  </span>
                   <span className="text-[9px] text-slate-400 dark:text-slate-500 block pt-1 border-t border-emerald-200/60 dark:border-emerald-900/40">
-                    Digitally generated. No signature required.
+                    No physical signature required.
                   </span>
                 </div>
               </div>

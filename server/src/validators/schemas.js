@@ -266,9 +266,11 @@ export const createQuotationSchema = z.object({
     phone: z.string().trim().optional().default(''),
     address: z.string().trim().optional().default(''),
   }),
-  project: z.object({
-    name: z.string().trim().min(1, 'Project name is required'),
-  }),
+  project: z
+    .object({
+      name: z.string().trim().optional(),
+    })
+    .optional(),
   items: z.array(quotationItemSchema).min(1, 'At least one quotation item is required'),
   termsAndConditions: z.array(z.string().trim()).optional(),
   status: z.enum(['DRAFT', 'SENT', 'ACCEPTED', 'EXPIRED']).optional(),
@@ -291,7 +293,7 @@ export const updateQuotationSchema = z.object({
     .optional(),
   project: z
     .object({
-      name: z.string().trim().min(1, 'Project name is required'),
+      name: z.string().trim().optional(),
     })
     .optional(),
   items: z.array(quotationItemSchema).min(1, 'At least one quotation item is required').optional(),
