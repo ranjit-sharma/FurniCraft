@@ -7,7 +7,7 @@ import XLSX from 'xlsx';
 import { Attendance, Payroll, FinancialTransaction, User, WorkerProfile } from '../models/index.js';
 import { ROLES } from '../config/constants.js';
 import { NotFoundError, ForbiddenError } from '../utils/errors.js';
-import { C, PAGE, CONTENT_W, BOTTOM_LIMIT, inr, createPdf, text, drawHeader, drawRunningHeader, drawInfoCards, drawTable, drawTotal, drawSignatures, drawFooters } from './pdfTheme.js';
+import { C, PAGE, CONTENT_W, BOTTOM_LIMIT, inr, createPdf, text, drawHeader, drawRunningHeader, drawInfoCards, drawTable, drawTotal, drawSignatures, drawThekedarDigitalSignature, drawFooters } from './pdfTheme.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -410,6 +410,17 @@ export const generateAttendancePDF = async (filterQuery = {}, { reqUser, lang = 
   }
   text(doc, L.legend, PAGE.margin, y, { size: 7, color: C.muted, width: CONTENT_W, lineBreak: true });
 
+  // Standard Thekedar Digital Signature
+  const thekedarName = thekedar?.businessName || thekedar?.name || reqUser?.businessName || reqUser?.name || 'Authorized Contractor';
+  const sigY = y + 20;
+  if (sigY + 85 > BOTTOM_LIMIT) {
+    doc.addPage();
+    drawRunningHeader(doc, running);
+    drawThekedarDigitalSignature(doc, PAGE.margin + CONTENT_W - 180, PAGE.margin + 30, 180, 80, { name: thekedarName, date: new Date() });
+  } else {
+    drawThekedarDigitalSignature(doc, PAGE.margin + CONTENT_W - 180, sigY, 180, 80, { name: thekedarName, date: new Date() });
+  }
+
   drawFooters(doc, `FurniCraft · ${running}`);
   doc.end();
   return done;
@@ -576,6 +587,21 @@ export const generateSalaryStatementPDF = async (payrollId, { reqUser, lang = 'e
         nextY += 36;
       }
 
+      // 6. Thekedar Digital Signature Block
+      const sigW = 180;
+      const sigX = 36 + 523 - sigW;
+      const thekedarName = payroll.thekedarId?.businessName || payroll.thekedarId?.name || 'Authorized Contractor';
+      const sigDate = payroll.finalizedAt
+        ? new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(payroll.finalizedAt))
+        : new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
+
+      if (nextY + 85 > 740) {
+        doc.addPage();
+        nextY = 40;
+      }
+      drawThekedarDigitalSignature(doc, sigX, nextY, sigW, 80, { name: thekedarName, date: sigDate });
+      nextY += 90;
+
       // Legal & Footer
       doc.fillColor('#64748B').fontSize(7.5).text(
         `Finalized on: ${payroll.finalizedAt ? new Date(payroll.finalizedAt).toLocaleString('en-IN') : 'Draft Status'}   •   Rule Version Applied: v${payroll.ruleVersionApplied || 1}`,
@@ -704,7 +730,16 @@ export const generatePaymentBillPDF = async (transactionIdOrCode, { reqUser, lan
     y = doc.y + 16;
   }
 
-  drawSignatures(doc, Math.max(y, 600), { label: L.authorised, name: thekedar.name || '' }, { label: L.received, name: worker.name || '' });
+  const billDate = txn.transactionDate
+    ? formatDay(txn.transactionDate)
+    : new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
+
+  drawSignatures(
+    doc,
+    Math.max(y, 590),
+    { label: L.authorised, name: thekedar.businessName || thekedar.name || '', date: billDate },
+    { label: L.received, name: worker.name || '' }
+  );
   drawFooters(doc, `FurniCraft · ${title} ${txn.transactionId}`);
   doc.end();
   return done;

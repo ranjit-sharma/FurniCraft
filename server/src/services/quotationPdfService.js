@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import PDFDocument from 'pdfkit';
-import { inr } from './pdfTheme.js';
+import { inr, drawThekedarDigitalSignature } from './pdfTheme.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ASSETS = path.resolve(__dirname, '../assets');
@@ -394,63 +394,12 @@ export const generateQuotationPdfBuffer = async (quotation) => {
   // Right: Digitally Signed Box (No external signature required)
   const sigX = PAGE.margin + termsW + 16;
   const sigH = 80;
-
-  doc
-    .roundedRect(sigX, bottomSectionY, sigW, sigH, 6)
-    .fillAndStroke(COLOR.cardBg, COLOR.line);
-
   const thekedarName =
     quotation.thekedar?.businessName || quotation.thekedar?.name || 'Contractor';
 
-  // 1. Only Thekedar Name (NO "For")
-  text(doc, thekedarName, sigX + 8, bottomSectionY + 8, {
-    size: 8.5,
-    font: 'Bold',
-    color: COLOR.navy,
-    width: sigW - 16,
-    align: 'center',
-    ellipsis: true,
-  });
-
-  // 2. Date
-  text(doc, `Date: ${quotation.formattedDate}`, sigX + 8, bottomSectionY + 22, {
-    size: 7,
-    font: 'Regular',
-    color: COLOR.muted,
-    width: sigW - 16,
-    align: 'center',
-  });
-
-  // 3. Digital Signature Seal / Badge (No unicode checkmark to avoid □ glyph missing in PDF font)
-  const sealY = bottomSectionY + 34;
-  doc
-    .roundedRect(sigX + 10, sealY, sigW - 20, 22, 4)
-    .fillAndStroke('#F0FDF4', '#86EFAC');
-
-  text(doc, 'DIGITALLY SIGNED', sigX + 10, sealY + 6, {
-    size: 7.5,
-    font: 'Bold',
-    color: '#15803D',
-    width: sigW - 20,
-    align: 'center',
-    characterSpacing: 0.5,
-  });
-
-  // 4. Authorized Digital Signature
-  text(doc, 'Authorized Digital Signature', sigX + 6, bottomSectionY + 60, {
-    size: 6.5,
-    font: 'Bold',
-    color: '#15803D',
-    width: sigW - 12,
-    align: 'center',
-  });
-
-  text(doc, 'No physical signature required.', sigX + 6, bottomSectionY + 70, {
-    size: 5.5,
-    font: 'Regular',
-    color: COLOR.muted,
-    width: sigW - 12,
-    align: 'center',
+  drawThekedarDigitalSignature(doc, sigX, bottomSectionY, sigW, sigH, {
+    name: thekedarName,
+    date: quotation.formattedDate,
   });
 
   // Draw Page Numbers and Footers across all buffered pages

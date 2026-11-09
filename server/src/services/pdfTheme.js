@@ -150,17 +150,112 @@ export const drawTotal = (doc, y, { label, value, note, fill = C.goodSoft, color
   return y + h + 14;
 };
 
-/** Two signature boxes side by side. */
+/**
+ * Draws the standard FurniCraft Thekedar Digital Signature block.
+ * Matches approved format across all application PDFs:
+ * - Thekedar Name (Bold, Navy)
+ * - Date: DD MMM YYYY (Muted)
+ * - [ DIGITALLY SIGNED ] (Light green badge with green border)
+ * - Authorized Digital Signature (Green bold)
+ * - No physical signature required. (Muted)
+ */
+export const drawThekedarDigitalSignature = (
+  doc,
+  x,
+  y,
+  w = 180,
+  h = 80,
+  { name = 'Contractor', date = new Date() } = {}
+) => {
+  doc.roundedRect(x, y, w, h, 6).fillAndStroke(C.soft, C.line);
+
+  const thekedarName = name || 'Authorized Contractor';
+  const dateStr =
+    typeof date === 'string'
+      ? date.startsWith('Date:')
+        ? date
+        : `Date: ${date}`
+      : `Date: ${new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Kolkata',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).format(new Date(date))}`;
+
+  // 1. Thekedar Name (No "For")
+  text(doc, thekedarName, x + 8, y + 8, {
+    size: 8.5,
+    font: 'Bold',
+    color: C.ink,
+    width: w - 16,
+    align: 'center',
+    ellipsis: true,
+  });
+
+  // 2. Date
+  text(doc, dateStr, x + 8, y + 22, {
+    size: 7,
+    font: 'Regular',
+    color: C.muted,
+    width: w - 16,
+    align: 'center',
+  });
+
+  // 3. Digital Signature Badge (No unicode checkmark to avoid □ glyph missing in PDF font)
+  const sealY = y + 34;
+  doc
+    .roundedRect(x + 10, sealY, w - 20, 22, 4)
+    .fillAndStroke('#F0FDF4', '#86EFAC');
+
+  text(doc, 'DIGITALLY SIGNED', x + 10, sealY + 6, {
+    size: 7.5,
+    font: 'Bold',
+    color: '#15803D',
+    width: w - 20,
+    align: 'center',
+    characterSpacing: 0.5,
+  });
+
+  // 4. Authorized Digital Signature
+  text(doc, 'Authorized Digital Signature', x + 6, y + 60, {
+    size: 6.5,
+    font: 'Bold',
+    color: '#15803D',
+    width: w - 12,
+    align: 'center',
+  });
+
+  // 5. No physical signature required.
+  text(doc, 'No physical signature required.', x + 6, y + 70, {
+    size: 5.5,
+    font: 'Regular',
+    color: C.muted,
+    width: w - 12,
+    align: 'center',
+  });
+
+  return y + h;
+};
+
+/** Two signature boxes side by side: Thekedar Digital Signature on left, Receiver on right. */
 export const drawSignatures = (doc, y, left, right) => {
   const w = (CONTENT_W - 12) / 2;
-  [left, right].forEach((sig, i) => {
-    const x = PAGE.margin + i * (w + 12);
-    doc.roundedRect(x, y, w, 64, 6).lineWidth(0.8).strokeColor(C.line).stroke();
-    text(doc, sig.label, x + 10, y + 9, { size: 7, font: 'Bold', color: C.muted, width: w - 20 });
-    doc.moveTo(x + 10, y + 44).lineTo(x + w - 10, y + 44).lineWidth(0.6).strokeColor(C.faint).stroke();
-    text(doc, sig.name, x + 10, y + 49, { size: 8.5, font: 'Bold', color: C.ink, width: w - 20, ellipsis: true });
+  const h = 80;
+
+  // Left: Standard Thekedar Digital Signature
+  drawThekedarDigitalSignature(doc, PAGE.margin, y, w, h, {
+    name: left.name || 'Authorized Contractor',
+    date: left.date || new Date(),
   });
-  return y + 78;
+
+  // Right: Receiver signature box
+  const rx = PAGE.margin + w + 12;
+  doc.roundedRect(rx, y, w, h, 6).lineWidth(0.8).strokeColor(C.line).stroke();
+  text(doc, right.label || 'RECEIVED BY', rx + 10, y + 9, { size: 7, font: 'Bold', color: C.muted, width: w - 20 });
+  doc.moveTo(rx + 10, y + 54).lineTo(rx + w - 10, y + 54).lineWidth(0.6).strokeColor(C.faint).stroke();
+  text(doc, right.name, rx + 10, y + 60, { size: 8.5, font: 'Bold', color: C.ink, width: w - 20, ellipsis: true });
+
+  return y + h + 14;
 };
 
 /** "Page x of y" + generation stamp on every page (call just before doc.end()). */
