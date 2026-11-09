@@ -318,6 +318,7 @@ export const QuotationsPage = () => {
     try {
       await api.delete(`/quotations/${deletingQuotation._id}`);
       setDeleteModalOpen(false);
+      setPreviewModalOpen(false);
       setDeletingQuotation(null);
       setBanner({
         type: 'success',
@@ -443,6 +444,7 @@ export const QuotationsPage = () => {
   const handleOpenPreview = () => {
     if (!validateForm()) return;
     setPreviewData({
+      _id: editingId || null,
       quotationNumber: formData.quotationNumber || 'FC-PREVIEW-0001',
       formattedDate: formData.formattedDate || initialData.currentDate,
       thekedar: formData.thekedar,
@@ -643,22 +645,6 @@ export const QuotationsPage = () => {
                         >
                           <Edit className="h-3.5 w-3.5 text-slate-600 dark:text-slate-300" />
                           <span className="hidden sm:inline">Edit</span>
-                        </Button>
-
-                        {/* Delete */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingQuotation(qtn);
-                            setDeleteModalOpen(true);
-                          }}
-                          className="border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
-                          title="Delete Quotation"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                          <span className="hidden sm:inline">Delete</span>
                         </Button>
                       </div>
                     </div>
@@ -1071,6 +1057,7 @@ export const QuotationsPage = () => {
           isOpen={previewModalOpen}
           onClose={() => setPreviewModalOpen(false)}
           title="Quotation Preview"
+          maxWidth="max-w-2xl"
         >
           <div className="p-4 sm:p-6 bg-white dark:bg-slate-900 space-y-5 max-w-2xl mx-auto text-slate-900 dark:text-slate-100">
             {/* Header matching exact PDF design */}
@@ -1111,77 +1098,95 @@ export const QuotationsPage = () => {
               <div className="h-1 bg-amber-600 rounded-full w-full" />
             </div>
 
-            {/* 2 Info Cards: Thekedar and Customer */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {/* 2 Info Cards: Thekedar and Customer strictly in a single row */}
+            <div className="grid grid-cols-2 gap-3 text-xs">
               {/* 1. Thekedar */}
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
-                <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
-                  THEKEDAR
-                </span>
-                <span className="font-bold block truncate">
-                  {previewData.thekedar?.businessName || user?.businessName || user?.name}
-                </span>
-                <span className="text-[11px] text-slate-500 block">
-                  {previewData.thekedar?.phone ? `Phone: ${previewData.thekedar.phone}` : 'Site Contractor'}
-                </span>
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between min-w-0">
+                <div className="min-w-0">
+                  <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
+                    THEKEDAR
+                  </span>
+                  <span className="font-bold block truncate text-slate-900 dark:text-slate-100">
+                    {previewData.thekedar?.businessName || user?.businessName || user?.name || 'Contractor'}
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
+                    {previewData.thekedar?.phone ? `Phone: ${previewData.thekedar.phone}` : 'Site Contractor'}
+                  </span>
+                </div>
                 {previewData.thekedarCode && (
-                  <span className="text-[10px] text-slate-400 block font-mono">
+                  <span className="text-[10px] text-slate-400 block font-mono mt-1 truncate">
                     Code: {previewData.thekedarCode}
                   </span>
                 )}
               </div>
 
               {/* 2. Customer */}
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800">
-                <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
-                  CUSTOMER
-                </span>
-                <span className="font-bold block truncate">{previewData.customer?.name}</span>
-                {previewData.customer?.phone && (
-                  <span className="text-[11px] text-slate-500 block truncate">
-                    Phone: {previewData.customer.phone}
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between min-w-0">
+                <div className="min-w-0">
+                  <span className="text-[9px] font-bold text-amber-600 uppercase block mb-1">
+                    CUSTOMER
                   </span>
-                )}
+                  <span className="font-bold block truncate text-slate-900 dark:text-slate-100">
+                    {previewData.customer?.name}
+                  </span>
+                  {previewData.customer?.phone && (
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
+                      Phone: {previewData.customer.phone}
+                    </span>
+                  )}
+                </div>
                 {previewData.customer?.address && (
-                  <span className="text-[10px] text-slate-400 block truncate">
+                  <span className="text-[10px] text-slate-400 block truncate mt-1">
                     {previewData.customer.address}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Items Table matching PDF */}
+            {/* Items Table matching PDF with clean column separation */}
             <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-xs">
-              <div className="bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold grid grid-cols-12 px-3 py-2.5 items-center">
-                <span className="col-span-1 text-center">#</span>
-                <span className="col-span-4">PARTICULAR</span>
-                <span className="col-span-1 text-right">QTY</span>
-                <span className="col-span-2 text-center">UNIT</span>
-                <span className="col-span-2 text-right">RATE</span>
-                <span className="col-span-2 text-right">TOTAL</span>
-              </div>
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                {previewData.items.map((it, idx) => (
-                  <div
-                    key={idx}
-                    className={`grid grid-cols-12 px-3 py-2.5 items-center ${
-                      idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'
-                    }`}
-                  >
-                    <span className="col-span-1 text-center text-slate-400 font-mono text-[11px]">{idx + 1}</span>
-                    <span className="col-span-4 font-medium text-slate-900 dark:text-slate-100 break-words">{it.particular}</span>
-                    <span className="col-span-1 text-right text-slate-700 dark:text-slate-300 font-mono">{it.quantity}</span>
-                    <span className="col-span-2 text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
-                      {it.unit}
-                    </span>
-                    <span className="col-span-2 text-right text-slate-700 dark:text-slate-300 font-mono">
-                      {inr(it.rate)}
-                    </span>
-                    <span className="col-span-2 text-right font-bold text-slate-900 dark:text-slate-100 font-mono">
-                      {inr(it.total)}
-                    </span>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-left">
+                  <thead>
+                    <tr className="bg-slate-900 text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                      <th className="py-2.5 px-3 text-center w-10">#</th>
+                      <th className="py-2.5 px-3 text-left">PARTICULAR</th>
+                      <th className="py-2.5 px-3 text-right w-16">QTY</th>
+                      <th className="py-2.5 px-3 text-center w-24">UNIT</th>
+                      <th className="py-2.5 px-3 text-right w-24">RATE</th>
+                      <th className="py-2.5 px-3 text-right w-28">TOTAL</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {previewData.items.map((it, idx) => (
+                      <tr
+                        key={idx}
+                        className={idx % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}
+                      >
+                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-slate-100 break-words">
+                          {it.particular}
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300 font-mono whitespace-nowrap">
+                          {Number(it.quantity).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
+                            {it.unit}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-slate-700 dark:text-slate-300 font-mono whitespace-nowrap">
+                          {inr(it.rate)}
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-slate-100 font-mono whitespace-nowrap">
+                          {inr(it.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -1231,14 +1236,52 @@ export const QuotationsPage = () => {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setPreviewModalOpen(false)}
-                className="text-xs"
-              >
-                Close Preview
-              </Button>
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              {/* Bottom Left: Delete button in required style */}
+              <div>
+                {previewData._id ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setDeletingQuotation(previewData);
+                      setDeleteModalOpen(true);
+                    }}
+                    className="border-rose-300 dark:border-rose-900/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-medium"
+                    title="Delete Quotation"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                    <span>Delete</span>
+                  </Button>
+                ) : (
+                  <div />
+                )}
+              </div>
+
+              {/* Bottom Right: Actions */}
+              <div className="flex items-center gap-2">
+                {previewData._id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadPdf(previewData)}
+                    disabled={pdfDownloadingId === previewData._id}
+                    className="border-amber-400/80 dark:border-amber-600/70 bg-amber-50/70 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-xs flex items-center gap-1.5 px-2.5 py-1.5 font-semibold"
+                    title="Download PDF"
+                  >
+                    <Download className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                    <span className="hidden sm:inline">Download PDF</span>
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPreviewModalOpen(false)}
+                  className="text-xs px-3 py-1.5"
+                >
+                  Close Preview
+                </Button>
+              </div>
             </div>
           </div>
         </Modal>

@@ -207,6 +207,9 @@ describe('QuotationsPage Frontend Component Tests', () => {
     // Preview button should NOT be present on the card
     expect(screen.queryByTitle('Preview Quotation')).toBeNull();
 
+    // Delete button should NOT be present on the quotation card
+    expect(screen.queryByTitle('Delete Quotation')).toBeNull();
+
     // Clicking the quotation card (e.g. clicking quotation number badge) opens the Preview Modal
     const quotationNumberBadge = await screen.findByText('FC-TK001-QTN-0001');
     fireEvent.click(quotationNumberBadge);
@@ -215,6 +218,8 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('DIGITALLY SIGNED')).toBeInTheDocument();
     expect(screen.getByText('Authorized Digital Signature')).toBeInTheDocument();
+    // Delete button is present in the preview modal at bottom left
+    expect(screen.getByTitle('Delete Quotation')).toBeInTheDocument();
     // No "For" prefix in signature block
     expect(screen.queryByText(/For Sharma Modular Kitchens/i)).toBeNull();
     // No Project card in preview modal
