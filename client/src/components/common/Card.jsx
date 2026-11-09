@@ -1,8 +1,12 @@
 import React from 'react';
 
-export const Card = ({ children, className = '', title, subtitle, action }) => {
+export const Card = ({ children, className = '', title, subtitle, action, onClick, ...rest }) => {
   return (
-    <div className={`rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm transition-all hover:shadow-md ${className}`}>
+    <div
+      onClick={onClick}
+      className={`rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm transition-all hover:shadow-md ${className}`}
+      {...rest}
+    >
       {(title || action) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
           <div className="min-w-0">

@@ -192,7 +192,7 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(screen.queryByText(/Notes \/ Specifications/i)).toBeNull();
   });
 
-  it('provides a Preview button on the quotation card and omits status badge and duplicate button', async () => {
+  it('opens preview modal on clicking the quotation card and omits preview button, status badge, and duplicate button', async () => {
     renderComponent();
 
     // Verify card rendered
@@ -204,12 +204,13 @@ describe('QuotationsPage Frontend Component Tests', () => {
     // Duplicate button should not be present
     expect(screen.queryByTitle(/Duplicate/i)).toBeNull();
 
-    // Preview button should be present on the card
-    const previewBtn = screen.getByTitle('Preview Quotation');
-    expect(previewBtn).toBeInTheDocument();
+    // Preview button should NOT be present on the card
+    expect(screen.queryByTitle('Preview Quotation')).toBeNull();
 
-    // Clicking Preview opens the Preview Modal
-    fireEvent.click(previewBtn);
+    // Clicking the quotation card (e.g. clicking quotation number badge) opens the Preview Modal
+    const quotationNumberBadge = await screen.findByText('FC-TK001-QTN-0001');
+    fireEvent.click(quotationNumberBadge);
+
     expect(await screen.findByText('Quotation Preview')).toBeInTheDocument();
     expect(screen.getAllByText('Rajesh Gupta').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('DIGITALLY SIGNED')).toBeInTheDocument();
@@ -218,5 +219,17 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(screen.queryByText(/For Sharma Modular Kitchens/i)).toBeNull();
     // No Project card in preview modal
     expect(screen.queryByText('PROJECT')).toBeNull();
+  });
+
+  it('omits quotation number and date top banner while adding or editing in form', async () => {
+    renderComponent();
+
+    const createBtn = await screen.findByRole('button', { name: /Create Quotation/i });
+    fireEvent.click(createBtn);
+
+    // Top automatic date/number banner should NOT be displayed
+    expect(screen.queryByText('Quotation Date (India)')).toBeNull();
+    expect(screen.queryByText(/Will be allocated upon saving/i)).toBeNull();
+    expect(screen.getByText('A. Thekedar Information')).toBeInTheDocument();
   });
 });
