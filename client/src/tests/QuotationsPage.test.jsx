@@ -110,9 +110,9 @@ describe('QuotationsPage Frontend Component Tests', () => {
     fireEvent.click(createBtn);
 
     expect(await screen.findByText('Create New Quotation')).toBeInTheDocument();
-    expect(screen.getByText('A. Thekedar Information')).toBeInTheDocument();
-    expect(screen.getByText('B. Customer Information')).toBeInTheDocument();
-    expect(screen.getByText('C. Quotation Items')).toBeInTheDocument();
+    expect(screen.queryByText(/Thekedar Information/i)).toBeNull();
+    expect(screen.getByText('Customer Information')).toBeInTheDocument();
+    expect(screen.getByText('Quotation Items')).toBeInTheDocument();
     expect(screen.queryByText(/Project Information/i)).toBeNull();
   });
 
@@ -151,7 +151,7 @@ describe('QuotationsPage Frontend Component Tests', () => {
     expect(screen.getByText('GRAND TOTAL')).toBeInTheDocument();
 
     // Fill Particular
-    const particularInput = screen.getByPlaceholderText(/e\.g\. Kitchen Tandem/i);
+    const particularInput = screen.getByPlaceholderText(/Enter description \/ particular/i);
     fireEvent.change(particularInput, { target: { value: 'Wardrobe Shutter' } });
 
     // Change Quantity to 150
@@ -239,6 +239,6 @@ describe('QuotationsPage Frontend Component Tests', () => {
     // Top automatic date/number banner should NOT be displayed
     expect(screen.queryByText('Quotation Date (India)')).toBeNull();
     expect(screen.queryByText(/Will be allocated upon saving/i)).toBeNull();
-    expect(screen.getByText('A. Thekedar Information')).toBeInTheDocument();
+    expect(screen.queryByText(/Thekedar Information/i)).toBeNull();
   });
 });

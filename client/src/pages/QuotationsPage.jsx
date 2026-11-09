@@ -17,7 +17,6 @@ import {
   User,
   Phone,
   MapPin,
-  Building2,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
@@ -691,67 +690,7 @@ export const QuotationsPage = () => {
       {/* VIEW: CREATE / EDIT FORM */}
       {view === 'form' && (
         <div className="space-y-6">
-          {/* SECTION A: THEKEDAR INFORMATION (Auto-loaded) */}
-          <Card className="p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-700 dark:text-amber-400">
-                  <Building2 className="h-4 w-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    A. Thekedar Information
-                  </h2>
-                  <p className="text-[11px] text-slate-400">
-                    Auto-loaded from your verified profile. Displayed first on the PDF.
-                  </p>
-                </div>
-              </div>
-              <span className="font-mono text-xs font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
-                Code: {initialData.thekedar.thekedarCode || user?.thekedarCode || 'Auto'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Business / Company Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.thekedar.businessName}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      thekedar: { ...p.thekedar, businessName: e.target.value },
-                    }))
-                  }
-                  placeholder="e.g. Sharma Interiors & Woodcraft"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.thekedar.phone}
-                  onChange={(e) =>
-                    setFormData((p) => ({
-                      ...p,
-                      thekedar: { ...p.thekedar, phone: e.target.value },
-                    }))
-                  }
-                  placeholder="e.g. 9876543210"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* SECTION B: CUSTOMER INFORMATION */}
+          {/* CUSTOMER INFORMATION */}
           <Card className="p-5 space-y-4">
             <div className="flex items-center gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-950/60 flex items-center justify-center text-blue-700 dark:text-blue-400">
@@ -759,7 +698,7 @@ export const QuotationsPage = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  B. Customer Information
+                  Customer Information
                 </h2>
                 <p className="text-[11px] text-slate-400">
                   Enter client details. Customer name is required.
@@ -782,7 +721,7 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, name: e.target.value },
                     }))
                   }
-                  placeholder="e.g. Rajesh Gupta"
+                  placeholder="Enter customer name"
                   className={`w-full rounded-xl border px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none ${
                     formErrors.customerName
                       ? 'border-rose-400 bg-rose-50/20'
@@ -809,7 +748,7 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, phone: e.target.value },
                     }))
                   }
-                  placeholder="e.g. 9812345678"
+                  placeholder="Enter phone number"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                 />
               </div>
@@ -827,21 +766,21 @@ export const QuotationsPage = () => {
                       customer: { ...p.customer, address: e.target.value },
                     }))
                   }
-                  placeholder="e.g. Flat 402, Green Heights, Andheri West, Mumbai"
+                  placeholder="Enter site address or location"
                   className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                 />
               </div>
             </div>
           </Card>
 
-          {/* SECTION C: DYNAMIC QUOTATION ITEMS */}
+          {/* DYNAMIC QUOTATION ITEMS */}
           <Card className="p-5 space-y-4">
             <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                C. Quotation Items
+                Quotation Items
               </h2>
               <p className="text-[11px] text-slate-400">
-                Add items with quantity, unit (SQ FEET or PCS), and rate.
+                Add items with quantity, unit (SQF or PCS), and rate.
               </p>
             </div>
 
@@ -875,7 +814,7 @@ export const QuotationsPage = () => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                       {/* Particular / Description */}
                       <div className="md:col-span-5">
                         <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
@@ -887,7 +826,7 @@ export const QuotationsPage = () => {
                           onChange={(e) =>
                             handleItemChange(index, 'particular', e.target.value)
                           }
-                          placeholder="e.g. Kitchen Tandem Drawer Box"
+                          placeholder="Enter description / particular"
                           className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500"
                         />
                         {formErrors[`item_${index}_particular`] && (
@@ -897,8 +836,8 @@ export const QuotationsPage = () => {
                         )}
                       </div>
 
-                      {/* Quantity & Unit in a SINGLE ROW */}
-                      <div className="md:col-span-4 grid grid-cols-2 gap-2">
+                      {/* QTY, UNIT, and RATE in the SAME ROW on ALL screens */}
+                      <div className="md:col-span-5 grid grid-cols-3 gap-2">
                         <div>
                           <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
                             Qty <span className="text-rose-500">*</span>
@@ -911,7 +850,7 @@ export const QuotationsPage = () => {
                             onChange={(e) =>
                               handleItemChange(index, 'quantity', e.target.value)
                             }
-                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
+                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
                           />
                         </div>
 
@@ -922,35 +861,34 @@ export const QuotationsPage = () => {
                           <select
                             value={item.unit}
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
+                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 py-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 outline-none"
                           >
                             <option value="SQ FEET">SQF</option>
                             <option value="PCS">PCS</option>
                           </select>
                         </div>
-                      </div>
 
-                      {/* Rate */}
-                      <div className="md:col-span-2">
-                        <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
-                          Rate (₹) <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          step="any"
-                          min="0"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
-                        />
+                        <div>
+                          <label className="text-[11px] font-bold text-slate-500 uppercase block mb-1">
+                            Rate (₹) <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={item.rate}
+                            onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-amber-500 text-right"
+                          />
+                        </div>
                       </div>
 
                       {/* Item Total */}
-                      <div className="md:col-span-1 flex flex-col justify-center text-right">
+                      <div className="md:col-span-2 flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end text-right pt-2 md:pt-0 border-t border-slate-200/60 dark:border-slate-800/60 md:border-0 pb-1">
                         <span className="text-[10px] font-bold text-slate-400 uppercase block">
                           Total
                         </span>
-                        <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono">
+                        <span className="text-sm font-extrabold text-slate-900 dark:text-slate-100 font-mono">
                           {inr(itemTotal)}
                         </span>
                       </div>
