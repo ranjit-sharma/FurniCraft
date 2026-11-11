@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="google-site-verification" content="XbXTpwt2XPaSGldIYfyMTlRh5zpVOgbqTjFA8GvS02g" />
     <link rel="icon" type="image/svg+xml" href="/furnicraft-icon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/logo-icon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/logo-icon-16.png" />
@@ -16,6 +17,7 @@
     <title>FurniCraft | Official Furniture Workforce Management Platform</title>
     <meta name="description" content="FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations." />
     <link rel="canonical" href="https://furnicraft-erp.onrender.com/" />
+    <meta name="robots" content="index, follow" />
 
     <!-- Open Graph Metadata -->
     <meta property="og:site_name" content="FurniCraft" />
@@ -36,6 +38,42 @@
     <meta name="twitter:image" content="https://furnicraft-erp.onrender.com/logo-icon-512.png" />
     <meta name="twitter:image:alt" content="FurniCraft Logo" />
 
+    <!-- Google Site Identity & Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://furnicraft-erp.onrender.com/#website",
+          "url": "https://furnicraft-erp.onrender.com/",
+          "name": "FurniCraft",
+          "alternateName": ["FurniCraft ERP", "Furnicraft", "Furni Craft"],
+          "description": "FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations.",
+          "publisher": {
+            "@id": "https://furnicraft-erp.onrender.com/#organization"
+          },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://furnicraft-erp.onrender.com/#organization",
+          "name": "FurniCraft",
+          "alternateName": ["FurniCraft ERP", "Furnicraft", "Furni Craft"],
+          "url": "https://furnicraft-erp.onrender.com/",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "https://furnicraft-erp.onrender.com/#logo",
+            "url": "https://furnicraft-erp.onrender.com/furnicraft-logo.png",
+            "contentUrl": "https://furnicraft-erp.onrender.com/furnicraft-logo.png",
+            "caption": "FurniCraft Logo"
+          },
+          "image": "https://furnicraft-erp.onrender.com/furnicraft-logo.png",
+          "description": "FurniCraft is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations."
+        }
+      ]
+    }
+    </script>
     <!-- Google Fonts: Inter (Modern Geometric Sans-Serif) & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +91,42 @@
     </script>
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-brand-500 selection:text-white font-sans min-h-screen">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Semantic Initial Prerender for Search Engines & Screen Readers -->
+      <header style="padding: 1.5rem; text-align: center;">
+        <img src="/furnicraft-logo.png" alt="FurniCraft Logo" width="64" height="64" style="margin: 0 auto; display: block;" />
+        <h1>FurniCraft | Official Furniture Workforce Management Platform</h1>
+        <p>FurniCraft ERP is a modern furniture workforce management platform that helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations.</p>
+      </header>
+      <main style="max-width: 960px; margin: 0 auto; padding: 1rem;">
+        <section>
+          <h2>About FurniCraft</h2>
+          <p>FurniCraft (also recognized as Furnicraft, Furni Craft, or FurniCraft ERP) is the official digital operations platform engineered specifically for custom furniture workshops, carpentry contractors, and on-site fit-out supervisors. FurniCraft helps contractors manage workers, projects, attendance, earnings, payroll, payments, and business operations.</p>
+        </section>
+        <section>
+          <h2>Core Platform Capabilities</h2>
+          <article>
+            <h3>Furniture Workforce Management</h3>
+            <p>Maintain centralized craftsman rosters, trade skill categories, daily shift rates, and site allocations for carpenters, polishers, and helpers across bespoke furniture projects.</p>
+          </article>
+          <article>
+            <h3>Furniture Contractor &amp; Project Management</h3>
+            <p>Empower furniture contractors (Thekedars) with real-time site supervision, project milestone tracking, client money received tracking, and material expense approvals.</p>
+          </article>
+          <article>
+            <h3>Furniture Attendance &amp; Daily Worker Earnings</h3>
+            <p>Capture mobile attendance with rapid shift multipliers (0.5, 1, 1.5, 2, 2.5, 3, A), automated daily earnings calculation, and locked payroll protection.</p>
+          </article>
+          <article>
+            <h3>Furniture Payroll, Cash Advances &amp; Settlement Bills</h3>
+            <p>Record worker cash advances, calculate net dues automatically, generate PDF payment vouchers, and maintain transparent financial audit trails.</p>
+          </article>
+        </section>
+      </main>
+      <footer style="text-align: center; padding: 1.5rem; color: #64748b;">
+        <p>&copy; 2026 FurniCraft. All rights reserved. FurniCraft | Official Furniture Workforce Management Platform.</p>
+      </footer>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
