@@ -1,6 +1,6 @@
 # FurniCraft — Modern Furniture Workforce & Financial Management ERP
 
-[![Live Application](https://img.shields.io/badge/Live_App-furnicraft--erp.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp-9acv.onrender.com/)
+[![Live Application](https://img.shields.io/badge/Live_App-furnicraft-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp-9acv.onrender.com/)
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-v4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
