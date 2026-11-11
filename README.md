@@ -1,6 +1,6 @@
 # FurniCraft — Modern Furniture Workforce & Financial Management ERP
 
-[![Live Application](https://img.shields.io/badge/Live_App-furnicraft--erp.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp.onrender.com)
+[![Live Application](https://img.shields.io/badge/Live_App-furnicraft--erp.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp-9acv.onrender.com/)
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-v4.21-000000?logo=express&logoColor=white)](https://expressjs.com/)
@@ -11,10 +11,10 @@
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-v4.8-010101?logo=socket.io&logoColor=white)](https://socket.io/)
 [![JWT](https://img.shields.io/badge/Auth-JWT_Cookies-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
 [![Vitest](https://img.shields.io/badge/Testing-Vitest-FCC72B?logo=vitest&logoColor=black)](https://vitest.dev/)
-[![Render](https://img.shields.io/badge/Hosted_on-Render-46E3B7?logo=render&logoColor=black)](https://furnicraft-erp.onrender.com)
+[![Render](https://img.shields.io/badge/Hosted_on-Render-46E3B7?logo=render&logoColor=black)](https://furnicraft-erp-9acv.onrender.com/)
 [![License](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 
-> 🚀 **Live Production Application**: [**https://furnicraft-erp.onrender.com**](https://furnicraft-erp.onrender.com)
+> 🚀 **Live Production Application**: [**furnicraft**](https://furnicraft-erp-9acv.onrender.com)
 
 **FurniCraft** is an enterprise-grade MERN-stack workforce, attendance, payroll, and workshop financial operations platform engineered exclusively for modern interior furniture manufacturing, cabinetry workshops, and modular installation businesses.
 
@@ -472,7 +472,7 @@ FurniCraft implements the standard shopfloor wage conventions of the Indian mode
 
 FurniCraft is continuously deployed and live in production on **Render**:
 
-🌐 **Live Application URL**: [**https://furnicraft-erp.onrender.com**](https://furnicraft-erp.onrender.com)
+🌐 **Live Application URL**: [**furnicraft**](https://furnicraft-erp-9acv.onrender.com/)
 
 ### Cloud Architecture & Deployment
 - **Unified Web Service**: Hosted on Render as a single unified service where Express serves both the secured REST API routes (`/api/v1`) and the compiled, optimized React single-page application.
