@@ -1,4 +1,4 @@
-# FurniCraft — Modern Furniture Workforce & Financial Management ERP.
+# FurniCraft — Modern Furniture Workforce & Financial Management ERP
 
 [![Live Application](https://img.shields.io/badge/Live_App-furnicraft-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://furnicraft-erp-9acv.onrender.com/)
 
